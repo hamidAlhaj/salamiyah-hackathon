@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Theme tokens as "R G B" (see tailwind.config.ts). Text pairs are chosen for WCAG AA in both
+     themes: ink on page ≈ 15:1, muted on page ≈ 6:1, accent on page ≈ 7:1, control on surface ≈ 3.5:1. */
+
+  /* Light: cool limestone with a faint sage tint (Salamiyah stone, not cream paper). */
+  :root {
+    color-scheme: light;
+    --page: 238 242 239; /* #eef2ef */
+    --surface: 249 251 249; /* #f9fbf9 cards, inputs, header */
+    --surface-muted: 228 234 229; /* #e4eae5 recessed panels */
+    --border: 211 220 213; /* #d3dcd5 */
+    --track: 203 213 205; /* #cbd5cd progress track, skeletons */
+    --control: 123 138 128; /* #7b8a80 input outlines */
+    --text: 22 35 29; /* #16231d green-black ink */
+    --text-muted: 79 95 86; /* #4f5f56 */
+    --ring: 24 115 75; /* brand-600 */
+    --accent: 19 91 60; /* brand-700: links, active text */
+    --accent-strong: 17 74 50; /* brand-800 */
+    --accent-soft: 220 238 229; /* #dceee5 chips, selected */
+    --danger: 163 39 28;
+    --danger-soft: 245 222 214;
+    --danger-line: 233 195 184;
+    --warning: 133 70 11;
+    --warning-soft: 244 227 193;
+    --warning-line: 229 204 151;
+    --info: 15 76 110;
+    --info-soft: 217 232 238;
+    --panel: 15 61 42; /* brand-900: brand panel, logo tile */
+    --panel-ink: 228 242 235;
+    --lattice: rgb(255 255 255 / 0.09); /* star lattice lines on the panel */
+    --lattice-soft: rgb(19 91 60 / 0.07); /* star lattice on light surfaces */
+    --shadow-card: 0 1px 2px rgb(16 40 28 / 0.05), 0 2px 8px -2px rgb(16 40 28 / 0.08);
+    --shadow-lift: 0 14px 30px -12px rgb(16 40 28 / 0.25), 0 3px 8px rgb(16 40 28 / 0.06);
+  }
+
+  /* Dark: deep pine, never pure black; elevation becomes a faint outline. */
+  .dark {
+    color-scheme: dark;
+    --page: 14 21 18; /* #0e1512 */
+    --surface: 22 32 27; /* #16201b */
+    --surface-muted: 17 26 22; /* #111a16 */
+    --border: 44 58 51; /* #2c3a33 */
+    --track: 58 74 66; /* #3a4a42 */
+    --control: 113 131 122; /* #71837a */
+    --text: 236 242 238;
+    --text-muted: 160 176 167;
+    --ring: 70 162 122; /* brand-400 */
+    --accent: 121 191 159; /* brand-300 */
+    --accent-strong: 172 217 197; /* brand-200 */
+    --accent-soft: 22 54 40; /* #163628 */
+    --danger: 252 165 165;
+    --danger-soft: 61 27 25;
+    --danger-line: 92 32 29;
+    --warning: 252 211 77;
+    --warning-soft: 61 45 16;
+    --warning-line: 92 68 22;
+    --info: 186 230 253;
+    --info-soft: 16 44 59;
+    --panel: 10 41 29; /* deeper than brand-900 so it still reads as a panel */
+    --panel-ink: 214 236 225;
+    --lattice: rgb(255 255 255 / 0.06);
+    --lattice-soft: rgb(121 191 159 / 0.06);
+    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.03);
+    --shadow-lift: 0 0 0 1px rgb(255 255 255 / 0.07), 0 14px 32px -12px rgb(0 0 0 / 0.7);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-page font-sans text-base text-ink antialiased;
+  }
+  /* English UI: Plex Latin at a Latin-friendly line height. Noto Kufi has no Latin letters,
+     so the display face falls back to Plex bold; the Arabic wordmark keeps Kufi via lang="ar". */
+  html:lang(en) body {
+    line-height: 1.6;
+  }
+  .font-display:lang(en) {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  /* A visible keyboard focus ring everywhere. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Loading placeholder with a soft shimmer (static when motion is reduced). */
+  .skeleton {
+    @apply animate-shimmer rounded-2xl bg-track;
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(255 255 255 / 0.35) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+  }
+  .dark .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(255 255 255 / 0.06) 50%,
+      transparent 100%
+    );
+  }
+}
+
+/* Theme switch: colours cross-fade briefly (class added by ThemeContext for ~300ms). */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-switching,
+  html.theme-switching *,
+  html.theme-switching *::before,
+  html.theme-switching *::after {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow !important;
+    transition-duration: 250ms !important;
+    transition-timing-function: ease-out !important;
+  }
+}
+
+/* Motion is decoration only: with reduced motion everything is shown in its final state. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

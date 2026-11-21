@@ -4,8 +4,8 @@ Hackathon proof of concept for the Ismaili Council in Salamiyah, Syria. It publi
 pledges (bank transfer, cash at a collection point, or a demo payment), verifies the money, pays the approved hospital
 directly, and shows public transparency figures.
 
-> **Status:** `api/` skeleton in place (prompt P02). `web/` and `mobile/` arrive in prompts P04–P06
-> (see `docs/_analysis/05-execution-plan.md` §7). The steps below describe the finished setup.
+> **Status:** `api/` (P02–P03) and the `web/` skeleton (P04: login/logout, theme, AR/EN) are in place.
+> The real web pages arrive in P05 and `mobile/` in P06 (see `docs/_analysis/05-execution-plan.md` §7).
 
 ## Repository layout
 

@@ -1,0 +1,373 @@
+{
+  "meta": {
+    "title": "Majlis Fund",
+    "description": "Medical crowdfunding — Ismaili Council, Salamiyah"
+  },
+  "nav": {
+    "brand": "Majlis Fund",
+    "campaigns": "Cases",
+    "track": "Track a request",
+    "login": "Log in",
+    "dashboard": "Dashboard",
+    "logout": "Log out",
+    "main": "Main navigation",
+    "skip": "Skip to content"
+  },
+  "home": {
+    "title": "Medical cases that need your support",
+    "subtitle": "Every case is vetted by the welfare board and an approved doctor. The platform never holds money: pledge, transfer, upload the receipt, and we verify it.",
+    "filterAll": "All",
+    "empty": "No published cases right now.",
+    "prev": "Previous",
+    "next": "Next",
+    "kicker": "Ismaili Council, Salamiyah",
+    "heroTitle": "Treatment for those who need it, with donations you can follow",
+    "heroBody": "We publish vetted medical cases, verify every donation and pay the hospital directly. The figures shown are money the council has actually verified.",
+    "ctaCases": "Browse cases",
+    "ctaTrack": "Track your request",
+    "casesSoon": "Published cases will appear here soon.",
+    "stepsTitle": "How your donation arrives",
+    "steps": [
+      {
+        "title": "You pledge",
+        "body": "Pick a case and record the amount you will give."
+      },
+      {
+        "title": "You transfer or hand in cash",
+        "body": "A bank transfer with the receipt uploaded, or cash at a nearby collection point."
+      },
+      {
+        "title": "We verify",
+        "body": "The finance verifier matches the amount and issues an official receipt."
+      },
+      {
+        "title": "We pay the hospital",
+        "body": "Payment goes only to the approved hospital, and the case shows as completed."
+      }
+    ]
+  },
+  "priority": {
+    "VERY_URGENT": "Critical",
+    "URGENT": "Urgent",
+    "NORMAL": "Normal"
+  },
+  "category": {
+    "SURGERY": "Surgery",
+    "MEDICATION": "Medication",
+    "INCUBATOR": "Newborn incubator",
+    "ONCOLOGY": "Oncology",
+    "TRANSPORT": "Patient transport",
+    "OTHER": "Other"
+  },
+  "campaign": {
+    "verified": "Verified",
+    "pending": "Awaiting verification",
+    "target": "Goal",
+    "of": "of",
+    "donors": "{count, plural, =0 {No donors yet} one {# donor} other {# donors}}",
+    "hospital": "Approved hospital",
+    "fileNo": "File no.",
+    "anonymous": "Identity-protected case",
+    "approved": "Approved by the Council",
+    "ongoing": "Ongoing programme",
+    "updates": "Latest updates",
+    "howToDonate": "How do I donate?",
+    "howToDonateSteps": "1) Pledge in the Majlis Fund app  2) Transfer via Bank Bemo  3) Photograph and upload the receipt  4) We verify it, the total rises, and you get an official receipt in your name",
+    "notAccepting": "This campaign is not accepting pledges right now.",
+    "funded": "Fully funded",
+    "completed": "Paid to the hospital",
+    "shareWhatsapp": "Share on WhatsApp",
+    "shareText": "Support “{title}” — {percent}% of the goal is verified. {url}",
+    "transparency": "Transparency",
+    "disbursed": "Paid to hospital",
+    "pendingNote": "Includes transfers with uploaded receipts and collection-point totals; not counted until finance verification."
+  },
+  "receipt": {
+    "title": "Official donation receipt",
+    "no": "Receipt no.",
+    "donor": "Donor",
+    "anonymousDonor": "Anonymous donor",
+    "amount": "Amount",
+    "campaign": "Campaign",
+    "date": "Verified on",
+    "print": "Print",
+    "sendWhatsapp": "Send to myself on WhatsApp",
+    "thanks": "Thank you. This receipt is issued after the finance verifier confirmed the funds were received.",
+    "notFound": "Receipt not found."
+  },
+  "track": {
+    "title": "Track a request",
+    "intro": "Enter the request number and the last 4 digits of the registered phone.",
+    "no": "Request number",
+    "last4": "Last 4 phone digits",
+    "submit": "Show stage",
+    "notFound": "No request matches these details.",
+    "stage": "Current stage",
+    "stages": {
+      "RECEIVED": "Request received",
+      "UNDER_REVIEW": "Under review",
+      "NEEDS_INFO": "More information needed — contact your local council",
+      "APPROVED": "Approved",
+      "PUBLISHED": "Published for donations",
+      "DISBURSED": "Paid to the hospital",
+      "REJECTED": "Not approved",
+      "CLOSED": "Closed"
+    }
+  },
+  "auth": {
+    "title": "Log in",
+    "phone": "Phone number",
+    "password": "Password",
+    "submit": "Log in",
+    "invalid": "Wrong phone number or password.",
+    "donorHint": "Donors can also use the mobile app.",
+    "subtitle": "For donors and council staff. Use your registered phone number.",
+    "phoneHint": "Example: 0944123456",
+    "submitting": "Logging in…",
+    "required": "Enter your phone number and password.",
+    "unavailable": "The server could not be reached. Try again shortly.",
+    "panelTitle": "Every lira goes straight to the hospital",
+    "panelBody": "Medical cases vetted by the welfare board, donations the council verifies before they count, and payment only to the approved hospital.",
+    "panelPoints": [
+      "Medical vetting for every case",
+      "A finance check on every receipt",
+      "Direct payment to the hospital"
+    ]
+  },
+  "dash": {
+    "title": "Dashboard",
+    "finance": "Finance verification",
+    "cases": "Case review",
+    "intake": "New case",
+    "imports": "Excel import",
+    "collector": "Collection points",
+    "roleNotSupported": "There is no web dashboard for this role yet.",
+    "error": "Something went wrong",
+    "saved": "Saved",
+    "greeting": "Welcome, {name}",
+    "signedInAs": "Signed in as {role}",
+    "tasksTitle": "Your work on the platform",
+    "tasks": {
+      "DONOR": [
+        {
+          "title": "My donations",
+          "body": "Your pledges, the verification status of each one and your official receipts."
+        },
+        {
+          "title": "Browse cases",
+          "body": "Published medical cases and how much of each is verified."
+        }
+      ],
+      "STAFF": [
+        {
+          "title": "New case",
+          "body": "Take in a request with the medical report and a duplicate check."
+        },
+        {
+          "title": "Excel import",
+          "body": "Add beneficiaries from a file, with a preview of errors before saving."
+        },
+        {
+          "title": "In-person donation",
+          "body": "Record a cash donation handed in at the council."
+        }
+      ],
+      "CASE_OFFICER": [
+        {
+          "title": "Case review",
+          "body": "Approve, reject or ask for more information; set priority and hospital."
+        },
+        {
+          "title": "Publish cases",
+          "body": "Publish an approved case with a summary that never reveals the beneficiary."
+        }
+      ],
+      "FINANCE_VERIFIER": [
+        {
+          "title": "Finance verification",
+          "body": "Match receipts and collected cash, then issue the official receipt."
+        },
+        {
+          "title": "Pay the hospital",
+          "body": "Record the payment to the approved hospital with its invoice."
+        }
+      ],
+      "ADMIN": [
+        {
+          "title": "Users",
+          "body": "Team accounts, their roles and their collection points."
+        },
+        {
+          "title": "Hospitals and collection points",
+          "body": "The reference data cases and donations depend on."
+        },
+        {
+          "title": "Campaigns",
+          "body": "Publish ongoing campaigns and pause pledges when needed."
+        }
+      ],
+      "COLLECTOR": [
+        {
+          "title": "Collection points",
+          "body": "Only the points assigned to you; confirm cash donations you receive."
+        },
+        {
+          "title": "Clearance",
+          "body": "What you received and handed to the council, pending finance verification."
+        }
+      ]
+    }
+  },
+  "finance": {
+    "title": "Finance verification queue",
+    "intro": "Oldest first. Match the receipt against the bank statement, then approve or reject with a clear reason.",
+    "empty": "Nothing awaiting verification 🎉",
+    "pledge": "Pledge",
+    "channel": {
+      "PLATFORM": "Platform",
+      "COUNCIL": "In person at the council",
+      "COLLECTOR": "Collection point"
+    },
+    "donor": "Donor",
+    "noName": "No name (box total)",
+    "recordedBy": "Recorded by",
+    "transferRef": "Transfer ref",
+    "noReceipt": "Cash — matched when the box is handed to the council",
+    "openReceipt": "Open receipt",
+    "approve": "Approve",
+    "reject": "Reject",
+    "reason": "Rejection reason (sent to donor)",
+    "approved": "Approved — receipt {no}",
+    "approvedNoReceipt": "Approved",
+    "rejected": "Rejected",
+    "ownEntry": "You cannot verify an entry you recorded yourself."
+  },
+  "cases": {
+    "title": "Case review",
+    "overdue": "Overdue",
+    "filterAll": "All",
+    "filterOverdue": "Overdue only",
+    "tracking": "Tracking no.",
+    "beneficiary": "Beneficiary",
+    "requested": "Requested",
+    "approvedAmount": "Approved",
+    "status": "Status",
+    "statuses": {
+      "SUBMITTED": "New",
+      "UNDER_REVIEW": "Under review",
+      "NEEDS_INFO": "Needs info",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "PUBLISHED": "Published",
+      "CLOSED": "Closed"
+    },
+    "routes": {
+      "CROWDFUNDING": "Crowdfunding campaign",
+      "AGA_KHAN_REFERRAL": "Aga Khan referral",
+      "MONTHLY_BUDGET": "Monthly budget"
+    },
+    "open": "Open",
+    "details": "Case details",
+    "description": "Internal description",
+    "documents": "Documents",
+    "history": "Previous requests by the same beneficiary",
+    "otherPrograms": "Other programmes",
+    "none": "None",
+    "review": "Review",
+    "decision": "Decision",
+    "approve": "Approve",
+    "rejectDecision": "Reject",
+    "needsInfo": "Request info",
+    "priority": "Priority",
+    "route": "Route",
+    "hospital": "Hospital",
+    "doctor": "Assessing doctor",
+    "reason": "Reason",
+    "submit": "Save decision",
+    "publish": "Publish as campaign",
+    "titleAr": "Title (Arabic)",
+    "titleEn": "Title (English, optional)",
+    "redactedSummary": "Public summary with sensitive data removed",
+    "summaryEn": "Summary (English, optional)",
+    "isAnonymous": "Identity-protected case (patient name hidden)",
+    "publishSubmit": "Publish",
+    "published": "Published: ",
+    "lock": "Change hospital or amount",
+    "lockNote": "Changing the hospital or increasing the amount sends the case back to review and pauses pledges until re-approved.",
+    "newAmount": "New amount",
+    "lockSubmit": "Apply change",
+    "pledgesPaused": "Pledges paused until re-approval"
+  },
+  "intake": {
+    "title": "Register a medical case",
+    "name": "Beneficiary name",
+    "phone": "Beneficiary phone",
+    "nationalId": "National ID (stored hashed)",
+    "council": "Local council",
+    "category": "Need type",
+    "description": "Description",
+    "amount": "Estimated amount (SYP)",
+    "report": "Medical report (image or PDF)",
+    "submit": "Submit request",
+    "done": "Registered. Tracking no.: {no}",
+    "warnings": "Warning: this beneficiary has open requests or other aid — review before continuing."
+  },
+  "imports": {
+    "title": "Import beneficiaries from Excel",
+    "intro": "Upload an .xlsx or .csv file. Access files: export to Excel first (Access → External Data → Export).",
+    "file": "File",
+    "upload": "Upload & preview",
+    "mapping": "Column mapping",
+    "field": "System field",
+    "column": "File column",
+    "skip": "— skip —",
+    "validate": "Check (no save)",
+    "commit": "Save {count} rows",
+    "total": "Total rows",
+    "valid": "Valid",
+    "errors": "With errors",
+    "duplicates": "Duplicates (skipped)",
+    "row": "Row",
+    "message": "Error",
+    "downloadErrors": "Download rejected rows",
+    "done": "Saved {created} rows, skipped {skipped}.",
+    "sample": "First rows preview",
+    "fields": {
+      "fullName": "Full name",
+      "phone": "Phone",
+      "nationalId": "National ID",
+      "localCouncil": "Local council",
+      "otherPrograms": "Other programmes"
+    }
+  },
+  "common": {
+    "soon": "Soon",
+    "council": "Ismaili Council, Salamiyah"
+  },
+  "theme": {
+    "toLight": "Switch to light mode",
+    "toDark": "Switch to dark mode"
+  },
+  "language": {
+    "switchLabel": "التبديل إلى العربية"
+  },
+  "roles": {
+    "DONOR": "Donor",
+    "STAFF": "Intake staff",
+    "CASE_OFFICER": "Case officer",
+    "FINANCE_VERIFIER": "Finance verifier",
+    "ADMIN": "Administrator",
+    "COLLECTOR": "Collector"
+  },
+  "errors": {
+    "pageTitle": "This page could not be shown",
+    "pageBody": "Something unexpected happened. Try again, and if it keeps happening go back to the home page.",
+    "retry": "Try again",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The link may have changed or the page was removed.",
+    "home": "Home page"
+  },
+  "toast": {
+    "dismiss": "Dismiss notification"
+  }
+}

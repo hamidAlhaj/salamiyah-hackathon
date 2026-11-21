@@ -1,0 +1,5 @@
+# Copies of api/src/common/shared: keep byte-identical to the api (formatted with the api's Prettier).
+src/shared/enums.ts
+src/shared/constants.ts
+src/shared/utils.ts
+src/shared/types.ts
