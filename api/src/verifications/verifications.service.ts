@@ -1,0 +1,196 @@
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { AuditService } from '../audit/audit.service';
+import { officialReceiptNo } from '../common/utils/codes';
+import { money } from '../common/utils/money';
+import type { AuthUser } from '../common/types';
+import { NotificationsService } from '../notifications/notifications.service';
+import { PrismaService } from '../prisma/prisma.service';
+import type { ListVerificationsQueryDto } from './verifications.dto';
+
+@Injectable()
+export class VerificationsService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
+  ) {}
+
+  /** قائمة الانتظار — الأقدم أولاً، مع التعهد والإيصال جنباً إلى جنب (FR-15). */
+  async list(query: ListVerificationsQueryDto) {
+    const rows = await this.prisma.verification.findMany({
+      where: { status: query.status },
+      orderBy: { createdAt: query.status === 'PENDING' ? 'asc' : 'desc' },
+      take: 100,
+      include: {
+        receipt: { select: { id: true, mimeType: true, transferRef: true, createdAt: true } },
+        reviewer: { select: { fullName: true } },
+        pledge: {
+          include: {
+            campaign: { select: { id: true, slug: true, titleAr: true } },
+            collectionPoint: { select: { name: true, type: true, contactName: true } },
+            recordedBy: { select: { id: true, fullName: true, role: true } },
+          },
+        },
+      },
+    });
+    return rows.map((v) => ({
+      id: v.id,
+      status: v.status,
+      reason: v.reason,
+      createdAt: v.createdAt.toISOString(),
+      decidedAt: v.decidedAt?.toISOString() ?? null,
+      reviewer: v.reviewer?.fullName ?? null,
+      receipt: v.receipt,
+      pledge: {
+        id: v.pledge.id,
+        referenceNo: v.pledge.referenceNo,
+        amount: money(v.pledge.amount),
+        currency: v.pledge.currency,
+        channel: v.pledge.channel,
+        method: v.pledge.method,
+        donorName: v.pledge.donorName,
+        donorPhone: v.pledge.donorPhone,
+        campaign: v.pledge.campaign,
+        collectionPoint: v.pledge.collectionPoint,
+        recordedBy: v.pledge.recordedBy,
+        createdAt: v.pledge.createdAt.toISOString(),
+      },
+    }));
+  }
+
+  /**
+   * الاعتماد: transaction واحدة — التحقق، التعهد، رقم الإيصال الرسمي، رصيد الحملة، السجل، الإشعار.
+   * فصل الصلاحيات: لا يعتمد المدقق تعهداً سجّله أو تبرّع به بنفسه (NFR-04).
+   */
+  async approve(id: string, actor: AuthUser) {
+    return this.prisma.$transaction(
+      async (tx) => {
+        const v = await tx.verification.findUnique({
+          where: { id },
+          include: { pledge: { include: { campaign: true } } },
+        });
+        if (!v) throw new NotFoundException('verification_not_found');
+        if (v.status !== 'PENDING') throw new ConflictException('already_decided');
+        const { pledge } = v;
+        if (pledge.recordedById === actor.id || pledge.donorId === actor.id) {
+          throw new ForbiddenException('cannot_verify_own_entry');
+        }
+        if (!['RECEIPT_UPLOADED', 'COLLECTED'].includes(pledge.status))
+          throw new ConflictException('pledge_not_pending');
+
+        // إيصال رسمي باسم المتبرع للمنصة والمجلس؛ حصيلة الصناديق بلا إيصال فردي (قرار الفريق)
+        let receiptNo: string | null = null;
+        if (pledge.channel !== 'COLLECTOR') {
+          const [seq] = await tx.$queryRaw<
+            { nextval: bigint }[]
+          >`SELECT nextval('official_receipt_seq')`;
+          receiptNo = officialReceiptNo(Number(seq?.nextval ?? 0));
+        }
+
+        const now = new Date();
+        await tx.verification.update({
+          where: { id },
+          data: { status: 'APPROVED', reviewerId: actor.id, decidedAt: now },
+        });
+        await tx.pledge.update({
+          where: { id: pledge.id },
+          data: { status: 'VERIFIED', verifiedAt: now, officialReceiptNo: receiptNo },
+        });
+        const campaign = await tx.campaign.update({
+          where: { id: pledge.campaignId },
+          data: { verifiedAmount: { increment: pledge.amount } },
+        });
+        if (
+          campaign.status === 'ACTIVE' &&
+          campaign.verifiedAmount.greaterThanOrEqualTo(campaign.targetAmount)
+        ) {
+          await tx.campaign.update({ where: { id: campaign.id }, data: { status: 'FUNDED' } });
+        }
+
+        await this.audit.log(
+          {
+            actorId: actor.id,
+            action: 'pledge.verify',
+            entityType: 'Pledge',
+            entityId: pledge.id,
+            before: { status: pledge.status },
+            after: {
+              status: 'VERIFIED',
+              officialReceiptNo: receiptNo,
+              campaignVerified: money(campaign.verifiedAmount),
+            },
+          },
+          tx,
+        );
+        if (pledge.donorId) {
+          await this.notifications.notify(
+            {
+              userId: pledge.donorId,
+              type: 'pledge.verified',
+              title: 'تم التحقق من تبرعك',
+              body: `شكراً لك. تم التحقق من تبرعك لـ«${pledge.campaign.titleAr}».`,
+              link: receiptNo ? `/receipts/${receiptNo}` : undefined,
+            },
+            tx,
+          );
+        }
+        return {
+          id,
+          pledgeId: pledge.id,
+          officialReceiptNo: receiptNo,
+          campaignVerifiedAmount: money(campaign.verifiedAmount),
+        };
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
+  }
+
+  async reject(id: string, reason: string, actor: AuthUser) {
+    return this.prisma.$transaction(async (tx) => {
+      const v = await tx.verification.findUnique({
+        where: { id },
+        include: { pledge: { include: { campaign: true } } },
+      });
+      if (!v) throw new NotFoundException('verification_not_found');
+      if (v.status !== 'PENDING') throw new ConflictException('already_decided');
+      if (v.pledge.recordedById === actor.id || v.pledge.donorId === actor.id) {
+        throw new ForbiddenException('cannot_verify_own_entry');
+      }
+      await tx.verification.update({
+        where: { id },
+        data: { status: 'REJECTED', reason, reviewerId: actor.id, decidedAt: new Date() },
+      });
+      await tx.pledge.update({ where: { id: v.pledge.id }, data: { status: 'REJECTED' } });
+      await this.audit.log(
+        {
+          actorId: actor.id,
+          action: 'pledge.reject',
+          entityType: 'Pledge',
+          entityId: v.pledge.id,
+          before: { status: v.pledge.status },
+          after: { status: 'REJECTED', reason },
+        },
+        tx,
+      );
+      if (v.pledge.donorId) {
+        await this.notifications.notify(
+          {
+            userId: v.pledge.donorId,
+            type: 'pledge.rejected',
+            title: 'لم نتمكن من التحقق من الإيصال',
+            body: `السبب: ${reason}. يمكنك رفع إيصال جديد.`,
+            link: `/pledges/${v.pledge.id}`,
+          },
+          tx,
+        );
+      }
+      return { id, pledgeId: v.pledge.id, status: 'REJECTED' as const };
+    });
+  }
+}

@@ -4,7 +4,7 @@ Hackathon proof of concept for the Ismaili Council in Salamiyah, Syria. It publi
 pledges (bank transfer, cash at a collection point, or a demo payment), verifies the money, pays the approved hospital
 directly, and shows public transparency figures.
 
-> **Status:** scaffold only (prompt P01). `api/`, `web/` and `mobile/` arrive in prompts P02–P06
+> **Status:** `api/` skeleton in place (prompt P02). `web/` and `mobile/` arrive in prompts P04–P06
 > (see `docs/_analysis/05-execution-plan.md` §7). The steps below describe the finished setup.
 
 ## Repository layout
@@ -149,6 +149,7 @@ Libraries used here that the b4f reference does not have. Each one is pinned to 
 | `@nestjs/throttler` | api | Rate limit on login/register | 6.8.0 | P02 |
 | `sharp` | api | Strip EXIF/GPS from uploaded receipts and documents | 0.35.5 | P02 |
 | `exceljs`, `csv-parse` | api | Beneficiary Excel/CSV import | 4.4.0 / 7.0.3 | P02 |
+| `@types/multer` (dev) | api | Types for `Express.Multer.File` (matches the multer 2.0.x bundled with `@nestjs/platform-express` 10.4.22) | 2.0.0 | P02 |
 | `next-intl` | web | Arabic/English text (cookie locale, no URL routing) | 4.15.1 | P04 |
 | `i18next`, `react-i18next` | mobile | Arabic/English text | 27.2.1 / 18.0.3 | P06 |
 | `qrcode` | api or web | QR verification code on official receipts | pinned exactly in P11 | P11 |
