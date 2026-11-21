@@ -1,9 +1,7 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Public } from '../common/decorators/public.decorator';
-import { Roles } from '../common/decorators/roles.decorator';
-import type { AuthUser } from '../common/types';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import {
   CreateCampaignUpdateDto,
   CreateOngoingCampaignDto,
@@ -13,26 +11,18 @@ import {
 } from './campaigns.dto';
 import { CampaignsService } from './campaigns.service';
 
+/** Public campaign pages (no personal data). */
 @ApiTags('campaigns')
 @Controller('campaigns')
-export class CampaignsController {
+export class PublicCampaignsController {
   constructor(private readonly campaigns: CampaignsService) {}
 
-  @Public()
   @Get()
   @ApiOperation({ summary: 'الحملات الطبية العامة (المتحقق + بانتظار التحقق)' })
   list(@Query() query: ListCampaignsQueryDto) {
     return this.campaigns.listPublic(query);
   }
 
-  @Roles('ADMIN', 'CASE_OFFICER', 'FINANCE_VERIFIER', 'STAFF', 'COLLECTOR')
-  @Get('staff/all')
-  @ApiOperation({ summary: 'كل الحملات للوحات الموظفين' })
-  listForStaff() {
-    return this.campaigns.listForStaff();
-  }
-
-  @Public()
   @Get(':slug')
   @ApiOperation({ summary: 'تفاصيل حملة عامة (بلا بيانات شخصية)' })
   @ApiNotFoundResponse({ description: 'campaign_not_found' })
@@ -40,39 +30,53 @@ export class CampaignsController {
     return this.campaigns.getPublic(slug, query.lang);
   }
 
-  @Public()
   @Get(':id/transparency')
   @ApiOperation({ summary: 'الشفافية: المتحقق/بانتظار التحقق/المصروف (FR-23)' })
   transparency(@Param('id') id: string) {
     return this.campaigns.transparency(id);
   }
+}
 
-  @Roles('ADMIN')
-  @Post()
-  @ApiOperation({ summary: 'حملة مستمرة بلا حالة فردية (مثل مرضى السرطان)' })
-  createOngoing(@Body() dto: CreateOngoingCampaignDto, @CurrentUser() user: AuthUser) {
-    return this.campaigns.createOngoing(dto, user.id);
+/** Staff campaign management. Roles are checked in CampaignsService. */
+@ApiTags('campaigns')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('campaigns')
+export class CampaignsController {
+  constructor(private readonly campaigns: CampaignsService) {}
+
+  @Get('staff/all')
+  @ApiOperation({ summary: 'كل الحملات للوحات الموظفين (كل الأدوار عدا DONOR)' })
+  listForStaff(@CurrentUser() user: AuthenticatedUser) {
+    return this.campaigns.listForStaff(user);
   }
 
-  @Roles('ADMIN', 'CASE_OFFICER')
+  @Post()
+  @ApiOperation({ summary: 'حملة مستمرة بلا حالة فردية (ADMIN)' })
+  createOngoing(
+    @Body() dto: CreateOngoingCampaignDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.campaigns.createOngoing(dto, user);
+  }
+
   @Patch(':id/status')
-  @ApiOperation({ summary: 'تغيير حالة الحملة / إيقاف التعهدات' })
+  @ApiOperation({ summary: 'تغيير حالة الحملة / إيقاف التعهدات (ADMIN, CASE_OFFICER)' })
   updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateCampaignStatusDto,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.campaigns.updateStatus(id, dto, user.id);
+    return this.campaigns.updateStatus(id, dto, user);
   }
 
-  @Roles('STAFF', 'CASE_OFFICER', 'ADMIN')
   @Post(':id/updates')
-  @ApiOperation({ summary: 'نشر تحديث للحملة («تمت العملية»)' })
+  @ApiOperation({ summary: 'نشر تحديث للحملة (STAFF, CASE_OFFICER, ADMIN)' })
   addUpdate(
     @Param('id') id: string,
     @Body() dto: CreateCampaignUpdateDto,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.campaigns.addUpdate(id, dto, user.id);
+    return this.campaigns.addUpdate(id, dto, user);
   }
 }

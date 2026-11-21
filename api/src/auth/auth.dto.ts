@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsString, Length, Matches, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { LIMITS } from '../common/shared';
 import { NormalizePhone, PHONE_REGEX } from '../common/dto/transforms';
 
@@ -17,6 +25,7 @@ export class RegisterDto {
   @ApiProperty({ minLength: LIMITS.passwordMinLength })
   @IsString()
   @MinLength(LIMITS.passwordMinLength)
+  @MaxLength(72)
   password: string;
 
   @ApiPropertyOptional({ enum: ['ar', 'en'], default: 'ar' })
@@ -33,12 +42,8 @@ export class LoginDto {
 
   @ApiProperty()
   @IsString()
+  @MaxLength(72)
   password: string;
-}
-
-export class TokensResponse {
-  @ApiProperty()
-  accessToken: string;
 }
 
 export class MeResponse {
@@ -58,4 +63,12 @@ export class MeResponse {
 
   @ApiProperty({ enum: ['ar', 'en'] })
   locale: string;
+}
+
+export class AuthResponseDto {
+  @ApiProperty({ description: 'Bearer access token (8h)' })
+  accessToken: string;
+
+  @ApiProperty({ type: MeResponse })
+  user: MeResponse;
 }

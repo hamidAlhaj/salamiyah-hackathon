@@ -18,16 +18,18 @@ export interface Paginated<T> {
   pageSize: number;
 }
 
-export interface AuthTokens {
-  accessToken: string;
-}
-
 export interface CurrentUser {
   id: string;
   fullName: string;
   phone: string;
   role: Role;
   locale: 'ar' | 'en';
+}
+
+/** Body of POST /auth/login and POST /auth/register. One 8h access token, no refresh token. */
+export interface AuthResponse {
+  accessToken: string;
+  user: CurrentUser;
 }
 
 export interface PublicCampaign {

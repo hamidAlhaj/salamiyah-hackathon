@@ -6,10 +6,12 @@ import {
   Param,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOperation,
@@ -19,9 +21,8 @@ import {
 } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 import { LIMITS } from '../common/shared';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Roles } from '../common/decorators/roles.decorator';
-import type { AuthUser } from '../common/types';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { ImportsService } from './imports.service';
 
 class ImportFileDto {
@@ -60,8 +61,10 @@ class MappingDto {
   otherPrograms?: string;
 }
 
+/** Beneficiary import (STAFF, ADMIN). Roles are checked in ImportsService. */
 @ApiTags('imports')
-@Roles('STAFF', 'ADMIN')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('imports')
 export class ImportsController {
   constructor(private readonly imports: ImportsService) {}
@@ -73,20 +76,24 @@ export class ImportsController {
   @ApiOperation({ summary: '1) رفع الملف ← العناوين + أول 20 صف + mapping مقترح' })
   preview(
     @UploadedFile() file: Express.Multer.File | undefined,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.imports.preview(file, user);
   }
 
   @Post(':id/validate')
   @ApiOperation({ summary: '2) تطبيق المطابقة ← dry run (صالح/أخطاء/تكرار)' })
-  validate(@Param('id') id: string, @Body() mapping: MappingDto) {
-    return this.imports.validate(id, { ...mapping });
+  validate(
+    @Param('id') id: string,
+    @Body() mapping: MappingDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.imports.validate(id, { ...mapping }, user);
   }
 
   @Post(':id/commit')
   @ApiOperation({ summary: '3) الحفظ في transaction (التكرارات تُتخطى)' })
-  commit(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+  commit(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.imports.commit(id, user);
   }
 
@@ -94,7 +101,7 @@ export class ImportsController {
   @Header('Content-Type', 'text/csv; charset=utf-8')
   @Header('Content-Disposition', 'attachment; filename="import-errors.csv"')
   @ApiOperation({ summary: 'الصفوف المرفوضة مع السبب' })
-  errors(@Param('id') id: string) {
-    return this.imports.errorsCsv(id);
+  errors(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.imports.errorsCsv(id, user);
   }
 }

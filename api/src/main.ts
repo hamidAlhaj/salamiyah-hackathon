@@ -1,17 +1,19 @@
-import 'reflect-metadata';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
-async function bootstrap(): Promise<void> {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
 
-  const origins = (process.env.WEB_ORIGIN ?? '')
+  // Comma-separated list: the web app plus Expo web during development. Native apps send no Origin.
+  const webOrigins = (process.env.WEB_ORIGIN ?? 'http://localhost:3000')
     .split(',')
-    .map((o) => o.trim())
+    .map((origin) => origin.trim())
     .filter(Boolean);
-  app.enableCors({ origin: origins.length ? origins : true, credentials: true });
+  app.enableCors({ origin: webOrigins, credentials: true });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -20,18 +22,21 @@ async function bootstrap(): Promise<void> {
       transform: true,
     }),
   );
+  app.useGlobalFilters(new AllExceptionsFilter());
 
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Majlis Fund API')
-    .setDescription('منصة «مجلس فند» — Pledge & Verify للحالات الطبية')
+    .setDescription('Salamiyah medical crowdfunding — Pledge & Verify (hackathon PoC)')
     .setVersion('0.1.0')
     .addBearerAuth()
     .build();
-  SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, config));
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document);
 
-  const port = Number(process.env.PORT ?? 4000);
+  const port = process.env.PORT ? Number(process.env.PORT) : 4000;
   await app.listen(port);
-  Logger.log(`API on http://localhost:${port} — Swagger: /docs`, 'Bootstrap');
+  logger.log(`Majlis Fund API listening on http://localhost:${port}`);
+  logger.log(`Swagger UI at http://localhost:${port}/api/docs`);
 }
 
-void bootstrap();
+bootstrap();

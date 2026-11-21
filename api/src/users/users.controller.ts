@@ -1,5 +1,11 @@
-import { Body, ConflictException, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -10,15 +16,12 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
-import { hash } from 'bcrypt';
 import { LIMITS, ROLES } from '../common/shared';
 import type { Role } from '@prisma/client';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Roles } from '../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { NormalizePhone, PHONE_REGEX } from '../common/dto/transforms';
-import type { AuthUser } from '../common/types';
-import { AuditService } from '../audit/audit.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { UsersService } from './users.service';
 
 export class CreateUserDto {
   @ApiProperty()
@@ -65,83 +68,33 @@ export class UpdateUserDto {
   collectionPointIds?: string[];
 }
 
-const userSelect = {
-  id: true,
-  fullName: true,
-  phone: true,
-  role: true,
-  isActive: true,
-  createdAt: true,
-  collectionPoints: { select: { id: true, name: true } },
-} as const;
-
+/** Staff account administration (ADMIN). Roles are checked in UsersService. */
 @ApiTags('users')
-@Roles('ADMIN')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly audit: AuditService,
-  ) {}
+  constructor(private readonly users: UsersService) {}
 
   @Get()
   @ApiOperation({ summary: 'قائمة المستخدمين' })
-  list() {
-    return this.prisma.user.findMany({ select: userSelect, orderBy: { createdAt: 'desc' } });
+  list(@CurrentUser() actor: AuthenticatedUser) {
+    return this.users.list(actor);
   }
 
   @Post()
   @ApiOperation({ summary: 'إنشاء موظف بأي دور' })
-  async create(@Body() dto: CreateUserDto, @CurrentUser() actor: AuthUser) {
-    if (await this.prisma.user.findUnique({ where: { phone: dto.phone } }))
-      throw new ConflictException('phone_taken');
-    const user = await this.prisma.user.create({
-      data: {
-        fullName: dto.fullName,
-        phone: dto.phone,
-        passwordHash: await hash(dto.password, 10),
-        role: dto.role,
-        collectionPoints: dto.collectionPointIds
-          ? { connect: dto.collectionPointIds.map((id) => ({ id })) }
-          : undefined,
-      },
-      select: userSelect,
-    });
-    await this.audit.log({
-      actorId: actor.id,
-      action: 'user.create',
-      entityType: 'User',
-      entityId: user.id,
-      after: { role: user.role },
-    });
-    return user;
+  create(@Body() dto: CreateUserDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.users.create(dto, actor);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'تعديل الدور/التفعيل/نقاط الجمع' })
-  async update(
+  update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
-    @CurrentUser() actor: AuthUser,
+    @CurrentUser() actor: AuthenticatedUser,
   ) {
-    const user = await this.prisma.user.update({
-      where: { id },
-      data: {
-        role: dto.role,
-        isActive: dto.isActive,
-        collectionPoints: dto.collectionPointIds
-          ? { set: dto.collectionPointIds.map((cp) => ({ id: cp })) }
-          : undefined,
-      },
-      select: userSelect,
-    });
-    await this.audit.log({
-      actorId: actor.id,
-      action: 'user.update',
-      entityType: 'User',
-      entityId: id,
-      after: { role: user.role, isActive: user.isActive },
-    });
-    return user;
+    return this.users.update(id, dto, actor);
   }
 }

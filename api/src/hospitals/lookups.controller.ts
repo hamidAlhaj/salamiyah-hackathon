@@ -1,11 +1,16 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CollectionPointType } from '@prisma/client';
 import { IsBoolean, IsEnum, IsOptional, IsString, Length } from 'class-validator';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Authenticated, Roles } from '../common/decorators/roles.decorator';
-import type { AuthUser } from '../common/types';
-import { PrismaService } from '../prisma/prisma.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
+import { LookupsService } from './lookups.service';
 
 export class CreateHospitalDto {
   @ApiProperty({ example: 'المشفى الوطني بالسلمية' })
@@ -50,53 +55,44 @@ export class CreateCollectionPointDto {
   area: string;
 }
 
-/** بيانات مرجعية: المشافي ونقاط الجمع. */
+/** Reference data: hospitals and collection points. Roles are checked in LookupsService. */
 @ApiTags('lookups')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller()
 export class LookupsController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly lookups: LookupsService) {}
 
-  @Authenticated()
   @Get('hospitals')
-  @ApiOperation({ summary: 'المشافي المعتمدة' })
+  @ApiOperation({ summary: 'المشافي المعتمدة (أي مستخدم مسجّل)' })
   hospitals() {
-    return this.prisma.hospital.findMany({
-      where: { isActive: true },
-      orderBy: { nameAr: 'asc' },
-    });
+    return this.lookups.hospitals();
   }
 
-  @Roles('ADMIN')
   @Post('hospitals')
-  @ApiOperation({ summary: 'إضافة مشفى' })
-  createHospital(@Body() dto: CreateHospitalDto) {
-    return this.prisma.hospital.create({ data: dto });
+  @ApiOperation({ summary: 'إضافة مشفى (ADMIN)' })
+  createHospital(@Body() dto: CreateHospitalDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.lookups.createHospital(dto, user);
   }
 
-  @Roles('ADMIN', 'FINANCE_VERIFIER', 'STAFF')
   @Get('collection-points')
-  @ApiOperation({ summary: 'كل نقاط الجمع' })
-  collectionPoints() {
-    return this.prisma.collectionPoint.findMany({
-      orderBy: { name: 'asc' },
-      include: { collectors: { select: { id: true, fullName: true } } },
-    });
+  @ApiOperation({ summary: 'كل نقاط الجمع (ADMIN, FINANCE_VERIFIER, STAFF)' })
+  collectionPoints(@CurrentUser() user: AuthenticatedUser) {
+    return this.lookups.collectionPoints(user);
   }
 
-  @Roles('COLLECTOR')
   @Get('collection-points/mine')
-  @ApiOperation({ summary: 'نقاط الجمع المرتبطة بي فقط' })
-  myCollectionPoints(@CurrentUser() user: AuthUser) {
-    return this.prisma.collectionPoint.findMany({
-      where: { isActive: true, collectors: { some: { id: user.id } } },
-      orderBy: { name: 'asc' },
-    });
+  @ApiOperation({ summary: 'نقاط الجمع المرتبطة بي فقط (COLLECTOR)' })
+  myCollectionPoints(@CurrentUser() user: AuthenticatedUser) {
+    return this.lookups.myCollectionPoints(user);
   }
 
-  @Roles('ADMIN')
   @Post('collection-points')
-  @ApiOperation({ summary: 'إضافة نقطة جمع' })
-  createCollectionPoint(@Body() dto: CreateCollectionPointDto) {
-    return this.prisma.collectionPoint.create({ data: dto });
+  @ApiOperation({ summary: 'إضافة نقطة جمع (ADMIN)' })
+  createCollectionPoint(
+    @Body() dto: CreateCollectionPointDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.lookups.createCollectionPoint(dto, user);
   }
 }

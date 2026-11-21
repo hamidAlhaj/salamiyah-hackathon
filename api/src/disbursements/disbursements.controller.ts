@@ -5,40 +5,40 @@ import {
   Param,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { LIMITS } from '../common/shared';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Roles } from '../common/decorators/roles.decorator';
-import type { AuthUser } from '../common/types';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { CreateDisbursementDto } from './disbursements.dto';
 import { DisbursementsService } from './disbursements.service';
 
 @ApiTags('disbursements')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller()
 export class DisbursementsController {
   constructor(private readonly disbursements: DisbursementsService) {}
 
-  @Roles('FINANCE_VERIFIER')
   @Post('disbursements')
   @UseInterceptors(FileInterceptor('invoice', { limits: { fileSize: LIMITS.maxUploadBytes } }))
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateDisbursementDto })
-  @ApiOperation({ summary: 'صرف للمشفى المعتمد مع الفاتورة (FR-21)' })
+  @ApiOperation({ summary: 'صرف للمشفى المعتمد مع الفاتورة (FINANCE_VERIFIER, FR-21)' })
   create(
     @Body() dto: CreateDisbursementDto,
     @UploadedFile() file: Express.Multer.File | undefined,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.disbursements.create(dto, file, user);
   }
 
-  @Roles('FINANCE_VERIFIER', 'ADMIN', 'CASE_OFFICER')
   @Get('campaigns/:id/disbursements')
-  @ApiOperation({ summary: 'سجل الصرف لحملة' })
-  list(@Param('id') id: string) {
-    return this.disbursements.listForCampaign(id);
+  @ApiOperation({ summary: 'سجل الصرف لحملة (FINANCE_VERIFIER, ADMIN, CASE_OFFICER)' })
+  list(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.disbursements.listForCampaign(id, user);
   }
 }

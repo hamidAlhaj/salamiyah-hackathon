@@ -8,7 +8,8 @@ import { Prisma } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { officialReceiptNo } from '../common/utils/codes';
 import { money } from '../common/utils/money';
-import type { AuthUser } from '../common/types';
+import { RoleAccessService } from '../common/access/role-access.service';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ListVerificationsQueryDto } from './verifications.dto';
@@ -19,10 +20,12 @@ export class VerificationsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly access: RoleAccessService,
   ) {}
 
   /** قائمة الانتظار — الأقدم أولاً، مع التعهد والإيصال جنباً إلى جنب (FR-15). */
-  async list(query: ListVerificationsQueryDto) {
+  async list(query: ListVerificationsQueryDto, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['FINANCE_VERIFIER']);
     const rows = await this.prisma.verification.findMany({
       where: { status: query.status },
       orderBy: { createdAt: query.status === 'PENDING' ? 'asc' : 'desc' },
@@ -68,7 +71,8 @@ export class VerificationsService {
    * الاعتماد: transaction واحدة — التحقق، التعهد، رقم الإيصال الرسمي، رصيد الحملة، السجل، الإشعار.
    * فصل الصلاحيات: لا يعتمد المدقق تعهداً سجّله أو تبرّع به بنفسه (NFR-04).
    */
-  async approve(id: string, actor: AuthUser) {
+  async approve(id: string, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['FINANCE_VERIFIER']);
     return this.prisma.$transaction(
       async (tx) => {
         const v = await tx.verification.findUnique({
@@ -151,7 +155,8 @@ export class VerificationsService {
     );
   }
 
-  async reject(id: string, reason: string, actor: AuthUser) {
+  async reject(id: string, reason: string, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['FINANCE_VERIFIER']);
     return this.prisma.$transaction(async (tx) => {
       const v = await tx.verification.findUnique({
         where: { id },

@@ -1,68 +1,69 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
-import { compare, hash } from 'bcrypt';
-import type { AuthTokens, CurrentUser } from '../common/shared';
-import type { JwtPayload } from '../common/types';
+import * as bcrypt from 'bcrypt';
+import type { AuthResponse, CurrentUser } from '../common/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import type { LoginDto, RegisterDto } from './auth.dto';
+import type { JwtPayload } from './jwt.strategy';
+
+const BCRYPT_ROUNDS = 10;
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
-    private readonly config: ConfigService,
   ) {}
 
-  /** تسجيل متبرع فقط؛ حسابات الموظفين ينشئها الـADMIN. */
-  async register(dto: RegisterDto): Promise<AuthTokens> {
+  /** Donor self-registration only; staff accounts are created by an ADMIN. */
+  async register(dto: RegisterDto): Promise<AuthResponse> {
     const exists = await this.prisma.user.findUnique({ where: { phone: dto.phone } });
     if (exists) throw new ConflictException('phone_taken');
     const user = await this.prisma.user.create({
       data: {
         fullName: dto.fullName.trim(),
         phone: dto.phone,
-        passwordHash: await hash(dto.password, 10),
+        passwordHash: await bcrypt.hash(dto.password, BCRYPT_ROUNDS),
         role: 'DONOR',
         locale: dto.locale ?? 'ar',
       },
     });
-    return this.issueTokens(user);
+    return this.issueToken(user);
   }
 
-  async login(dto: LoginDto): Promise<AuthTokens> {
+  async login(dto: LoginDto): Promise<AuthResponse> {
     const user = await this.prisma.user.findUnique({ where: { phone: dto.phone } });
-    // نفس الرسالة للحالتين حتى لا نكشف وجود الرقم
+    // Same error for every failure so the response never reveals whether the phone exists.
     if (
       !user?.passwordHash ||
       !user.isActive ||
-      !(await compare(dto.password, user.passwordHash))
+      !(await bcrypt.compare(dto.password, user.passwordHash))
     ) {
       throw new UnauthorizedException('invalid_credentials');
     }
-    return this.issueTokens(user);
+    return this.issueToken(user);
   }
 
   async me(userId: string): Promise<CurrentUser> {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
-    return {
-      id: user.id,
-      fullName: user.fullName,
-      phone: user.phone,
-      role: user.role,
-      locale: user.locale,
-    };
+    return toCurrentUser(user);
   }
 
-  private async issueTokens(user: User): Promise<AuthTokens> {
+  /** Secret and expiry (JWT_SECRET, JWT_EXPIRES_IN, default 8h) come from the JwtModule config. */
+  private async issueToken(user: User): Promise<AuthResponse> {
     const payload: JwtPayload = { sub: user.id, role: user.role };
-    const accessToken = await this.jwt.signAsync(payload, {
-      secret: this.config.getOrThrow<string>('JWT_SECRET'),
-      expiresIn: (this.config.get<string>('JWT_EXPIRES_IN') ??
-        '8h') as JwtSignOptions['expiresIn'],
-    });
-    return { accessToken };
+    const accessToken = await this.jwt.signAsync(payload);
+    return { accessToken, user: toCurrentUser(user) };
   }
+}
+
+function toCurrentUser(user: User): CurrentUser {
+  return {
+    id: user.id,
+    fullName: user.fullName,
+    phone: user.phone,
+    role: user.role,
+    locale: user.locale,
+  };
 }

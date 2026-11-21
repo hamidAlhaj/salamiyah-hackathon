@@ -16,7 +16,8 @@ import type {
 import { AuditService } from '../audit/audit.service';
 import { newPledgeRef } from '../common/utils/codes';
 import { money } from '../common/utils/money';
-import type { AuthUser } from '../common/types';
+import { RoleAccessService } from '../common/access/role-access.service';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -49,10 +50,12 @@ export class PledgesService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly config: ConfigService,
+    private readonly access: RoleAccessService,
   ) {}
 
   /** FR-13: تعهد من المنصة — الإيصال الرسمي سيكون باسم المتبرع المسجّل. */
-  async create(dto: CreatePledgeDto, actor: AuthUser): Promise<CreatePledgeResult> {
+  async create(dto: CreatePledgeDto, actor: AuthenticatedUser): Promise<CreatePledgeResult> {
+    this.access.requireRole(actor, ['DONOR']);
     const donor = await this.prisma.user.findUniqueOrThrow({ where: { id: actor.id } });
     await this.assertCampaignOpen(dto.campaignId);
     const pledge = await this.prisma.$transaction(async (tx) => {
@@ -91,7 +94,8 @@ export class PledgesService {
   }
 
   /** FR-20: محاكاة دفع فوري — فقط في DEMO_MODE، ولا تدخل في الأرقام الحقيقية. */
-  async createDemo(dto: DemoPledgeDto, actor: AuthUser): Promise<PledgeView> {
+  async createDemo(dto: DemoPledgeDto, actor: AuthenticatedUser): Promise<PledgeView> {
+    this.access.requireRole(actor, ['DONOR']);
     if (this.config.get<string>('DEMO_MODE') !== 'true')
       throw new ForbiddenException('demo_mode_disabled');
     const donor = await this.prisma.user.findUniqueOrThrow({ where: { id: actor.id } });
@@ -133,7 +137,8 @@ export class PledgesService {
   }
 
   /** FR-18: تبرع حضوري في المجلس — كاش باليد، يمر على التحقق المالي. */
-  async createCouncil(dto: CouncilPledgeDto, actor: AuthUser): Promise<PledgeView> {
+  async createCouncil(dto: CouncilPledgeDto, actor: AuthenticatedUser): Promise<PledgeView> {
+    this.access.requireRole(actor, ['STAFF', 'FINANCE_VERIFIER']);
     await this.assertCampaignOpen(dto.campaignId);
     const pledge = await this.prisma.$transaction(async (tx) => {
       const p = await tx.pledge.create({
@@ -169,7 +174,11 @@ export class PledgesService {
   }
 
   /** FR-19: حصيلة نقطة جمع — المسؤول يسجّل لنقاطه فقط، بلا صلاحية تحقق. */
-  async createCollector(dto: CollectorPledgeDto, actor: AuthUser): Promise<PledgeView> {
+  async createCollector(
+    dto: CollectorPledgeDto,
+    actor: AuthenticatedUser,
+  ): Promise<PledgeView> {
+    this.access.requireRole(actor, ['COLLECTOR']);
     const point = await this.prisma.collectionPoint.findFirst({
       where: {
         id: dto.collectionPointId,
@@ -213,7 +222,8 @@ export class PledgesService {
     return this.toView(pledge);
   }
 
-  async mine(actor: AuthUser): Promise<PledgeView[]> {
+  async mine(actor: AuthenticatedUser): Promise<PledgeView[]> {
+    this.access.requireRole(actor, ['DONOR']);
     const rows = await this.prisma.pledge.findMany({
       where: { donorId: actor.id },
       include: pledgeInclude,
@@ -223,7 +233,8 @@ export class PledgesService {
   }
 
   /** ما سجّله الموظف/مسؤول نقطة الجمع بنفسه. */
-  async recordedByMe(actor: AuthUser): Promise<PledgeView[]> {
+  async recordedByMe(actor: AuthenticatedUser): Promise<PledgeView[]> {
+    this.access.requireRole(actor, ['STAFF', 'COLLECTOR', 'FINANCE_VERIFIER']);
     const rows = await this.prisma.pledge.findMany({
       where: { recordedById: actor.id },
       include: pledgeInclude,
@@ -235,7 +246,7 @@ export class PledgesService {
 
   async get(
     id: string,
-    actor: AuthUser,
+    actor: AuthenticatedUser,
   ): Promise<PledgeView & { instructions: PaymentInstructions[] }> {
     const p = await this.prisma.pledge.findUnique({ where: { id }, include: pledgeInclude });
     if (!p) throw new NotFoundException('pledge_not_found');
@@ -254,8 +265,9 @@ export class PledgesService {
     id: string,
     file: Express.Multer.File | undefined,
     transferRef: string | undefined,
-    actor: AuthUser,
+    actor: AuthenticatedUser,
   ) {
+    this.access.requireRole(actor, ['DONOR', 'STAFF']);
     const p = await this.prisma.pledge.findUnique({ where: { id } });
     if (!p) throw new NotFoundException('pledge_not_found');
     const isOwner = p.donorId === actor.id;
@@ -305,7 +317,8 @@ export class PledgesService {
     });
   }
 
-  async cancel(id: string, actor: AuthUser): Promise<PledgeView> {
+  async cancel(id: string, actor: AuthenticatedUser): Promise<PledgeView> {
+    this.access.requireRole(actor, ['DONOR']);
     const p = await this.prisma.pledge.findUnique({ where: { id } });
     if (!p || p.donorId !== actor.id) throw new NotFoundException('pledge_not_found');
     if (!['PLEDGED', 'REJECTED'].includes(p.status))
@@ -326,7 +339,7 @@ export class PledgesService {
 
   async receiptFile(
     receiptId: string,
-    actor: AuthUser,
+    actor: AuthenticatedUser,
   ): Promise<{ data: Buffer; mimeType: string }> {
     const r = await this.prisma.receipt.findUnique({
       where: { id: receiptId },

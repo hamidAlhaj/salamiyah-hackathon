@@ -12,7 +12,8 @@ import { AuditService } from '../audit/audit.service';
 import { newCampaignSlug, newTrackingNo } from '../common/utils/codes';
 import { money, toDecimal } from '../common/utils/money';
 import { hashNationalId } from '../common/utils/national-id';
-import type { AuthUser } from '../common/types';
+import { RoleAccessService } from '../common/access/role-access.service';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import type {
@@ -24,6 +25,7 @@ import type {
 } from './cases.dto';
 
 const REVIEWABLE = ['SUBMITTED', 'UNDER_REVIEW', 'NEEDS_INFO'] as const;
+const CASE_READERS: Role[] = ['STAFF', 'CASE_OFFICER', 'ADMIN'];
 const DOCUMENT_READERS: Role[] = ['STAFF', 'CASE_OFFICER', 'ADMIN', 'FINANCE_VERIFIER'];
 
 @Injectable()
@@ -33,6 +35,7 @@ export class CasesService {
     private readonly storage: StorageService,
     private readonly audit: AuditService,
     private readonly config: ConfigService,
+    private readonly access: RoleAccessService,
   ) {}
 
   private get slaDays(): number {
@@ -40,7 +43,12 @@ export class CasesService {
   }
 
   /** FR-06 + FR-10: تسجيل طلب مع كشف الازدواجية (تنبيه غير مانع). */
-  async create(dto: CreateCaseDto, file: Express.Multer.File | undefined, actor: AuthUser) {
+  async create(
+    dto: CreateCaseDto,
+    file: Express.Multer.File | undefined,
+    actor: AuthenticatedUser,
+  ) {
+    this.access.requireRole(actor, ['STAFF', 'ADMIN']);
     const { hash, last4 } = hashNationalId(
       dto.nationalId,
       this.config.getOrThrow<string>('NATIONAL_ID_HMAC_KEY'),
@@ -129,7 +137,8 @@ export class CasesService {
     });
   }
 
-  async list(query: ListCasesQueryDto) {
+  async list(query: ListCasesQueryDto, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, CASE_READERS);
     const now = new Date();
     const where: Prisma.CaseWhereInput = {
       ...(query.status ? { status: query.status } : {}),
@@ -168,7 +177,8 @@ export class CasesService {
     }));
   }
 
-  async get(id: string) {
+  async get(id: string, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, CASE_READERS);
     const c = await this.prisma.case.findUnique({
       where: { id },
       include: {
@@ -217,7 +227,8 @@ export class CasesService {
   }
 
   /** FR-07: اعتماد / رفض / طلب معلومات. */
-  async review(id: string, dto: ReviewCaseDto, actor: AuthUser) {
+  async review(id: string, dto: ReviewCaseDto, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['CASE_OFFICER']);
     return this.prisma.$transaction(async (tx) => {
       const c = await tx.case.findUnique({ where: { id }, include: { campaign: true } });
       if (!c) throw new NotFoundException('case_not_found');
@@ -293,7 +304,12 @@ export class CasesService {
    * FR-09 (سيناريو 15 ← 25 مليون): تغيير المشفى أو زيادة المبلغ بعد الاعتماد
    * يعيد الحالة إلى UNDER_REVIEW ويوقف قبول التعهدات حتى اعتماد جديد.
    */
-  async changeHospitalOrAmount(id: string, dto: ChangeHospitalAmountDto, actor: AuthUser) {
+  async changeHospitalOrAmount(
+    id: string,
+    dto: ChangeHospitalAmountDto,
+    actor: AuthenticatedUser,
+  ) {
+    this.access.requireRole(actor, ['CASE_OFFICER', 'ADMIN']);
     if (!dto.hospitalId && !dto.approvedAmount)
       throw new BadRequestException('nothing_to_change');
     return this.prisma.$transaction(async (tx) => {
@@ -368,7 +384,8 @@ export class CasesService {
   }
 
   /** FR-08: نشر الحالة المعتمدة كحملة (redactedSummary إلزامي). */
-  async publish(id: string, dto: PublishCaseDto, actor: AuthUser) {
+  async publish(id: string, dto: PublishCaseDto, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['CASE_OFFICER']);
     return this.prisma.$transaction(async (tx) => {
       const c = await tx.case.findUnique({ where: { id }, include: { campaign: true } });
       if (!c) throw new NotFoundException('case_not_found');
@@ -446,9 +463,9 @@ export class CasesService {
 
   async documentFile(
     documentId: string,
-    actor: AuthUser,
+    actor: AuthenticatedUser,
   ): Promise<{ data: Buffer; mimeType: string; name: string }> {
-    if (!DOCUMENT_READERS.includes(actor.role)) throw new ForbiddenException();
+    this.access.requireRole(actor, DOCUMENT_READERS);
     const doc = await this.prisma.document.findUnique({ where: { id: documentId } });
     if (!doc) throw new NotFoundException('document_not_found');
     return {

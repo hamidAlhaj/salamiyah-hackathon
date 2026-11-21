@@ -1,19 +1,25 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { Roles } from '../common/decorators/roles.decorator';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuditService } from './audit.service';
 
 @ApiTags('audit')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('audit')
 export class AuditController {
   constructor(private readonly audit: AuditService) {}
 
   @Get()
-  @Roles('ADMIN')
-  @ApiOperation({ summary: 'سجل التدقيق لكيان محدد' })
+  @ApiOperation({ summary: 'سجل التدقيق لكيان محدد (ADMIN)' })
   @ApiQuery({ name: 'entityType', example: 'Case' })
   @ApiQuery({ name: 'entityId' })
-  list(@Query('entityType') entityType: string, @Query('entityId') entityId: string) {
-    return this.audit.list(entityType, entityId);
+  list(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('entityType') entityType: string,
+    @Query('entityId') entityId: string,
+  ) {
+    return this.audit.list(user, entityType, entityId);
   }
 }

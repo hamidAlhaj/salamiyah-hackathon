@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '@prisma/client';
+import { Prisma, type Role } from '@prisma/client';
 import {
   BENEFICIARY_IMPORT_FIELDS,
   type BeneficiaryImportField,
@@ -15,7 +15,8 @@ import {
 } from '../common/shared';
 import { AuditService } from '../audit/audit.service';
 import { hashNationalId } from '../common/utils/national-id';
-import type { AuthUser } from '../common/types';
+import { RoleAccessService } from '../common/access/role-access.service';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { detectKind, readTable, type Table, toCsv } from './table-reader';
@@ -42,6 +43,8 @@ interface ValidationResult {
   duplicates: { row: number; reason: 'in_file' | 'in_database' }[];
 }
 
+const IMPORT_ROLES: Role[] = ['STAFF', 'ADMIN'];
+
 /** FR-26: استيراد المستفيدين من Excel/CSV — معاينة ← مطابقة الأعمدة ← dry run ← حفظ. */
 @Injectable()
 export class ImportsService {
@@ -50,9 +53,11 @@ export class ImportsService {
     private readonly storage: StorageService,
     private readonly audit: AuditService,
     private readonly config: ConfigService,
+    private readonly access: RoleAccessService,
   ) {}
 
-  async preview(file: Express.Multer.File | undefined, actor: AuthUser) {
+  async preview(file: Express.Multer.File | undefined, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, IMPORT_ROLES);
     if (!file) throw new BadRequestException('file_required');
     if (file.size > LIMITS.maxImportBytes) throw new BadRequestException('file_too_large');
     const kind = detectKind(file.originalname, file.buffer);
@@ -78,7 +83,8 @@ export class ImportsService {
     };
   }
 
-  async validate(jobId: string, mapping: ColumnMapping) {
+  async validate(jobId: string, mapping: ColumnMapping, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, IMPORT_ROLES);
     const { job, table } = await this.load(jobId);
     const result = await this.run(table, mapping);
     await this.prisma.importJob.update({
@@ -108,7 +114,8 @@ export class ImportsService {
     };
   }
 
-  async commit(jobId: string, actor: AuthUser) {
+  async commit(jobId: string, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, IMPORT_ROLES);
     const { job, table } = await this.load(jobId);
     const mapping = (job.mapping ?? {}) as ColumnMapping;
     if (!mapping.fullName) throw new BadRequestException('validate_first');
@@ -146,7 +153,8 @@ export class ImportsService {
   }
 
   /** الصفوف المرفوضة مع السبب، لتصحيحها وإعادة رفعها. */
-  async errorsCsv(jobId: string): Promise<string> {
+  async errorsCsv(jobId: string, actor: AuthenticatedUser): Promise<string> {
+    this.access.requireRole(actor, IMPORT_ROLES);
     const { job, table } = await this.load(jobId, true);
     const errors = (job.errors ?? []) as unknown as RowError[];
     const byRow = new Map<number, string[]>();

@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service';
 import { money, toDecimal } from '../common/utils/money';
-import type { AuthUser } from '../common/types';
+import { RoleAccessService } from '../common/access/role-access.service';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import type { CreateDisbursementDto } from './disbursements.dto';
@@ -17,6 +18,7 @@ export class DisbursementsService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly audit: AuditService,
+    private readonly access: RoleAccessService,
   ) {}
 
   /**
@@ -26,8 +28,9 @@ export class DisbursementsService {
   async create(
     dto: CreateDisbursementDto,
     file: Express.Multer.File | undefined,
-    actor: AuthUser,
+    actor: AuthenticatedUser,
   ) {
+    this.access.requireRole(actor, ['FINANCE_VERIFIER']);
     const campaign = await this.prisma.campaign.findUnique({
       where: { id: dto.campaignId },
       include: { case: true },
@@ -106,7 +109,8 @@ export class DisbursementsService {
     });
   }
 
-  async listForCampaign(campaignId: string) {
+  async listForCampaign(campaignId: string, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['FINANCE_VERIFIER', 'ADMIN', 'CASE_OFFICER']);
     const rows = await this.prisma.disbursement.findMany({
       where: { campaignId },
       orderBy: { paidAt: 'desc' },

@@ -1,5 +1,6 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiOkResponse,
   ApiOperation,
@@ -7,44 +8,49 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Public } from '../common/decorators/public.decorator';
-import { Authenticated } from '../common/decorators/roles.decorator';
-import type { AuthUser } from '../common/types';
-import { LoginDto, MeResponse, RegisterDto, TokensResponse } from './auth.dto';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
+import { AuthResponseDto, LoginDto, MeResponse, RegisterDto } from './auth.dto';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
+/** Public: register and login. */
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
-  @Public()
   @Post('register')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  @ApiOperation({ summary: 'تسجيل متبرع جديد (DONOR)' })
-  @ApiOkResponse({ type: TokensResponse })
+  @ApiOperation({ summary: 'Register a new donor (DONOR)' })
+  @ApiOkResponse({ type: AuthResponseDto })
   @ApiConflictResponse({ description: 'phone_taken' })
   register(@Body() dto: RegisterDto) {
     return this.auth.register(dto);
   }
 
-  @Public()
   @Post('login')
   @HttpCode(200)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
-  @ApiOperation({ summary: 'تسجيل الدخول بالهاتف وكلمة المرور' })
-  @ApiOkResponse({ type: TokensResponse })
+  @ApiOperation({ summary: 'Log in with phone and password' })
+  @ApiOkResponse({ type: AuthResponseDto })
   @ApiUnauthorizedResponse({ description: 'invalid_credentials' })
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
   }
+}
 
-  @Authenticated()
+/** Protected: the current user. */
+@ApiTags('auth')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('auth')
+export class AuthMeController {
+  constructor(private readonly auth: AuthService) {}
+
   @Get('me')
-  @ApiOperation({ summary: 'المستخدم الحالي' })
+  @ApiOperation({ summary: 'Current user' })
   @ApiOkResponse({ type: MeResponse })
-  me(@CurrentUser() user: AuthUser) {
+  me(@CurrentUser() user: AuthenticatedUser) {
     return this.auth.me(user.id);
   }
 }

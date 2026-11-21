@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type { Paginated, PublicCampaign, PublicCampaignDetail } from '../common/shared';
 import { AuditService } from '../audit/audit.service';
+import { RoleAccessService } from '../common/access/role-access.service';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { newCampaignSlug } from '../common/utils/codes';
 import { money } from '../common/utils/money';
 import { PrismaService } from '../prisma/prisma.service';
@@ -29,6 +31,7 @@ export class CampaignsService {
     private readonly prisma: PrismaService,
     private readonly stats: CampaignStatsService,
     private readonly audit: AuditService,
+    private readonly access: RoleAccessService,
   ) {}
 
   async listPublic(query: ListCampaignsQueryDto): Promise<Paginated<PublicCampaign>> {
@@ -112,7 +115,9 @@ export class CampaignsService {
     };
   }
 
-  async createOngoing(dto: CreateOngoingCampaignDto, actorId: string) {
+  async createOngoing(dto: CreateOngoingCampaignDto, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['ADMIN']);
+    const actorId = actor.id;
     return this.prisma.$transaction(async (tx) => {
       const campaign = await tx.campaign.create({
         data: {
@@ -144,7 +149,9 @@ export class CampaignsService {
     });
   }
 
-  async updateStatus(id: string, dto: UpdateCampaignStatusDto, actorId: string) {
+  async updateStatus(id: string, dto: UpdateCampaignStatusDto, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['ADMIN', 'CASE_OFFICER']);
+    const actorId = actor.id;
     return this.prisma.$transaction(async (tx) => {
       const before = await tx.campaign.findUnique({ where: { id } });
       if (!before) throw new NotFoundException('campaign_not_found');
@@ -170,7 +177,9 @@ export class CampaignsService {
     });
   }
 
-  async addUpdate(campaignId: string, dto: CreateCampaignUpdateDto, authorId: string) {
+  async addUpdate(campaignId: string, dto: CreateCampaignUpdateDto, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['STAFF', 'CASE_OFFICER', 'ADMIN']);
+    const authorId = actor.id;
     const exists = await this.prisma.campaign.count({ where: { id: campaignId } });
     if (!exists) throw new NotFoundException('campaign_not_found');
     return this.prisma.campaignUpdate.create({
@@ -179,7 +188,14 @@ export class CampaignsService {
   }
 
   /** لوحة الموظفين: كل الحملات مع الحالة. */
-  listForStaff() {
+  listForStaff(user: AuthenticatedUser) {
+    this.access.requireRole(user, [
+      'ADMIN',
+      'CASE_OFFICER',
+      'FINANCE_VERIFIER',
+      'STAFF',
+      'COLLECTOR',
+    ]);
     return this.prisma.campaign.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
