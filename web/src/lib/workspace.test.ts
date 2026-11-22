@@ -12,6 +12,7 @@ describe('workspace links per role', () => {
       'newCampaign',
       'intake',
       'cases',
+      'spending',
       'imports',
       'outbox',
       'notifications',
@@ -21,7 +22,7 @@ describe('workspace links per role', () => {
   it('each staff role sees only its own screens', () => {
     expect(keys('STAFF')).toEqual(['home', 'intake', 'cases', 'imports', 'notifications']);
     expect(keys('CASE_OFFICER')).toEqual(['home', 'cases', 'notifications']);
-    expect(keys('FINANCE_VERIFIER')).toEqual(['home', 'finance', 'notifications']);
+    expect(keys('FINANCE_VERIFIER')).toEqual(['home', 'finance', 'spending', 'notifications']);
   });
 
   it('donors see their donations; collectors their collection points', () => {

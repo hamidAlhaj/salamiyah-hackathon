@@ -6,6 +6,7 @@ import type {
   CaseStatus,
   CollectionPointType,
   Currency,
+  PayeeType,
   PaymentMethod,
   PledgeChannel,
   Priority,
@@ -172,4 +173,54 @@ export interface ImportValidation {
   errorRows: number;
   duplicateRows: number;
   errors: { row: number; field: string; message: string }[];
+}
+
+/** GET /campaigns/:id/spending-context: what the spending page needs (rules come from the flags). */
+export interface SpendingContext {
+  campaign: {
+    id: string;
+    slug: string;
+    title: string;
+    status: CampaignStatus;
+    isOngoing: boolean;
+    currency: Currency;
+    targetAmount: string;
+    verifiedAmount: string;
+    spentAmount: string;
+    remainingAmount: string;
+    category: {
+      code: string;
+      name: string;
+      icon: string;
+      lockedPayeeHospital: boolean;
+      supportsMonthlySponsorship: boolean;
+    };
+  };
+  hospital: { id: string; name: string } | null;
+  beneficiaries: {
+    id: string;
+    code: string;
+    kind: BeneficiaryKind;
+    monthlyAmount: string | null;
+  }[];
+  paidMonths: { periodMonth: string; count: number }[];
+}
+
+/** GET /campaigns/:id/expenditures (staff): every expenditure with its proof (public or not). */
+export interface StaffExpenditure {
+  id: string;
+  payeeType: PayeeType;
+  payee: string;
+  hospital: string | null;
+  beneficiaryCode: string | null;
+  amount: string;
+  currency: Currency;
+  paidAt: string;
+  periodMonth: string | null;
+  description: string;
+  descriptionEn: string | null;
+  recordedBy: string;
+  proofDocumentId: string | null;
+  proofMimeType: string | null;
+  proofPublic: boolean;
 }

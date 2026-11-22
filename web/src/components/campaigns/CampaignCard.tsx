@@ -11,6 +11,8 @@ export function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
   const tPriority = useTranslations('priority');
   const locale = useLocale() === 'en' ? 'en' : 'ar';
   const urgent = campaign.priority !== 'NORMAL';
+  const completed = campaign.status === 'COMPLETED';
+  const spent = Number(campaign.spentAmount) > 0;
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lift">
@@ -20,10 +22,29 @@ export function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
           <CategoryIcon icon={campaign.category.icon} className="h-4 w-4" />
           {campaign.category.name}
         </span>
-        {urgent && (
-          <span className="absolute end-3 top-3 rounded-full bg-danger-soft px-2.5 py-1 text-xs font-semibold text-danger">
-            {tPriority(campaign.priority)}
+        {completed ? (
+          <span
+            className="absolute end-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2.5 py-1 text-xs font-bold text-white shadow-card dark:bg-brand-600"
+            data-testid="completed-badge"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-3.5 w-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              aria-hidden="true"
+            >
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+            {t('completed')}
           </span>
+        ) : (
+          urgent && (
+            <span className="absolute end-3 top-3 rounded-full bg-danger-soft px-2.5 py-1 text-xs font-semibold text-danger">
+              {tPriority(campaign.priority)}
+            </span>
+          )
         )}
       </div>
       <div className="flex flex-1 flex-col p-5">
@@ -58,6 +79,13 @@ export function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
               })}
             </span>
           </p>
+          {spent && (
+            <p className="mt-0.5 text-xs text-muted">
+              {t('spentSoFar', {
+                amount: formatMoney(campaign.spentAmount, campaign.currency, locale),
+              })}
+            </p>
+          )}
         </div>
       </div>
     </article>

@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ExpendituresController } from './expenditures.controller';
+import {
+  ExpendituresController,
+  PublicExpendituresController,
+} from './expenditures.controller';
 import { ExpendituresService } from './expenditures.service';
 
 @Module({
-  controllers: [ExpendituresController],
+  controllers: [PublicExpendituresController, ExpendituresController],
   providers: [ExpendituresService],
 })
 export class ExpendituresModule {}

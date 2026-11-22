@@ -351,9 +351,9 @@ model Document {
   uploadedById String       @map("uploaded_by_id") @db.Uuid
   createdAt    DateTime     @default(now()) @map("created_at")
 
-  case        Case?        @relation(fields: [caseId], references: [id], onDelete: Restrict)
-  uploadedBy  User         @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
-  expenditure Expenditure?
+  case         Case?         @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  uploadedBy   User          @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  expenditures Expenditure[]
 
   @@map("documents")
 }
@@ -454,19 +454,25 @@ model Expenditure {
   beneficiaryId   String?   @map("beneficiary_id") @db.Uuid
   amount          Decimal   @db.Decimal(14, 2)
   currency        Currency
-  description     String
+  description     String // Arabic
+  descriptionEn   String?   @map("description_en")
   paidAt          DateTime  @map("paid_at")
   periodMonth     String?   @map("period_month") // YYYY-MM, monthly sponsorship
-  proofDocumentId String    @unique @map("proof_document_id") @db.Uuid
+  /// One proof may cover several rows (a monthly sponsorship run shares one transfer slip).
+  proofDocumentId String?   @map("proof_document_id") @db.Uuid
+  /// Reviewed at upload as safe to show the public; unpublished proofs stay staff-only.
+  proofPublic     Boolean   @default(false) @map("proof_public")
   recordedById    String    @map("recorded_by_id") @db.Uuid
   createdAt       DateTime  @default(now()) @map("created_at")
 
   campaign      Campaign     @relation(fields: [campaignId], references: [id], onDelete: Restrict)
   hospital      Hospital?    @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
   beneficiary   Beneficiary? @relation(fields: [beneficiaryId], references: [id], onDelete: Restrict)
-  proofDocument Document     @relation(fields: [proofDocumentId], references: [id], onDelete: Restrict)
+  proofDocument Document?    @relation(fields: [proofDocumentId], references: [id], onDelete: Restrict)
   recordedBy    User         @relation(fields: [recordedById], references: [id], onDelete: Restrict)
 
+  /// A sponsored beneficiary is paid at most once per month per campaign (NULLs never collide).
+  @@unique([campaignId, beneficiaryId, periodMonth])
   @@index([campaignId, paidAt])
   @@index([beneficiaryId, periodMonth])
   @@map("expenditures")

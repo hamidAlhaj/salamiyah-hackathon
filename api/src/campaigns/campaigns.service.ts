@@ -223,12 +223,17 @@ export class CampaignsService {
         data: {
           status: dto.status,
           ...(dto.acceptsPledges === undefined ? {} : { acceptsPledges: dto.acceptsPledges }),
+          // «تم الإنجاز» set by the council (e.g. an ongoing programme): no more pledges.
+          ...(dto.status === 'COMPLETED' ? { acceptsPledges: false } : {}),
           ...(dto.status === 'ACTIVE' && !before.publishedAt
             ? { publishedAt: new Date() }
             : {}),
         },
       });
       firstPublish = dto.status === 'ACTIVE' && !before.publishedAt;
+      if (dto.status === 'COMPLETED' && before.caseId) {
+        await tx.case.update({ where: { id: before.caseId }, data: { status: 'CLOSED' } });
+      }
       await this.audit.log(
         {
           actorId,

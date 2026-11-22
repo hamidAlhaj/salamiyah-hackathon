@@ -47,6 +47,8 @@ const REVALIDATE_PATH_PATTERNS: RegExp[] = [
   /^\/dashboard\/notifications$/,
   /^\/dashboard\/outbox$/,
   /^\/dashboard\/collector$/,
+  /^\/dashboard\/spending$/,
+  new RegExp(`^/dashboard/spending/${UUID}$`),
   /^\/campaigns\/[a-z0-9_-]{3,60}$/,
 ];
 

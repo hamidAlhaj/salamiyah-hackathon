@@ -9,9 +9,11 @@ import { CategoryIcon } from '@/components/campaigns/CategoryIcon';
 import { fundingSegments } from '@/components/campaigns/funding';
 import { LedgerCard } from '@/components/campaigns/LedgerCard';
 import { ReceivingAccounts } from '@/components/campaigns/ReceivingAccounts';
+import { SpendingTimeline } from '@/components/campaigns/SpendingTimeline';
 import { buttonClasses } from '@/components/ui/Button';
 import { listCampaignBeneficiaries } from '@/lib/api/beneficiaries';
 import { getCampaign, getLedger } from '@/lib/api/campaigns';
+import { publicSpending } from '@/lib/api/expenditures';
 import { orNotFound } from '@/lib/api/client';
 import { getCampaignAccounts } from '@/lib/api/payment-methods';
 import { whatsappShareUrl } from '@/shared';
@@ -32,10 +34,11 @@ export default async function CampaignPage({ params }: Props) {
   const { slug } = await params;
   const locale = await lang();
   const campaign = await orNotFound(getCampaign(slug, locale));
-  const [ledger, accounts, beneficiaries] = await Promise.all([
+  const [ledger, accounts, beneficiaries, spending] = await Promise.all([
     getLedger(campaign.id),
     getCampaignAccounts(campaign.id, locale),
     listCampaignBeneficiaries(campaign.id),
+    publicSpending(campaign.id, locale),
   ]);
   const t = await getTranslations('campaign');
   const tPriority = await getTranslations('priority');
@@ -73,6 +76,31 @@ export default async function CampaignPage({ params }: Props) {
       <header className="mt-4">
         <div className="relative h-48 overflow-hidden rounded-[28px] border border-border sm:h-64">
           <CampaignCover coverKey={campaign.coverKey} />
+          {campaign.status === 'COMPLETED' && (
+            <div
+              className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-panel/95 px-5 py-3 text-white"
+              data-testid="completed-banner"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.6"
+                  aria-hidden="true"
+                >
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+              <span>
+                <span className="block font-display text-lg font-bold leading-tight">
+                  {t('completed')}
+                </span>
+                <span className="block text-sm text-panel-ink/85">{t('completedNote')}</span>
+              </span>
+            </div>
+          )}
         </div>
         <div className="mt-6 flex flex-wrap items-center gap-2">
           <span
@@ -88,7 +116,13 @@ export default async function CampaignPage({ params }: Props) {
             </span>
           )}
           {statusLabel && (
-            <span className="rounded-full bg-surface-muted px-3 py-1 text-sm font-semibold">
+            <span
+              className={`rounded-full px-3 py-1 text-sm font-semibold ${
+                campaign.status === 'COMPLETED'
+                  ? 'bg-brand-700 text-white dark:bg-brand-600'
+                  : 'bg-surface-muted'
+              }`}
+            >
               {statusLabel}
             </span>
           )}
@@ -122,14 +156,7 @@ export default async function CampaignPage({ params }: Props) {
 
           <BeneficiaryList beneficiaries={beneficiaries} currency={campaign.currency} />
 
-          <section aria-labelledby="spending-title">
-            <h2 id="spending-title" className="font-display text-xl font-bold">
-              {t('spendingTitle')}
-            </h2>
-            <p className="mt-2 rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted">
-              {t('spendingEmpty')}
-            </p>
-          </section>
+          <SpendingTimeline items={spending} />
 
           <section aria-labelledby="updates-title">
             <h2 id="updates-title" className="font-display text-xl font-bold">

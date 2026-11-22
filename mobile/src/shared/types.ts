@@ -7,6 +7,7 @@ import type {
   CollectionPointType,
   Currency,
   OutboundStatus,
+  PayeeType,
   PaymentMethod,
   PaymentMethodKind,
   PledgeChannel,
@@ -246,4 +247,21 @@ export interface CollectorPledge {
   createdAt: string;
   /** When the collector confirmed receipt or recorded the amount (handed over to the council). */
   handedOverAt: string | null;
+}
+
+/**
+ * One row of a campaign's public spending timeline. A beneficiary payment shows the beneficiary's
+ * code only (`payeeLabel` is null); `proof` is set only when the proof was published at upload.
+ */
+export interface PublicExpenditure {
+  id: string;
+  paidAt: string;
+  payeeType: PayeeType;
+  payeeLabel: string | null;
+  beneficiaryCode: string | null;
+  amount: string;
+  currency: Currency;
+  description: string;
+  periodMonth: string | null;
+  proof: { mimeType: string } | null;
 }

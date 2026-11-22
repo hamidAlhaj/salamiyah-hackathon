@@ -9,6 +9,7 @@ import {
   progressPercent,
   type PublicBeneficiary,
   type PublicCampaignDetail,
+  type PublicExpenditure,
   whatsappShareUrl,
 } from '@/shared';
 import { useLang } from '@/i18n';
@@ -35,6 +36,7 @@ interface Loaded {
   ledger: CampaignLedger;
   accounts: PaymentAccount[];
   beneficiaries: PublicBeneficiary[];
+  spending: PublicExpenditure[];
 }
 
 /**
@@ -57,15 +59,19 @@ export default function CampaignScreen() {
         auth: false,
         query: { lang },
       });
-      const [ledger, accounts, beneficiaries] = await Promise.all([
+      const [ledger, accounts, beneficiaries, spending] = await Promise.all([
         api<CampaignLedger>(`/campaigns/${campaign.id}/ledger`, { auth: false }),
         api<PaymentAccount[]>(`/campaigns/${campaign.id}/payment-accounts`, {
           auth: false,
           query: { lang },
         }),
         api<PublicBeneficiary[]>(`/campaigns/${campaign.id}/beneficiaries`, { auth: false }),
+        api<PublicExpenditure[]>(`/campaigns/${campaign.id}/spending`, {
+          auth: false,
+          query: { lang },
+        }),
       ]);
-      setData({ campaign, ledger, accounts, beneficiaries });
+      setData({ campaign, ledger, accounts, beneficiaries, spending });
     } catch (e) {
       setError(e instanceof ApiError && e.status === 404 ? 'notFound' : 'generic');
     }
@@ -138,9 +144,14 @@ export default function CampaignScreen() {
             </AppText>
           )}
           {cp.status === 'COMPLETED' && (
-            <AppText size="xs" weight="bold" tone="accent">
-              {t('campaign.completed')}
-            </AppText>
+            <View
+              testID="completed-badge"
+              style={{ backgroundColor: c.panel, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2 }}
+            >
+              <AppText size="xs" weight="bold" style={{ color: c.panelInk }}>
+                {t('campaign.completed')}
+              </AppText>
+            </View>
           )}
         </View>
         <AppText display size="xl" testID="campaign-title">
@@ -245,6 +256,55 @@ export default function CampaignScreen() {
                     ? t('campaign.monthly', { amount: money(b.monthlyAmount, ledger.currency, lang) })
                     : t('campaign.since', { date: date(b.since, lang) })}
                 </AppText>
+              </View>
+            ))
+          )}
+        </Card>
+
+        <Card testID="spending-timeline">
+          <AppText display size="lg">
+            {t('campaign.spendingTitle')}
+          </AppText>
+          {data.spending.length === 0 ? (
+            <AppText size="sm" tone="muted">
+              {t('campaign.spendingEmpty')}
+            </AppText>
+          ) : (
+            data.spending.map((e) => (
+              <View
+                key={e.id}
+                style={{ borderTopWidth: 1, borderTopColor: c.border, paddingTop: 10, gap: 3 }}
+                testID={`spending-${e.id}`}
+              >
+                <View style={[styles.row, { justifyContent: 'space-between' }]}>
+                  <AppText size="sm" weight="bold">
+                    {e.beneficiaryCode ?? e.payeeLabel}
+                    <AppText size="sm" tone="muted">
+                      {` — ${t(`campaign.payeeTypes.${e.payeeType}`)}`}
+                    </AppText>
+                  </AppText>
+                  <AppText weight="bold">{money(e.amount, e.currency, lang)}</AppText>
+                </View>
+                <AppText size="sm">{e.description}</AppText>
+                <View style={[styles.row, { justifyContent: 'space-between' }]}>
+                  <AppText size="xs" tone="muted">
+                    {date(e.paidAt, lang)}
+                  </AppText>
+                  {e.proof ? (
+                    <Pressable
+                      accessibilityRole="link"
+                      onPress={() => void Linking.openURL(`${SITE_URL}/api/proofs/${e.id}`)}
+                    >
+                      <AppText size="xs" weight="bold" tone="accent">
+                        {t('campaign.viewProof')}
+                      </AppText>
+                    </Pressable>
+                  ) : (
+                    <AppText size="xs" tone="muted">
+                      {t('campaign.proofKept')}
+                    </AppText>
+                  )}
+                </View>
               </View>
             ))
           )}
