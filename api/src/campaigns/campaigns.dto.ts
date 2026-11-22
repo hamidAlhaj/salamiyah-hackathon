@@ -8,12 +8,34 @@ import {
   Length,
   Matches,
 } from 'class-validator';
-import { CAMPAIGN_STATUSES, CURRENCIES, PRIORITIES } from '../common/shared';
+import {
+  CAMPAIGN_STATUSES,
+  COVER_KEYS,
+  CURRENCIES,
+  PRIORITIES,
+  type CoverKey,
+} from '../common/shared';
 import type { CampaignStatus, Currency, Priority } from '@prisma/client';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { AMOUNT_REGEX, NormalizeAmount } from '../common/dto/transforms';
 
+/** Statuses a public list may filter by. */
+const PUBLIC_CAMPAIGN_STATUSES = ['ACTIVE', 'FUNDED', 'COMPLETED'] as const;
+
 export class ListCampaignsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({
+    example: 'ORPHAN_SPONSORSHIP',
+    description: 'Category code (display filter)',
+  })
+  @IsOptional()
+  @Matches(/^[A-Z][A-Z0-9_]{2,39}$/, { message: 'invalid_category_code' })
+  category?: string;
+
+  @ApiPropertyOptional({ enum: PUBLIC_CAMPAIGN_STATUSES })
+  @IsOptional()
+  @IsIn(PUBLIC_CAMPAIGN_STATUSES)
+  status?: (typeof PUBLIC_CAMPAIGN_STATUSES)[number];
+
   @ApiPropertyOptional({ enum: PRIORITIES })
   @IsOptional()
   @IsIn(PRIORITIES)
@@ -32,8 +54,8 @@ export class LangQueryDto {
   lang: 'ar' | 'en' = 'ar';
 }
 
-/** حملة مستمرة بلا حالة فردية (مثل برنامج مرضى السرطان). */
-export class CreateOngoingCampaignDto {
+/** ADMIN creates a campaign in an active category without requiresMedicalCase. */
+export class CreateCampaignDto {
   @ApiProperty({
     description: 'CampaignCategory id (an active category without requiresMedicalCase)',
   })
@@ -74,6 +96,37 @@ export class CreateOngoingCampaignDto {
   @ApiProperty({ enum: PRIORITIES, default: 'NORMAL' })
   @IsIn(PRIORITIES)
   priority: Priority = 'NORMAL';
+
+  @ApiPropertyOptional({
+    enum: COVER_KEYS,
+    description: 'Bundled illustration (never a photo)',
+  })
+  @IsOptional()
+  @IsIn(COVER_KEYS)
+  coverKey?: CoverKey;
+
+  @ApiPropertyOptional({ example: 'حي الشيخ بدر', description: 'A neighbourhood at most' })
+  @IsOptional()
+  @IsString()
+  @Length(2, 60)
+  area?: string;
+
+  @ApiPropertyOptional({
+    default: false,
+    description: 'Open-ended programme (e.g. yearly sponsorship)',
+  })
+  @IsOptional()
+  @IsBoolean()
+  isOngoing?: boolean;
+
+  @ApiPropertyOptional({
+    enum: ['ACTIVE', 'DRAFT'],
+    default: 'ACTIVE',
+    description: 'ACTIVE publishes now',
+  })
+  @IsOptional()
+  @IsIn(['ACTIVE', 'DRAFT'])
+  status?: 'ACTIVE' | 'DRAFT';
 }
 
 export class UpdateCampaignStatusDto {

@@ -34,3 +34,19 @@ export const CATEGORY_ICONS = [
   'star',
 ] as const;
 export type CategoryIcon = (typeof CATEGORY_ICONS)[number];
+
+/**
+ * Bundled campaign cover illustrations (Campaign.coverKey). Illustrations only, never photos of
+ * beneficiaries; web and mobile ship one image per key.
+ */
+export const COVER_KEYS = [
+  'medical-1',
+  'medical-2',
+  'orphans-1',
+  'orphans-2',
+  'home-1',
+  'home-2',
+  'community-1',
+  'general-1',
+] as const;
+export type CoverKey = (typeof COVER_KEYS)[number];

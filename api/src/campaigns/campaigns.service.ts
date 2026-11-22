@@ -1,30 +1,43 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import type { Paginated, PublicCampaign, PublicCampaignDetail } from '../common/shared';
+import type {
+  CampaignLedger,
+  Paginated,
+  PublicCampaign,
+  PublicCampaignDetail,
+} from '../common/shared';
 import { AuditService } from '../audit/audit.service';
 import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { newCampaignSlug } from '../common/utils/codes';
 import { money } from '../common/utils/money';
 import { PrismaService } from '../prisma/prisma.service';
+import { computeLedger } from './campaign-ledger';
 import { CampaignStatsService, type CampaignStats } from './campaign-stats.service';
 import type {
+  CreateCampaignDto,
   CreateCampaignUpdateDto,
-  CreateOngoingCampaignDto,
   ListCampaignsQueryDto,
   UpdateCampaignStatusDto,
 } from './campaigns.dto';
 
+/** Only active beneficiary links are counted. */
+const activeBeneficiariesCount = {
+  _count: { select: { beneficiaries: { where: { endedAt: null } } } },
+} satisfies Prisma.CampaignInclude;
+
+/** Everything a public campaign response reads. No beneficiary relation: counts only. */
 const publicInclude = {
   category: { select: { id: true, code: true, nameAr: true, nameEn: true, icon: true } },
   hospital: { select: { nameAr: true, nameEn: true } },
   case: { select: { category: true, isAnonymous: true, trackingNo: true } },
+  ...activeBeneficiariesCount,
 } satisfies Prisma.CampaignInclude;
 
 type CampaignWithRefs = Prisma.CampaignGetPayload<{ include: typeof publicInclude }>;
 
-/** الحالات المعروضة للعامة. */
-const PUBLIC_STATUSES = ['ACTIVE', 'FUNDED', 'COMPLETED'] as const;
+/** Campaign statuses visible to the public. */
+export const PUBLIC_STATUSES = ['ACTIVE', 'FUNDED', 'COMPLETED'] as const;
 
 @Injectable()
 export class CampaignsService {
@@ -36,9 +49,10 @@ export class CampaignsService {
   ) {}
 
   async listPublic(query: ListCampaignsQueryDto): Promise<Paginated<PublicCampaign>> {
-    // All categories are public (the category filter arrives with the categories API in P06).
     const where: Prisma.CampaignWhereInput = {
-      status: { in: [...PUBLIC_STATUSES] },
+      status: query.status ? query.status : { in: [...PUBLIC_STATUSES] },
+      // The category filter is a public display filter by code, not a business rule.
+      ...(query.category ? { category: { code: query.category, isActive: true } } : {}),
       ...(query.priority ? { priority: query.priority } : {}),
     };
     const [total, rows] = await this.prisma.$transaction([
@@ -46,7 +60,7 @@ export class CampaignsService {
       this.prisma.campaign.findMany({
         where,
         include: publicInclude,
-        // ACTIVE أولاً، ثم الأكثر استعجالاً، ثم الأحدث
+        // ACTIVE first, then the most urgent, then the newest.
         orderBy: [{ status: 'asc' }, { priority: 'asc' }, { publishedAt: 'desc' }],
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
@@ -54,7 +68,7 @@ export class CampaignsService {
     ]);
     const stats = await this.stats.forCampaigns(rows.map((r) => r.id));
     return {
-      items: rows.map((r) => this.toPublic(r, stats.get(r.id), query.lang)),
+      items: rows.map((r) => toPublicCampaign(r, stats.get(r.id), query.lang)),
       total,
       page: query.page,
       pageSize: query.pageSize,
@@ -69,7 +83,7 @@ export class CampaignsService {
     if (!row) throw new NotFoundException('campaign_not_found');
     const stats = await this.stats.forCampaigns([row.id]);
     return {
-      ...this.toPublic(row, stats.get(row.id), lang),
+      ...toPublicCampaign(row, stats.get(row.id), lang),
       fileNo: row.case?.trackingNo ?? null,
       updates: row.updates.map((u) => ({
         id: u.id,
@@ -79,88 +93,112 @@ export class CampaignsService {
     };
   }
 
-  /** Per-campaign transparency: verified, pending, demo (separate), spent and the public-safe spending list. */
-  async transparency(id: string) {
-    const campaign = await this.prisma.campaign.findUnique({
-      where: { id },
-      include: {
-        expenditures: {
-          select: {
-            id: true,
-            payeeType: true,
-            payeeLabel: true,
-            amount: true,
-            currency: true,
-            paidAt: true,
-            hospital: { select: { nameAr: true, nameEn: true } },
-          },
-          orderBy: { paidAt: 'desc' },
-        },
+  /** The campaign account ledger (public): remaining = verified − spent; pending and demo apart. */
+  async ledger(id: string): Promise<CampaignLedger> {
+    const campaign = await this.prisma.campaign.findFirst({
+      where: { id, status: { in: [...PUBLIC_STATUSES] } },
+      select: {
+        id: true,
+        currency: true,
+        targetAmount: true,
+        verifiedAmount: true,
+        spentAmount: true,
+        ...activeBeneficiariesCount,
       },
     });
     if (!campaign) throw new NotFoundException('campaign_not_found');
     const stats = (await this.stats.forCampaigns([id])).get(id);
-    return {
-      campaignId: id,
+    return computeLedger({
+      campaignId: campaign.id,
       currency: campaign.currency,
-      targetAmount: money(campaign.targetAmount),
-      verifiedAmount: money(campaign.verifiedAmount),
-      pendingAmount: money(stats?.pending),
-      demoAmount: money(stats?.demo),
-      spentAmount: money(campaign.spentAmount),
-      remainingAmount: money(campaign.verifiedAmount.minus(campaign.spentAmount)),
-      expenditures: campaign.expenditures.map((e) => ({
+      targetAmount: campaign.targetAmount,
+      verifiedAmount: campaign.verifiedAmount,
+      spentAmount: campaign.spentAmount,
+      pending: stats?.pending,
+      demo: stats?.demo,
+      donorsCount: stats?.donorsCount,
+      beneficiariesCount: campaign._count.beneficiaries,
+    });
+  }
+
+  /** Per-campaign transparency: the ledger plus the public-safe spending list. */
+  async transparency(id: string) {
+    const ledger = await this.ledger(id);
+    const expenditures = await this.prisma.expenditure.findMany({
+      where: { campaignId: id },
+      orderBy: { paidAt: 'desc' },
+      select: {
+        id: true,
+        payeeType: true,
+        payeeLabel: true,
+        amount: true,
+        currency: true,
+        paidAt: true,
+        periodMonth: true,
+        hospital: { select: { nameAr: true, nameEn: true } },
+        beneficiary: { select: { publicCode: true } },
+      },
+    });
+    return {
+      ...ledger,
+      expenditures: expenditures.map((e) => ({
         id: e.id,
         payeeType: e.payeeType,
         payee: e.payeeLabel,
         hospital: e.hospital?.nameAr ?? null,
         hospitalEn: e.hospital?.nameEn ?? null,
+        beneficiaryCode: e.beneficiary?.publicCode ?? null,
         amount: money(e.amount),
         currency: e.currency,
         paidAt: e.paidAt.toISOString(),
+        periodMonth: e.periodMonth,
       })),
     };
   }
 
   /**
-   * ADMIN creates a direct (ongoing) campaign in an active category. Categories whose campaigns come from
-   * the medical case pipeline (`requiresMedicalCase`) are refused here. Full create API: P06.
+   * ADMIN creates a campaign in an active category. A category flagged `requiresMedicalCase` is refused:
+   * its campaigns only come from the case intake → review → publish pipeline (CASE_OFFICER).
    */
-  async createOngoing(dto: CreateOngoingCampaignDto, actor: AuthenticatedUser) {
+  async create(dto: CreateCampaignDto, actor: AuthenticatedUser) {
     this.access.requireRole(actor, ['ADMIN']);
-    const actorId = actor.id;
     const category = await this.prisma.campaignCategory.findUnique({
       where: { id: dto.categoryId },
-      select: { id: true, isActive: true, requiresMedicalCase: true },
+      select: { id: true, code: true, isActive: true, requiresMedicalCase: true },
     });
     if (!category || !category.isActive) throw new NotFoundException('category_not_found');
-    if (category.requiresMedicalCase)
+    if (category.requiresMedicalCase) {
       throw new ConflictException('category_requires_medical_case');
+    }
+    const publish = (dto.status ?? 'ACTIVE') === 'ACTIVE';
     return this.prisma.$transaction(async (tx) => {
       const campaign = await tx.campaign.create({
         data: {
-          slug: newCampaignSlug('program'),
+          slug: newCampaignSlug(category.code),
           categoryId: category.id,
-          isOngoing: true,
-          titleAr: dto.titleAr,
-          titleEn: dto.titleEn,
-          summaryAr: dto.summaryAr,
-          summaryEn: dto.summaryEn,
+          isOngoing: dto.isOngoing ?? false,
+          titleAr: dto.titleAr.trim(),
+          titleEn: dto.titleEn?.trim(),
+          summaryAr: dto.summaryAr.trim(),
+          summaryEn: dto.summaryEn?.trim(),
           targetAmount: dto.targetAmount,
           currency: dto.currency,
           priority: dto.priority,
-          status: 'ACTIVE',
-          publishedAt: new Date(),
-          createdById: actorId,
+          coverKey: dto.coverKey,
+          area: dto.area?.trim(),
+          status: publish ? 'ACTIVE' : 'DRAFT',
+          publishedAt: publish ? new Date() : null,
+          createdById: actor.id,
         },
+        select: { id: true, slug: true, status: true },
       });
       await this.audit.log(
         {
-          actorId,
-          action: 'campaign.create_ongoing',
+          actorId: actor.id,
+          action: 'campaign.create',
           entityType: 'Campaign',
           entityId: campaign.id,
-          after: { slug: campaign.slug },
+          after: { slug: campaign.slug, category: category.code, status: campaign.status },
         },
         tx,
       );
@@ -179,6 +217,9 @@ export class CampaignsService {
         data: {
           status: dto.status,
           ...(dto.acceptsPledges === undefined ? {} : { acceptsPledges: dto.acceptsPledges }),
+          ...(dto.status === 'ACTIVE' && !before.publishedAt
+            ? { publishedAt: new Date() }
+            : {}),
         },
       });
       await this.audit.log(
@@ -206,7 +247,7 @@ export class CampaignsService {
     });
   }
 
-  /** لوحة الموظفين: كل الحملات مع الحالة. */
+  /** Staff dashboards: every campaign with its status and category. */
   listForStaff(user: AuthenticatedUser) {
     this.access.requireRole(user, [
       'ADMIN',
@@ -230,49 +271,55 @@ export class CampaignsService {
         spentAmount: true,
         category: { select: { id: true, code: true, nameAr: true, icon: true } },
         hospital: { select: { id: true, nameAr: true } },
+        ...activeBeneficiariesCount,
       },
     });
   }
+}
 
-  private toPublic(
-    row: CampaignWithRefs,
-    stats: CampaignStats | undefined,
-    lang: 'ar' | 'en',
-  ): PublicCampaign {
-    const en = lang === 'en';
-    return {
-      id: row.id,
-      slug: row.slug,
-      category: {
-        id: row.category.id,
-        code: row.category.code,
-        name: en ? row.category.nameEn : row.category.nameAr,
-        icon: row.category.icon,
-      },
-      isOngoing: row.isOngoing,
-      title: en && row.titleEn ? row.titleEn : row.titleAr,
-      summary: en && row.summaryEn ? row.summaryEn : row.summaryAr,
-      coverKey: row.coverKey,
-      area: row.area,
-      caseCategory: row.case?.category ?? null,
-      priority: row.priority,
-      status: row.status,
-      currency: row.currency,
-      targetAmount: money(row.targetAmount),
-      // Demo money is reported separately and never added to verified money.
-      verifiedAmount: money(row.verifiedAmount),
-      pendingAmount: money(stats?.pending),
-      demoAmount: money(stats?.demo),
-      spentAmount: money(row.spentAmount),
-      hospitalName: row.hospital
-        ? en && row.hospital.nameEn
-          ? row.hospital.nameEn
-          : row.hospital.nameAr
-        : null,
-      acceptsPledges: row.acceptsPledges && row.status === 'ACTIVE',
-      isAnonymousCase: row.case?.isAnonymous ?? false,
-      publishedAt: row.publishedAt?.toISOString() ?? null,
-      donorsCount: stats?.donorsCount ?? 0,
-    };
-  }
+/**
+ * Builds the public campaign field by field from a row that only selects public-safe relations
+ * (category, hospital, case summary flags, beneficiary counts). Never spreads the row.
+ */
+export function toPublicCampaign(
+  row: CampaignWithRefs,
+  stats: CampaignStats | undefined,
+  lang: 'ar' | 'en',
+): PublicCampaign {
+  const en = lang === 'en';
+  return {
+    id: row.id,
+    slug: row.slug,
+    category: {
+      id: row.category.id,
+      code: row.category.code,
+      name: en ? row.category.nameEn : row.category.nameAr,
+      icon: row.category.icon,
+    },
+    isOngoing: row.isOngoing,
+    title: en && row.titleEn ? row.titleEn : row.titleAr,
+    summary: en && row.summaryEn ? row.summaryEn : row.summaryAr,
+    coverKey: row.coverKey,
+    area: row.area,
+    caseCategory: row.case?.category ?? null,
+    priority: row.priority,
+    status: row.status,
+    currency: row.currency,
+    targetAmount: money(row.targetAmount),
+    // Demo money is reported separately and never added to verified money.
+    verifiedAmount: money(row.verifiedAmount),
+    pendingAmount: money(stats?.pending),
+    demoAmount: money(stats?.demo),
+    spentAmount: money(row.spentAmount),
+    hospitalName: row.hospital
+      ? en && row.hospital.nameEn
+        ? row.hospital.nameEn
+        : row.hospital.nameAr
+      : null,
+    acceptsPledges: row.acceptsPledges && row.status === 'ACTIVE',
+    isAnonymousCase: row.case?.isAnonymous ?? false,
+    publishedAt: row.publishedAt?.toISOString() ?? null,
+    donorsCount: stats?.donorsCount ?? 0,
+    beneficiariesCount: row._count.beneficiaries,
+  };
 }

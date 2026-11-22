@@ -4,7 +4,9 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
+import { BeneficiariesModule } from './beneficiaries/beneficiaries.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
+import { CategoriesModule } from './categories/categories.module';
 import { CasesModule } from './cases/cases.module';
 import { AccessModule } from './common/access/access.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -13,6 +15,7 @@ import { HealthController } from './health.controller';
 import { LookupsModule } from './hospitals/lookups.module';
 import { ImportsModule } from './imports/imports.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PaymentMethodsModule } from './payment-methods/payment-methods.module';
 import { PledgesModule } from './pledges/pledges.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StorageModule } from './storage/storage.module';
@@ -30,7 +33,10 @@ import { VerificationsModule } from './verifications/verifications.module';
     AuditModule,
     NotificationsModule,
     AuthModule,
+    CategoriesModule,
     CampaignsModule,
+    BeneficiariesModule,
+    PaymentMethodsModule,
     CasesModule,
     PledgesModule,
     VerificationsModule,

@@ -474,6 +474,8 @@ async function main() {
           slug: `${c.category.toLowerCase()}-demo${i}`,
           categoryId: medicalAid.id,
           caseId: created.id,
+          // The patient is linked anonymised, as case publish does.
+          beneficiaries: { create: [{ beneficiaryId: beneficiary.id }] },
           titleAr: c.titleAr,
           titleEn: c.titleEn,
           summaryAr: c.summaryAr,
@@ -543,6 +545,17 @@ async function main() {
       publishedAt: new Date(Date.now() - 3 * 86_400_000),
       createdById: admin.id,
       beneficiaries: { create: [{ beneficiaryId: family.id }] },
+      // One per-campaign receiving account override (FAKE), shown on this campaign only.
+      paymentAccounts: {
+        create: [
+          {
+            method: 'SYRIATEL_CASH',
+            accountName: 'صندوق ترميم حي البعث (مثال)',
+            accountNumber: '0930 000 099 (FAKE)',
+            note: 'للتبرعات الخاصة بهذه الحملة فقط',
+          },
+        ],
+      },
     },
   });
 

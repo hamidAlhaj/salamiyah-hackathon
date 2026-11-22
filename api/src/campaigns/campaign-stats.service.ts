@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export interface CampaignStats {
   /** تعهدات بإيصال مرفوع أو حصيلة نقطة جمع، بانتظار التحقق. */
   pending: Prisma.Decimal;
-  /** مبالغ المحاكاة (تُضاف للمتحقق فقط عند DEMO_MODE). */
+  /** Simulated payments (DEMO_MODE only): reported separately, never added to verified money. */
   demo: Prisma.Decimal;
   donorsCount: number;
 }

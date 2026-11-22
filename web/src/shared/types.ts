@@ -1,9 +1,11 @@
 /** أشكال الردود العامة من الـAPI (تستهلكها الويب والموبايل). المبالغ نصوص عشرية. */
 import type {
   CampaignStatus,
+  BeneficiaryKind,
   CaseCategory,
   Currency,
   PaymentMethod,
+  PaymentMethodKind,
   PledgeChannel,
   PledgeStatus,
   Priority,
@@ -39,6 +41,12 @@ export interface PublicCampaignCategory {
   icon: string;
 }
 
+/** GET /categories: an active category with its description (behaviour flags stay internal). */
+export interface PublicCategory extends PublicCampaignCategory {
+  description: string | null;
+  sortOrder: number;
+}
+
 export interface PublicCampaign {
   id: string;
   slug: string;
@@ -66,6 +74,7 @@ export interface PublicCampaign {
   isAnonymousCase: boolean;
   publishedAt: string | null;
   donorsCount: number;
+  beneficiariesCount: number;
 }
 
 export interface CampaignUpdateView {
@@ -119,4 +128,46 @@ export interface OfficialReceipt {
   campaignTitle: string;
   campaignSlug: string;
   verifiedAt: string;
+}
+
+/**
+ * The campaign account ledger. verified = real verified money; demo is shown separately and never part
+ * of verified, spent or remaining; remaining = verified − spent.
+ */
+export interface CampaignLedger {
+  campaignId: string;
+  currency: Currency;
+  targetAmount: string;
+  verifiedAmount: string;
+  pendingAmount: string;
+  demoAmount: string;
+  spentAmount: string;
+  remainingAmount: string;
+  donorsCount: number;
+  beneficiariesCount: number;
+}
+
+/** A receiving account shown to donors (all account data is fake for the hackathon). */
+export interface PaymentAccount {
+  method: PaymentMethod;
+  kind: PaymentMethodKind;
+  label: string;
+  accountName: string | null;
+  accountNumber: string | null;
+  instructions: string | null;
+  note: string | null;
+  /** 'campaign' when this campaign overrides the default account for the method. */
+  source: 'default' | 'campaign';
+  allowsReceiptUpload: boolean;
+  /** Simulated instant payment («Demo» badge, never counted as verified). */
+  allowsDemoCheckout: boolean;
+}
+
+/** An anonymised beneficiary as the public sees it: never a name, phone or national ID. */
+export interface PublicBeneficiary {
+  code: string;
+  kind: BeneficiaryKind;
+  area: string | null;
+  monthlyAmount: string | null;
+  since: string;
 }

@@ -426,6 +426,10 @@ export class CasesService {
           createdById: actor.id,
         },
       });
+      // The patient is linked to the campaign anonymised (public: code, kind, area only).
+      await tx.campaignBeneficiary.create({
+        data: { campaignId: campaign.id, beneficiaryId: c.beneficiaryId },
+      });
       await tx.case.update({
         where: { id },
         data: { status: 'PUBLISHED', isAnonymous, redactedSummary: dto.redactedSummary },

@@ -1,10 +1,20 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import {
+  CreateCampaignDto,
   CreateCampaignUpdateDto,
-  CreateOngoingCampaignDto,
   LangQueryDto,
   ListCampaignsQueryDto,
   UpdateCampaignStatusDto,
@@ -18,7 +28,9 @@ export class PublicCampaignsController {
   constructor(private readonly campaigns: CampaignsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'الحملات الطبية العامة (المتحقق + بانتظار التحقق)' })
+  @ApiOperation({
+    summary: 'Public campaigns of every category (filter by category code/status)',
+  })
   list(@Query() query: ListCampaignsQueryDto) {
     return this.campaigns.listPublic(query);
   }
@@ -30,9 +42,18 @@ export class PublicCampaignsController {
     return this.campaigns.getPublic(slug, query.lang);
   }
 
+  @Get(':id/ledger')
+  @ApiOperation({
+    summary: 'Campaign account: verified, pending, demo, spent, remaining = verified − spent',
+  })
+  @ApiNotFoundResponse({ description: 'campaign_not_found' })
+  ledger(@Param('id', ParseUUIDPipe) id: string) {
+    return this.campaigns.ledger(id);
+  }
+
   @Get(':id/transparency')
-  @ApiOperation({ summary: 'الشفافية: المتحقق/بانتظار التحقق/المصروف (FR-23)' })
-  transparency(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Ledger + public-safe spending list (FR-23)' })
+  transparency(@Param('id', ParseUUIDPipe) id: string) {
     return this.campaigns.transparency(id);
   }
 }
@@ -52,18 +73,18 @@ export class CampaignsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'حملة مستمرة بلا حالة فردية (ADMIN)' })
-  createOngoing(
-    @Body() dto: CreateOngoingCampaignDto,
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
-    return this.campaigns.createOngoing(dto, user);
+  @ApiOperation({
+    summary:
+      'Create a campaign in a category (ADMIN; medical-case categories come from the case pipeline)',
+  })
+  create(@Body() dto: CreateCampaignDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.campaigns.create(dto, user);
   }
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'تغيير حالة الحملة / إيقاف التعهدات (ADMIN, CASE_OFFICER)' })
   updateStatus(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCampaignStatusDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
@@ -73,7 +94,7 @@ export class CampaignsController {
   @Post(':id/updates')
   @ApiOperation({ summary: 'نشر تحديث للحملة (STAFF, CASE_OFFICER, ADMIN)' })
   addUpdate(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateCampaignUpdateDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
