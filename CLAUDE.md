@@ -1,15 +1,47 @@
 # Majlis Fund (مجلس فند) — Salamiyah Medical Crowdfunding · Hackathon PoC
 
-Read this file before any task. Requirements: `docs/input/` (the PoC proposal is the primary source).
-Plan and analysis: `docs/_analysis/` 01–05. **`05-execution-plan.md` §7 (prompts P01–P20) and its final
-"Decision updates" section override everything else.** `docs/analysis/` is historical: where it mentions pnpm, turbo,
-refresh tokens or Docker, this file wins. The b4f reference folder will be deleted; its rules live here and in `docs/_analysis/01-reference-b4f.md`.
+Read this file before any task.
+
+## Top-level requirement: the official hackathon idea (Team 4, approved) — build exactly this
+> أتمتة التبرعات للمجلس المحلي في سلمية
+> منصة ويب مبسطة مخصصة للمجلس المحلي في مدينة سلمية لإدارة وتوثيق حملات التبرع المحلية بشكل شفاف. تتيح المنصة للمجلس
+> إنشاء حملات (مثل: كفالة أيتام، ترميم منازل، مساعدات طبية) مع تحديد المبلغ المستهدف، بينما يمكن للمتبرعين تصفح الحملات
+> والمساهمة مالياً (عبر الحوالات أو المحافظ المحلية) وتلقي إشعارات فورية بتأكيد استلام تبرعهم. الأهم أن المنصة توفر لوحة
+> شفافية تظهر إجمالي التبرعات المجمعة، والمبالغ التي تم صرفها، والمستفيدين (بدون كشف هوياتهم)، مما يعزز الثقة بين المجتمع
+> والمجلس المحلي.
+
+> **Donation Automation for the Local Council in Salamiyah.** A simplified web platform dedicated to the Local Council of
+> Salamiyah to manage and document local donation campaigns transparently. The platform lets the council create campaigns
+> (e.g. orphan sponsorship, home renovation, medical aid) with a target amount, while donors can browse campaigns,
+> contribute financially (via money transfers or local e-wallets), and receive instant notifications confirming receipt of
+> their donation. Most importantly, the platform provides a transparency dashboard showing the total donations collected,
+> the amounts spent, and the beneficiaries (without revealing their identities), strengthening trust between the community
+> and the local council.
+
+The judges require exactly this idea. The council's own "medical only" decision applies to their separate future product,
+not to this hackathon build. Requirements, schema impact and the demo scenario: `docs/_analysis/06-scope-change-hackathon-idea.md`.
+
+## Sources
+Other requirement sources: `docs/input/` (the council PoC proposal, still used for the medical pipeline, collectors and
+receipts). Plan and analysis: `docs/_analysis/` 01–06. **`06-scope-change-hackathon-idea.md`, then `05-execution-plan.md`
+§7 (prompts P01–P20) and its final "Decision updates" sections override everything else.** `docs/analysis/` is historical:
+where it mentions pnpm, turbo, refresh tokens or Docker, this file wins. The b4f reference folder will be deleted; its
+rules live here and in `docs/_analysis/01-reference-b4f.md`.
 
 ## Context
-- Platform for the Ismaili Council in Salamiyah, Syria: publish vetted medical cases, collect pledges, verify money,
-  pay hospitals directly, show transparency. Deliverables: web (Next.js) + donor mobile app (Expo).
-- **Scope: medical only.** Orphans, home repair, food baskets, education, monthly collection-point box collection,
-  joint approval, Aga Khan transfers, monthly reconciliation = Future Scope (mention only, never build).
+- Platform for the Local (Ismaili) Council in Salamiyah, Syria: the council creates donation campaigns, donors give,
+  the council verifies money, records spending with proof, and a public transparency dashboard shows it all.
+  Deliverables: web (Next.js) + donor mobile app (Expo).
+- **Scope (hackathon):** campaign types `ORPHAN_SPONSORSHIP`, `HOME_RENOVATION`, `MEDICAL_AID` (enum kept extensible).
+  ADMIN creates campaigns of any type (CASE_OFFICER: medical) with a target amount, category, anonymised summary and a cover
+  illustration. The medical intake → review → publish pipeline produces `MEDICAL_AID` campaigns.
+- Every campaign has a **campaign account**: a ledger (collected = verified, pending, demo shown separately, spent,
+  remaining = verified − spent) and receiving details for donors (transfer / local wallet account names and numbers, all
+  **fake**, from `PaymentMethodConfig`, optionally overridden per campaign).
+- Beneficiaries are linked to campaigns **anonymised**: public code `B-XXXX`, kind, area at most. Counts and codes are
+  public; identities never.
+- **Future Scope (mention only, never build):** food baskets, education, monthly collection-point box collection, joint
+  approval, Aga Khan transfers, monthly reconciliation.
 
 ## Repository
 - `api/` NestJS · `web/` Next.js · `mobile/` Expo. Three separate npm projects, each with its own package-lock.json.
@@ -30,7 +62,8 @@ refresh tokens or Docker, this file wins. The b4f reference folder will be delet
 
 ## Roles
 DONOR · STAFF (intake) · CASE_OFFICER (review, severity, publish) · FINANCE_VERIFIER (verify, disburse) ·
-ADMIN (setup, publish, suspend/reactivate) · COLLECTOR («مسؤول نقطة جمع», cash at their collection points only).
+ADMIN (setup, create campaigns of any type, publish, suspend/reactivate) · COLLECTOR («مسؤول نقطة جمع», cash at their
+collection points only). FINANCE_VERIFIER also records expenditures.
 
 ## API rules (b4f pattern)
 - One module per domain: module, controller, service, `dto/`, co-located `*.spec.ts`.
@@ -60,25 +93,35 @@ ADMIN (setup, publish, suspend/reactivate) · COLLECTOR («مسؤول نقطة �
 - Tests: Vitest + Testing Library, co-located `*.test.tsx`.
 
 ## Mobile rules
-- Donor app only: browse, pledge, demo checkout, choose a collection point for cash, upload receipt, my donations.
+- Donor app only: browse campaigns of all types, donate (simulated wallet/card checkout, transfer + receipt upload,
+  choose a collection point for cash), notifications, my donations.
 - Token in `expo-secure-store`; `Authorization: Bearer`; on 401 → clear token → login. API URL from `EXPO_PUBLIC_API_URL`.
 
 ## Money flows
 - **Pledge & Verify (real path):** pledge (PLEDGED) → receipt upload (RECEIPT_UPLOADED + Verification PENDING) →
   FINANCE_VERIFIER approves → VERIFIED, official receipt `R-YYYY-NNNNNN` + QR, `verifiedAmount` += amount.
-- **Demo payments (ShamCash, PayPal, Visa):** a hackathon-only feature on web and mobile, always with a «Demo» badge,
-  `isDemo=true`. Demo money is shown **separately** and never added to `verifiedAmount` or platform totals.
-- Bemo account details shown in transfer instructions are **fake placeholders** for the hackathon.
+- **Simulated electronic payment (a core demo path):** local e-wallets (ShamCash, Syriatel Cash, MTN Cash), local
+  transfers, PayPal and Visa, on web and mobile, always with a «Demo» badge, `isDemo=true`. Demo money is shown
+  **separately** and never added to `verifiedAmount` or platform totals.
+- All receiving details (Bemo/bank/wallet account names and numbers) are **fake placeholders** for the hackathon,
+  configured in `PaymentMethodConfig` with optional per-campaign overrides.
+- **Instant notifications confirming receipt** on every donation path: in-app `Notification` + WhatsApp outbox message,
+  then the official receipt with QR after verification.
 - **Cash at a collection point:** donor picks a point → COLLECTOR confirms "received" → COLLECTED; the bar shows a
   "received, pending verification" segment; the donor gets an acknowledgement (no official number) →
   FINANCE_VERIFIER approves → official receipt. Collectors never verify or raise balances.
-- A verifier never verifies their own entry. Disbursement only to the case's locked hospital, ≤ verified − disbursed;
-  at target → campaign COMPLETED («تم الإنجاز»), case CLOSED. Hospital change or amount increase → back to review, pledges paused.
+- A verifier never verifies their own entry.
+- **Spending = `Expenditure`** per campaign (replaces hospital-only disbursement): payee type (HOSPITAL, CONTRACTOR,
+  SUPPLIER, BENEFICIARY_FAMILY, OTHER), amount ≤ verified − spent, date, description, proof upload (public-safe).
+  `MEDICAL_AID` keeps the locked-hospital rule (payee = the case's approved hospital); hospital change or amount increase
+  → back to review, pledges paused. `ORPHAN_SPONSORSHIP` supports recurring monthly payments to its anonymised
+  beneficiaries. Fully spent at target → campaign COMPLETED («تم الإنجاز»); a medical case → CLOSED.
 - WhatsApp: every alert and receipt is written to the internal outbox (`OutboundMessage`); staff send each with a
   one-tap `wa.me` link from the council's phone. No WhatsApp API.
 
 ## Seed and demo data
-- All seed data (hospitals, collection points, collectors, donors, cases) is **fictional**.
+- All seed data (campaigns of every type, beneficiaries, expenditures, hospitals, collection points, collectors, donors,
+  cases, payment accounts) is **fictional**.
 - Real team WhatsApp numbers for the live demo live **only** in `api/.env` as `DEMO_WHATSAPP_NUMBERS="+963…,+963…"`.
   The seed reads it and falls back to fictional numbers when empty. Never commit, log or print real numbers.
 
@@ -95,8 +138,9 @@ ADMIN (setup, publish, suspend/reactivate) · COLLECTOR («مسؤول نقطة �
   no raw palette colours for neutrals. `give` colour only for donate actions and funding progress.
 - Distinctive, professional, calm; dark mode supported; WCAG-AA contrast; visible focus ring; reduced-motion respected.
 - Low bandwidth: server-rendered pages, no heavy client libraries, compressed images, no autoplay media.
-- Beneficiary privacy: public pages show file number, redacted summary, hospital, priority, amounts — never names,
-  national IDs or private documents (optional redacted report image only).
+- Beneficiary privacy: public pages show the beneficiary code (`B-XXXX`), kind, area at most, redacted summary, hospital
+  (medical), priority, amounts and public-safe spending proof — never names, phones, national IDs or private documents.
+  Campaign covers are illustrations, never photos of beneficiaries.
 
 ## Commands
 - DB (once): `psql -U postgres -h localhost -p 5432 -v app_password="..." -f api/prisma/dev-db-setup.sql`

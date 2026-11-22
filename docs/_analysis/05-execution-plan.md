@@ -43,6 +43,9 @@ printed only **key names and value lengths**. No secret value was printed or wri
 
 ## 2. Scope tiers and the cut line
 
+> **Superseded (2026-11-22):** the tiers below describe the old medical-only plan. The current tiers and cut lines are the
+> rewritten §7 (Tier 1 = P05–P16) per `06-scope-change-hackathon-idea.md`; see "Decision updates (scope change)" at the end.
+
 Effort is in **developer-days** (1 dd ≈ 8 h) for one developer familiar with the code. 02's alignment estimate (45–85 h)
 is folded into Tier 1, with 03 option B replacing 02's W5/W6 Tailwind work.
 
@@ -393,93 +396,112 @@ ADMIN (setup, publish, suspend/reactivate) · COLLECTOR («مسؤول نقطة �
 
 ---
 
-## 7. Phase 2 prompts (20 sessions)
+## 7. Phase 2 prompts (20 sessions + backlog)
 
 Each prompt starts with "Read `CLAUDE.md` and `docs/_analysis/05-execution-plan.md` §7 Pn" and ends with the acceptance
 checks. **Std checks:** `api` = `npm run lint && npm test && npm run build`; `web` = `npm run lint && npm test && npm run build`;
 `mobile` = `npx tsc --noEmit && npx expo lint`.
 
-### Tier 1 — foundation and alignment
+### Tier 1 — foundation and alignment (P01–P04 done) and the new-scope build
 
-**P01 — Scaffold NEW + git + docs**
+**P01 — Scaffold NEW + git + docs — ✅ DONE**
 - Goal: create `salamiyah-hackathon/` with the root files from §3/§5/§6, docs copied (PDFs, analysis, `_analysis`), postgres-only `docker-compose.yml` (5433), `.nvmrc`, README, CLAUDE.md, `git init`, first commit.
 - Inputs: §3 root/docs rows, §5, §6.
 - Accept: `git status` clean; `git check-ignore -v api/.env web/.env api/uploads/x` all ignored; `docker compose up -d` → healthy; the docs folder holds 6 input files + analysis + 01–05.
 - Deps: none.
 
-**P02 — API skeleton on b4f versions + schema regeneration**
+**P02 — API skeleton on b4f versions + schema regeneration — ✅ DONE**
 - Goal: `api/` with exact versions, legacy ESLint, Jest config, SAL modules copied; Prisma 5.22 schema with uuid, `@@map`, `CollectionPointType`, `contactName`; regenerated init migration (+ receipt sequence); seed runs (ts-node, safety guard); compiles.
 - Inputs: 02 §2.2/§5.6, 03 §5, §3 api rows.
 - Accept: `npm ci`; `npx prisma migrate reset --force` then `npm run seed` succeed; `npm run build` passes; `npm ls @nestjs/core @prisma/client bcrypt` shows 10.4.22 / 5.22.0 / 5.1.1.
 - Deps: P01.
 
-**P03 — API auth contract + RoleAccessService (freeze the contract)**
+**P03 — API auth contract + RoleAccessService (freeze the contract) — ✅ DONE**
 - Goal: passport-jwt strategy/guard, phone login returning `{ accessToken, user }`, register, `/auth/me`, no refresh; class-level guards on every controller; all `@Roles` → `requireRole`; b4f filter + interceptor + `main.ts`; `/health` public (B1); copied shared code + Jest enum-sync and authorization specs.
 - Inputs: 01 §2.4–2.5, 02 §5.1–5.3.
 - Accept: Std api; Swagger at `/api/docs`; `curl` `/health` → 200 without a token; a DONOR token on `GET /verifications` → 403; no token → 401. Run `/security-review` on the diff.
 - Deps: P02.
 
-**P04 — Web skeleton: b4f infrastructure + adopted theme**
+**P04 — Web skeleton: b4f infrastructure + adopted theme — ✅ DONE**
 - Goal: `web/` on exact versions; SANAD theme with SAL green, fonts, `components/ui` + b4f primitives; `lib/session`, `lib/api/client`, `lib/actions/validation`, Redux `currentUser`, Theme + Toast contexts; next-intl cookie locale with `app/lang/route.ts`; route groups; login/logout Server Actions; Vitest setup.
 - Inputs: 01 §3, 03 §2.3/§4, §3 web rows.
 - Accept: Std web; login as every seeded role works; dark/light toggle; AR↔EN switch keeps the URL; `document.cookie` shows no session cookie (check in the browser console); no `middleware.ts` in the repo.
 - Deps: P03 (auth contract). Use frontend-design.
 
-**P05 — Web: port existing SAL pages onto the new UI**
-- Goal: home, campaign detail, track, receipt, finance queue, cases list/detail (review, publish, hospital change), intake, import wizard, file proxy; per-resource `lib/api/*` + `lib/actions/*`; role-based Sidebar (no badges yet).
-- Inputs: 02b §1.2, §3 web rows.
-- Accept: Std web; click through 04 §7 step 1 (intake) and the step 2 review/publish part; the hospital-change pause works; Playwright smoke of the public pages.
+> **Rewritten 2026-11-22 for the official hackathon idea** (`06-scope-change-hackathon-idea.md`). P01–P04 are DONE and
+> unchanged. Requirement IDs `H1–H24` refer to 06 §2; the demo steps refer to 06 §5. Each prompt is one session.
+
+**P05 — Schema for the new scope + shared enums**
+- Goal: one Prisma migration per 06 §3.1: `CampaignType` = `MEDICAL_AID`/`ORPHAN_SPONSORSHIP`/`HOME_RENOVATION`; `Campaign.spentAmount` (was `disbursedAmount`), `coverKey`, `area`; `BeneficiaryKind` + `Beneficiary.publicCode` (`B-XXXX`) / `kind` / `area`; `CampaignBeneficiary` (with `monthlyAmount`); `PayeeType` + **`Expenditure` replacing `Disbursement`**; `DocumentKind.EXPENDITURE_PROOF`; `PaymentMethod` with SHAM_CASH/SYRIATEL_CASH/MTN_CASH/PAYPAL/VISA (no `E_WALLET`); `PledgeStatus.DEMO_CONFIRMED`; `PaymentMethodConfig` + `CampaignPaymentAccount`; `OutboundMessage`; `User.whatsappOptIn`. Update the three shared copies, the api services that used the renamed fields (compile + existing specs), and a minimal seed so `migrate reset` + seed still run (full demo seed is P16).
+- Inputs: 06 §3.1, §4.
+- Accept: Std api + web; `npx prisma migrate reset --force && npm run seed`; enum-sync spec and web shared-copy test pass; no `MEDICAL` / `Disbursement` / `disbursedAmount` left in api code.
 - Deps: P04.
 
-**P06 — Mobile alignment** *(can run in parallel with P04/P05)*
-- Goal: `mobile/` standalone npm project, TS 5.9.3, ESLint 8 legacy, shared copy, Bearer only (401 → login), template assets removed.
-- Inputs: 02 §2.4/§3/§5.3, §3 mobile rows.
-- Accept: Std mobile; `npx expo install --check`; on a phone: login as donor → list → detail → pledge → upload receipt.
-- Deps: P03.
-
-### Tier 1 — demo features, in scenario order
-
-**P07 — Outbox + WhatsApp alerts (demo step 2)**
-- Goal: `OutboundMessage` model + module; `User.whatsappOptIn` (register checkbox on mobile); on publish of VERY_URGENT/URGENT → one message per opted-in donor; `(app)/outbox` page with per-row `wa.me` button + "next" stepping; status QUEUED → OPENED.
-- Inputs: 04 R14, §5.
-- Accept: Std api/web; publish an urgent case → outbox shows N rows; the button opens WhatsApp with the campaign link; unit test for recipient selection.
+**P06 — API: campaign management, campaign account and beneficiaries**
+- Goal: `POST /campaigns` (ADMIN any type; CASE_OFFICER `MEDICAL_AID` only) with type, titles, anonymised summary, target, currency, `coverKey`, area; case publish creates `MEDICAL_AID`; `GET /campaigns?type=&status=` + detail including type/cover/beneficiaries count; `GET /campaigns/:id/ledger` (verified, pending, demo, spent, remaining, donors count); `GET /payment-methods` + `GET /campaigns/:id/payment-accounts` (config merged with overrides, demo-capable methods flagged); beneficiaries: create/link with generated `B-XXXX`, public codes per campaign. Specs for role rules, ledger maths and "no identity fields in public responses".
+- Inputs: 06 §2 H5–H9, H11, H19; §3.2.
+- Accept: Std api; Swagger shows the new endpoints; a public campaign response contains no `fullName`/`phone`/`nationalId*` (spec).
 - Deps: P05.
 
-**P08 — Demo checkout + live progress + B3 (demo step 3)**
-- Goal: `PaymentMethodConfig` (seeded: Bemo real; ShamCash/PayPal/Visa simulated) feeding instructions; demo checkout screens on mobile (and the component for web) with a "Demo" badge; stats return `verified`, `receivedPending`, `demo` separately; `LiveProgress` (poll ~5 s) with 3 segments on the web detail page; mobile bar shows the same segments.
-- Inputs: 03 §2.2, 04 R5/R9/B3.
-- Accept: Std all; a mobile ShamCash demo pledge → the web detail bar updates within ~5 s in the demo segment; `verifiedAmount` unchanged (API test).
-- Deps: P05, P06.
+**P07 — Web public pages for all campaign types**
+- Goal: home (hero for the council's campaigns, type tabs, campaign cards with cover illustration + 3-segment progress, totals strip), campaign detail (summary, ledger, receiving accounts, beneficiaries count + codes, spending placeholder), track page, public receipt page; bundled cover illustrations per type (SVG, no photos); rewrite medical-only copy in `messages/*` (06 §4); per-resource `lib/api/*`.
+- Inputs: 06 §3.3, §4; P04 theme/components.
+- Accept: Std web; Playwright: home lists all three types and the filter works; detail shows ledger + accounts; AR/EN + dark mode screenshots in `docs/screenshots/p07/`.
+- Deps: P06. Use frontend-design.
 
-**P09 — Web donate flow + collection-point picker (demo step 4)**
-- Goal: `(public)/campaigns/[slug]/donate` with `PledgeForm` (methods: Bemo transfer → instructions → receipt upload; demo methods; cash → pick an active collection point by area/type); API: donor CASH pledge with `collectionPointId`, public `GET /collection-points`; mobile picker for cash.
-- Inputs: 03 §2.1, 04 R8/R10.
-- Accept: Std all; web cash pledge → reference shown and the pledge visible under "my donations" on mobile; Bemo pledge → receipt upload → appears in the finance queue.
-- Deps: P08.
+**P08 — Web staff workspace: campaigns, cases, intake, import**
+- Goal: role-based Sidebar and real dashboards; `(app)/campaigns` list + "new campaign" form (type, target, cover picker, area, link/create anonymised beneficiaries with monthly amount for orphans); port the medical pipeline screens (intake, cases list/detail with review/publish/hospital change, import wizard, file proxy) so publishing produces a `MEDICAL_AID` campaign; Server Actions per resource.
+- Inputs: 02b §1.2, 06 §2 H2/H4/H6–H8.
+- Accept: Std web; ADMIN creates an orphan campaign with 3 beneficiaries → it is on the public home; STAFF intake → CASE_OFFICER publish → a `MEDICAL_AID` campaign appears; hospital change pauses pledges (demo steps 1–2 without the outbox).
+- Deps: P06 (P07 for the public result).
 
-**P10 — Collector PWA (demo step 5)**
-- Goal: `(app)/collector`: my points, pending cash pledges at my points, one-tap "confirm received" (→ COLLECTED + Verification PENDING + acknowledgement outbox message), record an anonymous cash amount, history; «براءة ذمة» wording; PWA manifest/sw/offline page/icons; API endpoints are COLLECTOR-scoped in the service.
-- Inputs: 04 R11/R12/§6, 03 PWA row.
-- Accept: Std api/web; on a phone browser (375 px) a COLLECTOR confirms → the campaign bar shows the pending segment → outbox has the acknowledgement; another collector's pledge → 404; Lighthouse "installable".
-- Deps: P09.
+**P09 — Mobile alignment + campaigns of all types** *(can run in parallel with P07/P08)*
+- Goal: `mobile/` standalone npm project (TS 5.9.3, ESLint 8 legacy, shared copy, Bearer only, 401 → login, template assets removed); campaign list with type chips, detail with cover/ledger/beneficiaries count; register with WhatsApp opt-in; "my donations".
+- Inputs: 02 §2.4/§5.3, §3 mobile rows, 06 §3.4.
+- Accept: Std mobile; `npx expo install --check`; on a phone: login as donor → filter by type → detail → my donations.
+- Deps: P06.
 
-**P11 — Official receipts with QR + receipt messages (demo step 6)**
-- Goal: approval issues `R-YYYY-NNNNNN` for platform **and** donor-chosen collector cash (box totals stay without a receipt); QR on the receipt page + share image; receipt outbox message on approval; rejection link → mobile `/receipt/{pledgeId}` (B2) with a route-pattern test.
-- Inputs: 04 R15/R16/B2. A QR generator is a new dependency: list it in the README as an addition (exact version pinned) or write a small SVG encoder.
-- Accept: Std api/web; approve a collector cash pledge → receipt page shows the QR → scanning it opens the same page.
+**P10 — Donations on every path: simulated wallets/cards, transfer + receipt, cash point; live progress**
+- Goal: `(public)/campaigns/[slug]/donate` and the mobile equivalent: method choice from `PaymentMethodConfig`; simulated checkout for ShamCash / Syriatel Cash / MTN Cash / PayPal / Visa with a «Demo» badge (→ `DEMO_CONFIRMED`, `isDemo`); transfer → campaign account details → receipt upload (→ RECEIPT_UPLOADED + verification); cash → collection-point picker (public `GET /collection-points`); `LiveProgress` polling ~5 s with verified / received-pending / demo segments on web and mobile.
+- Inputs: 06 §2 H11–H13, H24; 03 §2.1/§2.2.
+- Accept: Std all; a mobile Syriatel Cash demo payment moves the web bar's demo segment within ~5 s and leaves `verifiedAmount` unchanged (API test); a web transfer pledge with receipt appears in the finance queue (demo steps 3–4 without notifications).
+- Deps: P07, P09.
+
+**P11 — Instant notifications + WhatsApp outbox**
+- Goal: one notification service called on every donation event (demo confirmed, receipt uploaded, cash collected, verified, rejected) → in-app `Notification` + `OutboundMessage` with a `wa.me` link (donor phone; opted-in donors for new-campaign alerts); alert on publish of urgent medical or any new campaign to opted-in donors; `(app)/outbox` with per-row send button + "next" stepping (QUEUED → OPENED); web bell + list, mobile notifications screen.
+- Inputs: 06 §2 H14; 04 §5 (no WhatsApp API).
+- Accept: Std all; demo steps 2–4 now show the notification on the phone and rows in the outbox; unit tests for recipient selection and one notification per event.
 - Deps: P10.
 
-**P12 — Disbursement UI + platform transparency (demo step 7)**
-- Goal: finance disbursement form (amount ≤ available, paidAt, invoice upload) + timeline on campaign/case; COMPLETED shown as «تم الإنجاز»; `GET /stats/transparency` (verified, disbursed, %, by channel, by hospital, cases helped; demo separate); `(public)/transparency` page.
-- Inputs: 03 §2.1, 04 R23/R29.
-- Accept: Std api/web; disburse the full amount → campaign «تم الإنجاز», case CLOSED, transparency totals match an API test.
+**P12 — Collector PWA**
+- Goal: `(app)/collector`: my points, pending cash pledges at my points, one-tap "confirm received" (→ COLLECTED + verification PENDING + acknowledgement notification/outbox), record an anonymous cash amount for a campaign, history; «براءة ذمة» wording; PWA manifest / service worker / offline page / icons; COLLECTOR scoping in the service.
+- Inputs: 04 R11/R12/§6, 03 PWA row.
+- Accept: Std api/web; at 375 px a COLLECTOR confirms → pending segment + acknowledgement; another collector's pledge → 404; Lighthouse "installable" (demo step 5).
 - Deps: P11.
 
-**P13 — Demo seed + walkthrough + smoke tests**
-- Goal: seed for all 7 steps (opted-in donors, collection points of types CENTER/MOSQUE/OFFICE, collector assigned, finance/case-officer users, a pledged Bemo receipt, hospitals); `DEMO.md` script with logins; Playwright smoke for public pages + login per role.
-- Inputs: 04 §7.
+**P13 — Finance verification + official receipts with QR**
+- Goal: port the finance queue (receipts, collected cash) for all campaign types; approval issues `R-YYYY-NNNNNN` + QR (pinned `qrcode`, listed in README) on the public receipt page and share image; receipt notification + outbox message; rejection with reason → donor notification and mobile `/receipt/{pledgeId}` (B2).
+- Inputs: 04 R15/R16/B2, 06 H22.
+- Accept: Std api/web; approve a transfer and a collector cash pledge → receipt page with a QR that opens the same page; ledger "collected" rises (demo step 6).
+- Deps: P12.
+
+**P14 — Expenditures with proof + orphan monthly payments**
+- Goal: `expenditures` module replacing disbursements: `POST /campaigns/:id/expenditures` (FINANCE_VERIFIER; payee type, public-safe payee label, amount ≤ remaining, date, description, proof upload via `StorageService`); locked hospital for `MEDICAL_AID`; `POST /campaigns/:id/expenditures/monthly` (one row per active sponsored beneficiary, `periodMonth`, no duplicates per month); public spending timeline; COMPLETED «تم الإنجاز» when fully spent at target (medical case → CLOSED); finance web form + timeline on the campaign page.
+- Inputs: 06 §2 H18/H20/H21.
+- Accept: Std api/web; contractor expenditure with an invoice photo appears on the public timeline; monthly run creates N rows once per month (spec); amount > remaining → 409 (spec) (demo step 7, first half).
+- Deps: P13.
+
+**P15 — Public transparency dashboard (headline feature)**
+- Goal: `GET /stats/transparency` (collected, spent, remaining; demo separate; by campaign type; per campaign; beneficiaries count; donors count) and `(public)/transparency`: totals, breakdown by type, per-campaign ledger rows, spending timeline with proof links, beneficiaries count and codes — no identities; same summary on mobile.
+- Inputs: 06 §2 H16–H19.
+- Accept: Std api/web; totals match an API test against seeded data; no identity field reachable from any public endpoint (spec); screenshots AR light/dark/375 px (demo step 7, second half).
+- Deps: P14. Use frontend-design.
+
+**P16 — Demo seed + walkthrough + smoke tests**
+- Goal: seed per 06 §3.5 (≥ 2 campaigns per type, anonymised beneficiaries, expenditures with proof, fake payment accounts with one per-campaign override, pledges in every status, users per role, opted-in donors from `DEMO_WHATSAPP_NUMBERS`, collection points CENTER/MOSQUE/OFFICE); `DEMO.md` for the 06 §5 scenario with logins; Playwright smoke for public pages + login per role.
+- Inputs: 06 §3.5, §5.
 - Accept: `npx prisma migrate reset --force && npm run seed`; full 7-step walkthrough on PC + 2 phones without manual DB edits; Std all. Tag `demo-ready`.
-- Deps: P07–P12.
+- Deps: P05–P15.
 
 ```
 ──── CUT LINE A ────
@@ -487,20 +509,15 @@ checks. **Std checks:** `api` = `npm run lint && npm test && npm run build`; `we
 
 ### Tier 2
 
-**P14 — Admin screens: users, hospitals, collection points**
-- Goal: `PATCH /hospitals/:id`, `PATCH /collection-points/:id`; Form/Row screens incl. type select, `contactName`, collector assignment, role/isActive editing.
-- Accept: Std api/web; create a collector → assign a point → that collector sees it in the PWA.
-- Deps: P13.
+**P17 — Admin setup screens**
+- Goal: users (role/isActive, collector point assignment), hospitals, collection points (type, `contactName`), payment methods (`PaymentMethodConfig`) and per-campaign account overrides, beneficiaries registry (create, link, codes) with `PATCH` endpoints where missing.
+- Accept: Std api/web; create a collector → assign a point → the collector sees it in the PWA; override a campaign's wallet number → the donate page shows it.
+- Deps: P16.
 
-**P15 — Admin campaigns + ADMIN publish + mobile priority filter**
-- Goal: campaigns list (status tabs) + detail (status, pause pledges, post update) + "new ongoing campaign"; ADMIN may publish (C5); mobile priority chips.
-- Accept: Std all; create an ongoing campaign → it appears on the web home and mobile.
-- Deps: P13.
-
-**P16 — Violations log + invisible suspension + reactivation**
-- Goal: `BeneficiaryNote` model; `POST /beneficiaries/:id/suspend|reactivate` (ADMIN, reason, audit); beneficiary page with history, notes and suspend toggle; intake keeps silently refusing suspended beneficiaries; no public badge.
-- Accept: Std api/web; suspend → intake for that national ID shows the generic error → reactivate → intake works.
-- Deps: P13.
+**P18 — Campaign lifecycle + violations log**
+- Goal: campaign status tabs, pause/resume pledges, close, post updates, edit cover/summary; `BeneficiaryNote` + `POST /beneficiaries/:id/suspend|reactivate` (ADMIN, reason, audit) with silent intake refusal; mobile type + priority filters.
+- Accept: Std all; pause a campaign → donate is blocked on web and mobile; suspend → intake for that national ID shows the generic error → reactivate → works.
+- Deps: P16.
 
 ```
 ──── CUT LINE B ────
@@ -508,20 +525,10 @@ checks. **Std checks:** `api` = `npm run lint && npm test && npm run build`; `we
 
 ### Tier 3
 
-**P17 — Notifications, audit history, SLA alerts, admin overview**
-- Goal: web bell + list (b4f `NotificationBell` pattern) and a mobile list; audit history panel on case/campaign (ADMIN); overdue check that notifies CASE_OFFICER/ADMIN once per case; admin overview StatCards + Sidebar badges.
-- Accept: Std all; an overdue seeded case raises one notification; badges match counts.
-- Deps: P13.
-
-**P18 — Public polish: redacted report image, donor code, OG/share, donor PWA**
-- Goal: `DocumentKind.PUBLIC_REPORT` upload on publish (optional) shown on the card; `D-XXXXXX` donor code on profile/receipts; OG image + share buttons; donor install prompt; mobile staff-login message.
-- Accept: Std all; WhatsApp link preview shows the OG card; no private document is reachable publicly (test).
-- Deps: P13.
-
-**P19 — UI/a11y polish pass**
-- Goal: consistent spacing and empty/loading/error states on every page; RTL/LTR check; dark mode; 375 px layouts; Arabic copy review; performance (no unused JS on public pages).
-- Accept: Std web; Playwright screenshots of all routes in AR light/dark at 375 px and 1280 px reviewed; Lighthouse accessibility ≥ 90 on public pages.
-- Deps: P13 (and P14–P18 if done). Use frontend-design.
+**P19 — Trust polish: audit history, SLA alerts, sharing, UI/a11y pass**
+- Goal: audit history panel on campaign/case (ADMIN); overdue-case notification once per case; donor code `D-XXXXXX`; OG image + share buttons per campaign; donor PWA install prompt; consistent empty/loading/error states, RTL/LTR, dark mode, 375 px, Arabic copy review, no unused JS on public pages.
+- Accept: Std all; WhatsApp link preview shows the OG card; Lighthouse accessibility ≥ 90 on public pages; screenshots of all routes reviewed.
+- Deps: P16 (and P17–P18 if done). Use frontend-design.
 
 ### Cleanup
 
@@ -530,8 +537,16 @@ checks. **Std checks:** `api` = `npm run lint && npm test && npm run build`; `we
 - Accept: all Std checks green from a fresh `git clone` on a second Windows machine following the README; backup zip opens; old folders removed.
 - Deps: all chosen tiers.
 
-**Parallelism:** P06 runs alongside P04/P05. After P13: P14, P15, P16, P17 and P18 touch different files and can run in
-parallel branches (merge P14 before P17 if Sidebar badges are touched by both).
+**Parallelism:** P09 runs alongside P07/P08 (different project). After P16: P17, P18 and P19 touch mostly different files
+and can run in parallel branches (merge P17 before P19 if both touch the Sidebar).
+
+### Backlog after P20 (only if time remains; not part of any cut line)
+
+**P21 — Light mode** — team backlog item, recorded as given; to be scoped by the team before starting (the theme already
+ships light and dark from P04).
+
+**P22 — Google sign-in** — team backlog item, recorded as given; needs a team decision first (it is an extra library and a
+second auth path next to the frozen phone + password contract).
 
 ---
 
@@ -596,3 +611,17 @@ parallel branches (merge P14 before P17 if Sidebar badges are touched by both).
 - No `api/.env.example` yet: it is created with the API in P02 (keys per §5, plus `DEMO_WHATSAPP_NUMBERS=""`).
 - `api/prisma/dev-db-setup.sql` is the only file under `api/` in P01. It was **not executed** in P01 (it needs the
   postgres superuser password); run it before P02.
+
+---
+
+## Decision updates (scope change, 2026-11-22)
+
+> Override every earlier section of this plan where they conflict. Full analysis: `06-scope-change-hackathon-idea.md`.
+
+1. **Scope = the official hackathon idea** (Team 4): orphan sponsorship, home renovation and medical aid campaigns created
+   by the council, donations by transfer / local e-wallets (simulated payments with a «Demo» badge), instant notifications,
+   expenditures with proof, and a public transparency dashboard with anonymised beneficiaries. Decision **C7** ("medical
+   only") no longer applies to the hackathon build; the §2 tier tables are superseded by the rewritten §7 (Tier 1 = P05–P16).
+2. P01–P04 are done and kept as they are. P05 had not started when the scope changed (no branch, no stash, clean tree).
+3. The medical case pipeline stays and produces `MEDICAL_AID` campaigns; `Disbursement` becomes `Expenditure`.
+4. The prompt count is unchanged (P05–P20). The backlog (P21, P22) is recorded at the end of §7 as given by the team.
