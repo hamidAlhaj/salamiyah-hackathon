@@ -96,6 +96,19 @@ export function donationMessage(
             body: `Hand over ${amount} at “${point?.name ?? ''}” (${point?.area ?? ''}) and tell the collector your reference ${c.referenceNo}. Campaign: “${c.campaignTitle}”.`,
           };
     }
+    case 'pledge.cash_collected': {
+      // An acknowledgement only: the official receipt comes after finance verification.
+      const point = c.collectionPoint;
+      return ar
+        ? {
+            title: 'استلمنا تبرعك النقدي',
+            body: `سلّمت ${amount} في «${point?.name ?? ''}» لحملة «${c.campaignTitle}» (المرجع ${c.referenceNo}). هو الآن بانتظار التحقق المالي، ويصلك الإيصال الرسمي بعد التحقق.`,
+          }
+        : {
+            title: 'Cash donation received',
+            body: `You handed over ${amount} at “${point?.name ?? ''}” for “${c.campaignTitle}” (reference ${c.referenceNo}). It is now awaiting verification; your official receipt follows after verification.`,
+          };
+    }
     case 'pledge.verified':
       return ar
         ? {

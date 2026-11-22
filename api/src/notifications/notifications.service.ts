@@ -13,6 +13,7 @@ const TEMPLATES: Record<DonationEventType, OutboxTemplate> = {
   'pledge.created': 'donation.pledged',
   'pledge.demo_confirmed': 'donation.demo',
   'pledge.cash_pledged': 'donation.cash',
+  'pledge.cash_collected': 'donation.collected',
   'pledge.receipt_uploaded': 'donation.received',
   'pledge.verified': 'receipt.issued',
   'pledge.rejected': 'receipt.rejected',

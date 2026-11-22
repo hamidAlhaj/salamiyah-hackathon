@@ -24,9 +24,10 @@ describe('workspace links per role', () => {
     expect(keys('FINANCE_VERIFIER')).toEqual(['home', 'finance', 'notifications']);
   });
 
-  it('donors see their donations; collectors have no web screens yet', () => {
+  it('donors see their donations; collectors their collection points', () => {
     expect(keys('DONOR')).toEqual(['home', 'donations', 'notifications']);
-    expect(keys('COLLECTOR')).toEqual(['home', 'notifications']);
+    expect(keys('COLLECTOR')).toEqual(['home', 'collector', 'notifications']);
+    expect(canUse('STAFF', 'collector')).toBe(false);
     expect(canUse('DONOR', 'outbox')).toBe(false);
     expect(canUse('DONOR', 'categories')).toBe(false);
     expect(canUse('CASE_OFFICER', 'finance')).toBe(false);

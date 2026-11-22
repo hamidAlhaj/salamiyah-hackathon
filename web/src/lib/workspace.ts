@@ -10,6 +10,7 @@ export const WORKSPACE_LINKS = [
   { key: 'intake', href: '/dashboard/intake', roles: ['STAFF', 'ADMIN'] },
   { key: 'cases', href: '/dashboard/cases', roles: ['STAFF', 'CASE_OFFICER', 'ADMIN'] },
   { key: 'finance', href: '/dashboard/finance', roles: ['FINANCE_VERIFIER'] },
+  { key: 'collector', href: '/dashboard/collector', roles: ['COLLECTOR'] },
   { key: 'imports', href: '/dashboard/imports', roles: ['STAFF', 'ADMIN'] },
   { key: 'outbox', href: '/dashboard/outbox', roles: ['ADMIN'] },
   { key: 'notifications', href: '/dashboard/notifications', roles: null },

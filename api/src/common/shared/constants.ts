@@ -57,6 +57,7 @@ export const OUTBOX_TEMPLATES = [
   'donation.pledged',
   'donation.received',
   'donation.cash',
+  'donation.collected',
   'receipt.issued',
   'receipt.rejected',
   'campaign.urgent',

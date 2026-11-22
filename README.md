@@ -123,7 +123,25 @@ New-NetFirewallRule -DisplayName "Majlis Fund dev (API 4000, Metro 8081)" -Direc
 ```
 Remove it after the hackathon: `Remove-NetFirewallRule -DisplayName "Majlis Fund dev (API 4000, Metro 8081)"`.
 
-### 7. Demo accounts
+### 7. Install the collector app (PWA)
+Collectors («مسؤول نقطة جمع») use the web dashboard `/dashboard/collector` on their phone and can add it to the home
+screen. The service worker (`web/public/sw.js`, offline page only, never caches donation data) registers in a
+**production build** on a **secure origin** only:
+```powershell
+cd web; npm run build; npm start
+```
+- On the PC, `http://localhost:3000` is a secure origin: Chrome shows "Install app" (DevTools → Application → Manifest
+  shows no installability errors).
+- On a phone over the LAN (`http://192.168.x.x:3000`) the page is **not** a secure origin, so there is no install prompt
+  and no offline page. "Add to Home screen" from the browser menu still creates an icon that opens the dashboard.
+- Workaround for a real install on Android without new tools (USB cable, Developer options on the phone): on the PC open
+  `chrome://inspect/#devices` in Chrome, enable **Port forwarding** `3000 → localhost:3000` (and `4000 → localhost:4000`
+  if the phone also calls the API), then open `http://localhost:3000` in Chrome on the phone. It is now a secure origin
+  and Chrome offers "Install app".
+- Alternative for a quick demo: in Chrome on the phone open `chrome://flags/#unsafely-treat-insecure-origin-as-secure`,
+  add `http://<LAN-IP>:3000`, relaunch. Use only on a demo device.
+
+### 8. Demo accounts
 `npm run seed` prints one fictional account per role (DONOR, STAFF, CASE_OFFICER, FINANCE_VERIFIER, ADMIN, COLLECTOR).
 The demo walkthrough is in `DEMO.md` (added in P13).
 

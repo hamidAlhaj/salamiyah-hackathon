@@ -1,7 +1,8 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Sans_Arabic, Noto_Kufi_Arabic } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
+import { ServiceWorkerRegister } from '@/components/layout/ServiceWorkerRegister';
 import { ToastViewport } from '@/components/ui/ToastViewport';
 import { ThemeProvider, themeInitScript } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
@@ -49,8 +50,18 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: t('title'), template: `%s · ${t('title')}` },
     description: t('description'),
+    // Installed from the home screen (PWA): the name under the icon on iOS.
+    appleWebApp: { capable: true, title: 'مجلس فند', statusBarStyle: 'default' },
   };
 }
+
+/** The browser bar and the installed app's title bar use the council green. */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#0f3d2a' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a291d' },
+  ],
+};
 
 /**
  * The current user for the header (Redux). Any failure — no API, a stale token — renders the
@@ -89,6 +100,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <ToastProvider>
               <StoreProvider initialUser={currentUser}>{children}</StoreProvider>
               <ToastViewport />
+              <ServiceWorkerRegister />
             </ToastProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

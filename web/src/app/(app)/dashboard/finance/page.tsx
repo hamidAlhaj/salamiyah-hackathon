@@ -107,7 +107,12 @@ export default async function FinancePage() {
                   {v.pledge.collectionPoint && (
                     <>
                       <dt className="text-muted">{t('point')}</dt>
-                      <dd>{v.pledge.collectionPoint.name}</dd>
+                      <dd>
+                        {v.pledge.collectionPoint.name}{' '}
+                        <span className="text-muted">
+                          ({t(`pointTypes.${v.pledge.collectionPoint.type}`)})
+                        </span>
+                      </dd>
                     </>
                   )}
                   {v.pledge.recordedBy && (

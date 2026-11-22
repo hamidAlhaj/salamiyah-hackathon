@@ -7,6 +7,7 @@ export type DonationEventType =
   | 'pledge.created'
   | 'pledge.demo_confirmed'
   | 'pledge.cash_pledged'
+  | 'pledge.cash_collected'
   | 'pledge.receipt_uploaded'
   | 'pledge.verified'
   | 'pledge.rejected';

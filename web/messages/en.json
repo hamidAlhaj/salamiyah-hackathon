@@ -173,7 +173,8 @@
       "A finance check on every donation",
       "Proof for every payment",
       "Beneficiaries without identities"
-    ]
+    ],
+    "tooMany": "Too many sign-in attempts. Wait a minute, then try again."
   },
   "dash": {
     "title": "Dashboard",
@@ -286,7 +287,14 @@
     "method": "Payment method",
     "point": "Collection point",
     "campaign": "Campaign",
-    "submittedAt": "Requested on"
+    "submittedAt": "Requested on",
+    "pointTypes": {
+      "MOSQUE": "Mosque",
+      "CENTER": "Centre",
+      "OFFICE": "Office",
+      "SHOP": "Shop",
+      "OTHER": "Point"
+    }
   },
   "cases": {
     "title": "Case review",
@@ -579,7 +587,8 @@
     "forbidden": "This page is not part of your role.",
     "donations": "My donations",
     "outbox": "WhatsApp outbox",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "collector": "Collection points"
   },
   "apiErrors": {
     "generic": "The request could not be completed. Check the data and try again.",
@@ -768,11 +777,70 @@
       "donation_cash": "Cash pledge",
       "receipt_issued": "Official receipt",
       "receipt_rejected": "Receipt rejected",
-      "campaign_urgent": "Urgent campaign alert"
+      "campaign_urgent": "Urgent campaign alert",
+      "donation_collected": "Cash received"
     },
     "count": "{total} messages, {queued} waiting to send",
     "empty": "No messages of this kind.",
     "unknownRecipient": "Donor",
     "openedAt": "opened"
+  },
+  "collector": {
+    "title": "Collection points",
+    "hello": "Hello, {name}",
+    "clearanceTitle": "Your clearance",
+    "clearanceBody": "Every amount you receive is recorded in your name and handed to the council. Once the finance verifier matches it, you are cleared of it.",
+    "statWaiting": "Waiting to hand over",
+    "statHandedOver": "Handed to the council",
+    "statMatched": "Matched by the council",
+    "pointsTitle": "Your points",
+    "pointTypes": {
+      "MOSQUE": "Mosque",
+      "CENTER": "Centre",
+      "OFFICE": "Office",
+      "SHOP": "Shop",
+      "OTHER": "Point"
+    },
+    "searchTitle": "Donor's reference",
+    "searchHint": "The donor shows a reference starting with P-. Search it, then confirm receipt.",
+    "searchLabel": "Reference",
+    "search": "Search",
+    "referenceInvalid": "Type the reference as the donor shows it, e.g. P-8T6NZ7.",
+    "referenceNotFound": "No cash donation with this reference at your points.",
+    "pendingTitle": "Donations waiting to hand over",
+    "pendingCount": "{count, plural, =0 {none} one {# donation} other {# donations}}",
+    "pendingEmpty": "No cash donations are waiting for you right now.",
+    "anonymous": "Anonymous donor",
+    "reference": "Reference",
+    "confirmButton": "Confirm receipt",
+    "confirming": "Confirming…",
+    "cancel": "Cancel",
+    "dialogTitle": "Confirm cash received",
+    "dialogBody": "Confirming records that you received this amount in cash and hands it to the finance verifier for matching. The donor is notified of receipt; the official receipt follows after matching.",
+    "confirmed": "Receipt of {reference} confirmed and handed to the finance verifier.",
+    "state": {
+      "PLEDGED": "Waiting to hand over",
+      "COLLECTED": "Handed to the council, awaiting matching",
+      "VERIFIED": "Matched by the council, cleared",
+      "REJECTED": "Needs a review with the council",
+      "CANCELLED": "Cancelled by the donor",
+      "RECEIPT_UPLOADED": "Being verified",
+      "DEMO_CONFIRMED": "Demo payment"
+    },
+    "recordTitle": "Record an amount from the point's box",
+    "recordIntro": "For a box total or a cash gift without a reference. It is recorded in your name and handed over for matching.",
+    "recordCampaign": "Campaign",
+    "recordPoint": "Collection point",
+    "recordAmount": "Amount (SYP)",
+    "recordDonor": "Donor name (optional)",
+    "recordDonorHint": "Leave empty to show “Anonymous donor”.",
+    "recordSubmit": "Record the amount",
+    "recording": "Recording…",
+    "recorded": "Amount recorded and handed over for matching.",
+    "amountInvalid": "Enter a valid amount in digits.",
+    "historyTitle": "What you handed over",
+    "historyIntro": "Everything you confirmed or recorded, and its matching status.",
+    "historyEmpty": "You have not handed over any amount yet.",
+    "boxTotal": "Box total"
   }
 }

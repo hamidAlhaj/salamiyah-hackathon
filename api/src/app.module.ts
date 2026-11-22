@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuditModule } from './audit/audit.module';
+import { CollectorModule } from './collector/collector.module';
 import { AuthModule } from './auth/auth.module';
 import { BeneficiariesModule } from './beneficiaries/beneficiaries.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
@@ -39,6 +40,7 @@ import { VerificationsModule } from './verifications/verifications.module';
     PaymentMethodsModule,
     CasesModule,
     PledgesModule,
+    CollectorModule,
     VerificationsModule,
     ExpendituresModule,
     LookupsModule,

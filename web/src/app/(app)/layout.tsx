@@ -32,6 +32,7 @@ const STAFF_CLIENT_NAMESPACES = [
   'myDonations',
   'notifications',
   'outbox',
+  'collector',
 ] as const;
 
 /** Every page in (app) needs a valid session: no cookie → /login; a rejected token → /login. */

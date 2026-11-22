@@ -27,6 +27,10 @@ export async function loginAction(_prevState: FormState, formData: FormData): Pr
     const { accessToken } = await authApi.login(phone, password);
     await setSessionToken(accessToken);
   } catch (err) {
+    // Too many attempts (the API's login rate limit): say so, never "wrong password".
+    if (err instanceof ApiError && err.statusCode === 429) {
+      return { error: t('tooMany') };
+    }
     // 401 invalid_credentials and 400 invalid_phone get the same message on purpose.
     if (err instanceof ApiError && err.statusCode < 500) {
       return { error: t('invalid') };

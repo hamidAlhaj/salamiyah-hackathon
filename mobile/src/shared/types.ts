@@ -209,3 +209,27 @@ export interface OutboxItem {
   createdAt: string;
   openedAt: string | null;
 }
+
+/** A collection point assigned to the signed-in COLLECTOR, with how many cash pledges wait there. */
+export interface CollectorPoint extends PublicCollectionPoint {
+  pendingCount: number;
+}
+
+/**
+ * A cash pledge as the collector sees it at their own points. `donorName` is null for «فاعل خير»
+ * (anonymous donors and box totals); the donor's phone is never shown.
+ */
+export interface CollectorPledge {
+  id: string;
+  referenceNo: string;
+  amount: string;
+  currency: Currency;
+  campaignTitle: string;
+  donorName: string | null;
+  status: PledgeStatus;
+  channel: PledgeChannel;
+  collectionPoint: PublicCollectionPoint | null;
+  createdAt: string;
+  /** When the collector confirmed receipt or recorded the amount (handed over to the council). */
+  handedOverAt: string | null;
+}

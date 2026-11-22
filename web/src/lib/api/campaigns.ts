@@ -11,6 +11,8 @@ import { apiFetch } from './client';
 export interface CampaignListQuery {
   category?: string;
   priority?: Priority;
+  /** Only campaigns in this public status (e.g. ACTIVE for collectors recording cash). */
+  status?: 'ACTIVE' | 'FUNDED' | 'COMPLETED';
   page?: number;
   pageSize?: number;
   lang: 'ar' | 'en';
@@ -21,6 +23,7 @@ export function listCampaigns(query: CampaignListQuery) {
     query: {
       category: query.category,
       priority: query.priority,
+      status: query.status,
       page: query.page ? String(query.page) : undefined,
       pageSize: query.pageSize ? String(query.pageSize) : undefined,
       lang: query.lang,

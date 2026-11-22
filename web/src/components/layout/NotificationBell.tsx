@@ -18,6 +18,7 @@ const GLYPHS: Record<string, React.ReactNode> = {
   'pledge.created': <path d="M7 4h7l4 4v12H7zM14 4v4h4M10 13h5M10 16h5" />,
   'pledge.receipt_uploaded': <path d="M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />,
   'pledge.cash_pledged': <path d="M3 7h18v10H3zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />,
+  'pledge.cash_collected': <path d="M3 7h18v10H3zM9 12l2 2 4-4" />,
   'pledge.verified': <path d="M5 13l4 4L19 7" />,
   'pledge.rejected': <path d="M12 8v5M12 16.5v.5M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />,
 };

@@ -64,6 +64,12 @@ describe('NotificationsService.donationEvent', () => {
       { method: 'CASH', collectionPoint: { name: 'مكتب المجلس المحلي', area: 'وسط المدينة' } },
     ],
     [
+      'pledge.cash_collected',
+      'donation.collected',
+      'بانتظار التحقق المالي',
+      { method: 'CASH', collectionPoint: { name: 'مكتب المجلس المحلي', area: 'وسط المدينة' } },
+    ],
+    [
       'pledge.verified',
       'receipt.issued',
       'R-2026-000007',
