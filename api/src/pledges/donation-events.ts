@@ -1,12 +1,19 @@
 /**
- * A donor donation event, raised by PledgesService after the change is committed. P11 turns each one
- * into an instant in-app notification and a WhatsApp outbox message (receipt confirmation).
+ * A donor donation event, raised after the change is committed (PledgesService for the donor paths,
+ * VerificationsService for the finance decision). NotificationsService.donationEvent turns each one
+ * into an in-app notification and, for opted-in donors, a WhatsApp outbox message.
  */
+export type DonationEventType =
+  | 'pledge.created'
+  | 'pledge.demo_confirmed'
+  | 'pledge.cash_pledged'
+  | 'pledge.receipt_uploaded'
+  | 'pledge.verified'
+  | 'pledge.rejected';
+
 export interface DonationEvent {
-  type:
-    | 'pledge.created'
-    | 'pledge.demo_confirmed'
-    | 'pledge.cash_pledged'
-    | 'pledge.receipt_uploaded';
+  type: DonationEventType;
   pledgeId: string;
+  /** pledge.rejected: the finance verifier's reason, shown to the donor. */
+  reason?: string;
 }

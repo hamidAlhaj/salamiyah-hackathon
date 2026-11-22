@@ -22,6 +22,7 @@ import {
   SEED_SAFETY_OVERRIDE_ENV_VAR,
 } from '../src/common/seed-safety.util';
 import { allocateBeneficiaryCodes } from '../src/common/utils/beneficiary-codes';
+import { normalizePhone } from '../src/common/shared';
 
 /** كلمة مرور تجريبية موحّدة لكل حسابات الـseed (تطوير فقط). */
 export const SEED_PASSWORD = 'Majlis@2026';
@@ -129,6 +130,30 @@ async function main() {
   const collector = await mkUser('مسؤول نقاط الجمع', '+963900000005', 'COLLECTOR');
   const donor = await mkUser('متبرع تجريبي', '+963900000006', 'DONOR');
   const diaspora = await mkUser('Diaspora Donor', '+4915100000007', 'DONOR', 'en');
+
+  // ── Opted-in donors («الخيرين»): instant receipts and urgent-campaign alerts on WhatsApp. The demo
+  //    donor opts in (fictional number); the diaspora donor does not (no outbox for them). Extra
+  //    alert donors take the team's real numbers from DEMO_WHATSAPP_NUMBERS in api/.env only — never
+  //    committed or printed — and fall back to fictional numbers when it is empty. ──
+  await prisma.user.update({ where: { id: donor.id }, data: { whatsappOptIn: true } });
+  const realNumbers = (process.env.DEMO_WHATSAPP_NUMBERS ?? '')
+    .split(',')
+    .map((n) => normalizePhone(n.trim()))
+    .filter((n): n is string => n !== null);
+  const alertPhones =
+    realNumbers.length > 0 ? realNumbers : ['+963999900001', '+963999900002'];
+  for (const [i, phone] of alertPhones.entries()) {
+    await prisma.user.create({
+      data: {
+        fullName: `فاعل خير ${i + 1} (مثال)`,
+        phone,
+        role: 'DONOR',
+        locale: 'ar',
+        passwordHash,
+        whatsappOptIn: true,
+      },
+    });
+  }
 
   // ── مشافي (تجريبية — تُستبدل بقائمة المجلس، سؤال Q10) ──
   const national = await prisma.hospital.create({
@@ -745,6 +770,12 @@ async function main() {
   for (const u of [admin, caseOfficer, finance, staff, collector, donor, diaspora]) {
     console.log(`  ${u.role.padEnd(16)} ${u.phone}`);
   }
+  // Real team numbers are never printed: only how many alert donors use them.
+  console.log(
+    realNumbers.length > 0
+      ? `  WhatsApp alert donors: ${realNumbers.length} from DEMO_WHATSAPP_NUMBERS (numbers not printed)`
+      : `  WhatsApp alert donors: ${alertPhones.join(', ')} (fictional; DEMO_WHATSAPP_NUMBERS is empty)`,
+  );
 }
 
 main()

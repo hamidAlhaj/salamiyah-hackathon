@@ -9,8 +9,11 @@ import { Logo } from '@/components/ui/Logo';
 import { LanguageSwitch } from './LanguageSwitch';
 import { ThemeToggle } from './ThemeToggle';
 
-/** One header for every page. The signed-in user comes from Redux (hydrated by the root layout). */
-export function SiteHeader() {
+/**
+ * One header for every page. The signed-in user comes from Redux (hydrated by the root layout); the
+ * layout passes the server-rendered notification bell.
+ */
+export function SiteHeader({ bell }: { bell?: React.ReactNode }) {
   const t = useTranslations('nav');
   const tRoles = useTranslations('roles');
   const user = useAppSelector((state) => state.currentUser.user);
@@ -55,6 +58,7 @@ export function SiteHeader() {
         <div className="ms-auto flex items-center gap-1">
           <LanguageSwitch />
           <ThemeToggle />
+          {user && bell}
           {user ? (
             <div className="ms-1 flex items-center gap-3 border-s border-border ps-2 sm:ms-2 sm:ps-3">
               <div className="hidden text-end leading-tight sm:block">

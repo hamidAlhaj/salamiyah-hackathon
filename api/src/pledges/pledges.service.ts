@@ -98,7 +98,7 @@ export class PledgesService {
       );
       return p;
     });
-    this.donationEvent({ type: 'pledge.created', pledgeId: pledge.id });
+    await this.donationEvent({ type: 'pledge.created', pledgeId: pledge.id });
     return {
       pledge: this.toView(pledge),
       instructions: await this.instructionsFor(pledge, donor.locale),
@@ -149,7 +149,7 @@ export class PledgesService {
       );
       return p;
     });
-    this.donationEvent({ type: 'pledge.demo_confirmed', pledgeId: pledge.id });
+    await this.donationEvent({ type: 'pledge.demo_confirmed', pledgeId: pledge.id });
     return this.toView(pledge);
   }
 
@@ -197,7 +197,7 @@ export class PledgesService {
       );
       return p;
     });
-    this.donationEvent({ type: 'pledge.cash_pledged', pledgeId: pledge.id });
+    await this.donationEvent({ type: 'pledge.cash_pledged', pledgeId: pledge.id });
     return this.toView(pledge);
   }
 
@@ -386,7 +386,7 @@ export class PledgesService {
       );
       return this.toView(updated);
     });
-    this.donationEvent({ type: 'pledge.receipt_uploaded', pledgeId: id });
+    await this.donationEvent({ type: 'pledge.receipt_uploaded', pledgeId: id });
     return view;
   }
 
@@ -488,13 +488,12 @@ export class PledgesService {
   }
 
   /**
-   * P11 hook: every donor donation event passes through here after its transaction has committed
-   * (pledge created, demo payment confirmed, cash pledged, receipt uploaded). P11 sends the instant
-   * in-app notification and queues the WhatsApp outbox message from this single place.
+   * Every donor donation event passes through here after its transaction has committed (pledge
+   * created, demo payment confirmed, cash pledged, receipt uploaded): an instant in-app notification,
+   * plus a WhatsApp outbox message for opted-in donors. It never fails the donation itself.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private donationEvent(_event: DonationEvent): void {
-    // Notifications are P11: intentionally nothing here yet.
+  private donationEvent(event: DonationEvent): Promise<void> {
+    return this.notifications.donationEvent(event);
   }
 
   private async assertCampaignOpen(campaignId: string): Promise<void> {

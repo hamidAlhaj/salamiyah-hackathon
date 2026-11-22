@@ -23,6 +23,8 @@ const ICONS: Record<WorkspaceKey, React.ReactNode> = {
   cases: <path d="M5 6h14M5 12h14M5 18h9" />,
   finance: <path d="M4 7h16v10H4zM4 10h16M8 14h3" />,
   imports: <path d="M12 4v11M8 11l4 4 4-4M5 19h14" />,
+  outbox: <path d="M4 5h16v11H8l-4 4zM8 9h8M8 12h5" />,
+  notifications: <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" />,
 };
 
 /** Role-based workspace navigation: a column on wide screens, a scrolling strip on phones. */

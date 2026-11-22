@@ -73,7 +73,7 @@ export class VerificationsService {
    */
   async approve(id: string, actor: AuthenticatedUser) {
     this.access.requireRole(actor, ['FINANCE_VERIFIER']);
-    return this.prisma.$transaction(
+    const result = await this.prisma.$transaction(
       async (tx) => {
         const v = await tx.verification.findUnique({
           where: { id },
@@ -134,18 +134,6 @@ export class VerificationsService {
           },
           tx,
         );
-        if (pledge.donorId) {
-          await this.notifications.notify(
-            {
-              userId: pledge.donorId,
-              type: 'pledge.verified',
-              title: 'تم التحقق من تبرعك',
-              body: `شكراً لك. تم التحقق من تبرعك لـ«${pledge.campaign.titleAr}».`,
-              link: receiptNo ? `/receipts/${receiptNo}` : undefined,
-            },
-            tx,
-          );
-        }
         return {
           id,
           pledgeId: pledge.id,
@@ -155,11 +143,17 @@ export class VerificationsService {
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
+    // After commit: the donor's "verified" notification (+ WhatsApp outbox when opted in).
+    await this.notifications.donationEvent({
+      type: 'pledge.verified',
+      pledgeId: result.pledgeId,
+    });
+    return result;
   }
 
   async reject(id: string, reason: string, actor: AuthenticatedUser) {
     this.access.requireRole(actor, ['FINANCE_VERIFIER']);
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const v = await tx.verification.findUnique({
         where: { id },
         include: { pledge: { include: { campaign: true } } },
@@ -185,19 +179,14 @@ export class VerificationsService {
         },
         tx,
       );
-      if (v.pledge.donorId) {
-        await this.notifications.notify(
-          {
-            userId: v.pledge.donorId,
-            type: 'pledge.rejected',
-            title: 'لم نتمكن من التحقق من الإيصال',
-            body: `السبب: ${reason}. يمكنك رفع إيصال جديد.`,
-            link: `/pledges/${v.pledge.id}`,
-          },
-          tx,
-        );
-      }
       return { id, pledgeId: v.pledge.id, status: 'REJECTED' as const };
     });
+    // After commit: the reason and a link to «تبرعاتي», where the donor uploads a new receipt.
+    await this.notifications.donationEvent({
+      type: 'pledge.rejected',
+      pledgeId: result.pledgeId,
+      reason,
+    });
+    return result;
   }
 }

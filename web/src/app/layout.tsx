@@ -17,7 +17,16 @@ import './globals.css';
  * server; shipping only these keeps pages small (low bandwidth). Add a namespace here when a Client
  * Component starts using it.
  */
-const CLIENT_NAMESPACES = ['auth', 'errors', 'language', 'nav', 'roles', 'theme', 'toast'] as const;
+const CLIENT_NAMESPACES = [
+  'auth',
+  'errors',
+  'language',
+  'nav',
+  'roles',
+  'theme',
+  'toast',
+  'notifications',
+] as const;
 
 // Downloaded once at build time and self-hosted by Next.js: no request to Google at runtime.
 const plexArabic = IBM_Plex_Sans_Arabic({

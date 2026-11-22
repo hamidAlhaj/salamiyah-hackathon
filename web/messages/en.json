@@ -577,7 +577,9 @@
     "imports": "Excel import",
     "publicSite": "Public site",
     "forbidden": "This page is not part of your role.",
-    "donations": "My donations"
+    "donations": "My donations",
+    "outbox": "WhatsApp outbox",
+    "notifications": "Notifications"
   },
   "apiErrors": {
     "generic": "The request could not be completed. Check the data and try again.",
@@ -729,5 +731,48 @@
       "REJECTED": "Rejected",
       "CANCELLED": "Cancelled"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "intro": "Confirmation of every donation, the finance verification result and your official receipt.",
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} unread",
+    "unread": "Unread",
+    "markAll": "Mark all as read",
+    "empty": "No notifications yet. Your donation confirmations will appear here.",
+    "seeAll": "See all notifications",
+    "open": "Open"
+  },
+  "outbox": {
+    "title": "WhatsApp outbox",
+    "intro": "Messages waiting to be sent from the council phone: donation confirmations, receipts and urgent campaign alerts. One tap each, with no automated WhatsApp connection.",
+    "nextTitle": "Send in order",
+    "nextIntro": "{count, plural, =0 {No messages waiting} one {# message waiting} other {# messages waiting}}",
+    "nextStart": "Start with the oldest",
+    "nextStop": "Stop",
+    "nextDone": "Every waiting message has been sent.",
+    "send": "Send on WhatsApp",
+    "sendAgain": "Open again",
+    "statusLabel": "Status",
+    "kindLabel": "Message kind",
+    "allStatuses": "All statuses",
+    "allKinds": "All kinds",
+    "status": {
+      "QUEUED": "Waiting to send",
+      "OPENED": "Opened in WhatsApp"
+    },
+    "templates": {
+      "donation_demo": "Demo payment",
+      "donation_pledged": "Pledge registered",
+      "donation_received": "Receipt received",
+      "donation_cash": "Cash pledge",
+      "receipt_issued": "Official receipt",
+      "receipt_rejected": "Receipt rejected",
+      "campaign_urgent": "Urgent campaign alert"
+    },
+    "count": "{total} messages, {queued} waiting to send",
+    "empty": "No messages of this kind.",
+    "unknownRecipient": "Donor",
+    "openedAt": "opened"
   }
 }

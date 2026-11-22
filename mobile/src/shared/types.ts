@@ -1,10 +1,12 @@
 /** أشكال الردود العامة من الـAPI (تستهلكها الويب والموبايل). المبالغ نصوص عشرية. */
+import type { OutboxTemplate } from './constants';
 import type {
   CampaignStatus,
   BeneficiaryKind,
   CaseCategory,
   CollectionPointType,
   Currency,
+  OutboundStatus,
   PaymentMethod,
   PaymentMethodKind,
   PledgeChannel,
@@ -181,4 +183,29 @@ export interface PublicBeneficiary {
   area: string | null;
   monthlyAmount: string | null;
   since: string;
+}
+
+/** An in-app notification. `link` is a web path; the mobile app maps it to its own screen. */
+export interface NotificationView {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  link: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+/** A WhatsApp outbox row for ADMIN: `openUrl` is the prefilled wa.me link (one tap to send). */
+export interface OutboxItem {
+  id: string;
+  template: OutboxTemplate;
+  status: OutboundStatus;
+  phone: string;
+  recipientName: string | null;
+  body: string;
+  link: string | null;
+  openUrl: string | null;
+  createdAt: string;
+  openedAt: string | null;
 }

@@ -11,6 +11,7 @@ import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { newCampaignSlug } from '../common/utils/codes';
 import { money } from '../common/utils/money';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { computeLedger } from './campaign-ledger';
 import { CampaignStatsService, type CampaignStats } from './campaign-stats.service';
@@ -46,6 +47,7 @@ export class CampaignsService {
     private readonly stats: CampaignStatsService,
     private readonly audit: AuditService,
     private readonly access: RoleAccessService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async listPublic(query: ListCampaignsQueryDto): Promise<Paginated<PublicCampaign>> {
@@ -171,7 +173,7 @@ export class CampaignsService {
       throw new ConflictException('category_requires_medical_case');
     }
     const publish = (dto.status ?? 'ACTIVE') === 'ACTIVE';
-    return this.prisma.$transaction(async (tx) => {
+    const created = await this.prisma.$transaction(async (tx) => {
       const campaign = await tx.campaign.create({
         data: {
           slug: newCampaignSlug(category.code),
@@ -204,12 +206,16 @@ export class CampaignsService {
       );
       return campaign;
     });
+    // Published now (not a draft): urgent campaigns alert the opted-in donors.
+    if (publish) await this.notifications.campaignPublished(created.id);
+    return created;
   }
 
   async updateStatus(id: string, dto: UpdateCampaignStatusDto, actor: AuthenticatedUser) {
     this.access.requireRole(actor, ['ADMIN', 'CASE_OFFICER']);
     const actorId = actor.id;
-    return this.prisma.$transaction(async (tx) => {
+    let firstPublish = false;
+    const updated = await this.prisma.$transaction(async (tx) => {
       const before = await tx.campaign.findUnique({ where: { id } });
       if (!before) throw new NotFoundException('campaign_not_found');
       const after = await tx.campaign.update({
@@ -222,6 +228,7 @@ export class CampaignsService {
             : {}),
         },
       });
+      firstPublish = dto.status === 'ACTIVE' && !before.publishedAt;
       await this.audit.log(
         {
           actorId,
@@ -235,6 +242,9 @@ export class CampaignsService {
       );
       return after;
     });
+    // A draft going public for the first time: urgent campaigns alert the opted-in donors.
+    if (firstPublish) await this.notifications.campaignPublished(id);
+    return updated;
   }
 
   async addUpdate(campaignId: string, dto: CreateCampaignUpdateDto, actor: AuthenticatedUser) {

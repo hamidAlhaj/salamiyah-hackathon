@@ -11,6 +11,8 @@ export const WORKSPACE_LINKS = [
   { key: 'cases', href: '/dashboard/cases', roles: ['STAFF', 'CASE_OFFICER', 'ADMIN'] },
   { key: 'finance', href: '/dashboard/finance', roles: ['FINANCE_VERIFIER'] },
   { key: 'imports', href: '/dashboard/imports', roles: ['STAFF', 'ADMIN'] },
+  { key: 'outbox', href: '/dashboard/outbox', roles: ['ADMIN'] },
+  { key: 'notifications', href: '/dashboard/notifications', roles: null },
 ] as const satisfies readonly { key: string; href: string; roles: readonly Role[] | null }[];
 
 export type WorkspaceKey = (typeof WORKSPACE_LINKS)[number]['key'];

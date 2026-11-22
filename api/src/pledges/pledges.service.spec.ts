@@ -136,12 +136,16 @@ function donorPrisma(opts: { config?: unknown; point?: unknown } = {}) {
   return { prisma, create };
 }
 
+const notificationsMock = {
+  donationEvent: jest.fn().mockResolvedValue(undefined),
+} as unknown as NotificationsService;
+
 function donorService(prisma: unknown, demoMode = 'true') {
   return new PledgesService(
     prisma as PrismaService,
     untouchable<StorageService>('storage'),
     { log: jest.fn() } as unknown as AuditService,
-    untouchable<NotificationsService>('notifications'),
+    notificationsMock,
     { get: () => demoMode } as unknown as ConfigService,
     new RoleAccessService(),
   );
@@ -162,6 +166,11 @@ describe('PledgesService simulated («Demo») payment', () => {
     });
     expect(data).not.toHaveProperty('verifications');
     expect(view.isDemo).toBe(true);
+    // The instant confirmation is raised once, after the pledge is saved.
+    expect(notificationsMock.donationEvent).toHaveBeenCalledWith({
+      type: 'pledge.demo_confirmed',
+      pledgeId: 'p1',
+    });
   });
 
   it('is refused for a method that is switched off', async () => {

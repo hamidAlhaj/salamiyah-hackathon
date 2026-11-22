@@ -1,5 +1,6 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import { HeaderBell } from '@/components/layout/HeaderBell';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { requireUser } from '@/lib/auth';
@@ -29,6 +30,8 @@ const STAFF_CLIENT_NAMESPACES = [
   'campaign',
   'donate',
   'myDonations',
+  'notifications',
+  'outbox',
 ] as const;
 
 /** Every page in (app) needs a valid session: no cookie → /login; a rejected token → /login. */
@@ -40,7 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <NextIntlClientProvider messages={messages}>
       <div className="flex min-h-screen flex-col">
-        <SiteHeader />
+        <SiteHeader bell={<HeaderBell />} />
         <div className="flex flex-1 flex-col lg:flex-row">
           <Sidebar role={user.role} />
           <main id="main" className="min-w-0 flex-1">

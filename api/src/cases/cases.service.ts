@@ -15,6 +15,7 @@ import { allocateBeneficiaryCodes } from '../common/utils/beneficiary-codes';
 import { hashNationalId } from '../common/utils/national-id';
 import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import type {
@@ -37,6 +38,7 @@ export class CasesService {
     private readonly audit: AuditService,
     private readonly config: ConfigService,
     private readonly access: RoleAccessService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   private get slaDays(): number {
@@ -390,7 +392,7 @@ export class CasesService {
   /** FR-08: نشر الحالة المعتمدة كحملة (redactedSummary إلزامي). */
   async publish(id: string, dto: PublishCaseDto, actor: AuthenticatedUser) {
     this.access.requireRole(actor, ['CASE_OFFICER']);
-    return this.prisma.$transaction(async (tx) => {
+    const published = await this.prisma.$transaction(async (tx) => {
       const c = await tx.case.findUnique({ where: { id }, include: { campaign: true } });
       if (!c) throw new NotFoundException('case_not_found');
       if (c.status !== 'APPROVED') throw new ConflictException('case_not_approved');
@@ -448,6 +450,9 @@ export class CasesService {
       );
       return { campaignId: campaign.id, slug: campaign.slug };
     });
+    // The new MEDICAL_AID campaign is public: urgent cases alert the opted-in donors.
+    await this.notifications.campaignPublished(published.campaignId);
+    return published;
   }
 
   /** FR-12: تتبع الطلب للمستفيد — المرحلة فقط، بلا مبالغ أو تفاصيل طبية. */

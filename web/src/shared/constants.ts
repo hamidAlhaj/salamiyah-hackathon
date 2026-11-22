@@ -50,3 +50,15 @@ export const COVER_KEYS = [
   'general-1',
 ] as const;
 export type CoverKey = (typeof COVER_KEYS)[number];
+
+/** WhatsApp outbox message kinds (OutboundMessage.template); the outbox screen filters by them. */
+export const OUTBOX_TEMPLATES = [
+  'donation.demo',
+  'donation.pledged',
+  'donation.received',
+  'donation.cash',
+  'receipt.issued',
+  'receipt.rejected',
+  'campaign.urgent',
+] as const;
+export type OutboxTemplate = (typeof OUTBOX_TEMPLATES)[number];

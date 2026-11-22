@@ -94,6 +94,14 @@ const ar = {
     staffOpenWeb: 'فتح لوحة الويب',
     sessionEnded: 'انتهت جلستك. سجّل الدخول من جديد.',
   },
+  notifications: {
+    title: 'الإشعارات',
+    bell: 'الإشعارات',
+    bellUnread: 'الإشعارات، {{count}} غير مقروءة',
+    empty: 'لا إشعارات بعد. ستصلك هنا تأكيدات تبرعاتك.',
+    markAll: 'تعليم الكل كمقروء',
+    unread: 'غير مقروء',
+  },
   donations: {
     empty: 'لم تتبرع بعد. اختر حملة وابدأ.',
     rejection: 'السبب: {{reason}}',
@@ -289,6 +297,14 @@ const en: Messages = {
     staffBody: 'Your account is a council staff account. Use the web dashboard to manage cases, campaigns and verification.',
     staffOpenWeb: 'Open the web dashboard',
     sessionEnded: 'Your session ended. Please log in again.',
+  },
+  notifications: {
+    title: 'Notifications',
+    bell: 'Notifications',
+    bellUnread: 'Notifications, {{count}} unread',
+    empty: 'No notifications yet. Your donation confirmations will appear here.',
+    markAll: 'Mark all as read',
+    unread: 'Unread',
   },
   donations: {
     empty: 'You have not donated yet. Pick a campaign to start.',

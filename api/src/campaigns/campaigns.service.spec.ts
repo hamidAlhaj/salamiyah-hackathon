@@ -1,3 +1,4 @@
+import type { NotificationsService } from '../notifications/notifications.service';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import { Prisma, Role } from '@prisma/client';
@@ -32,6 +33,7 @@ function serviceWith(prisma: unknown, audit: unknown = { log: jest.fn() }) {
     new CampaignStatsService(prisma as PrismaService, config),
     audit as AuditService,
     new RoleAccessService(),
+    { campaignPublished: jest.fn().mockResolvedValue(0) } as unknown as NotificationsService,
   );
 }
 

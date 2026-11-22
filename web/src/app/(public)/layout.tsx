@@ -1,11 +1,12 @@
 import { getTranslations } from 'next-intl/server';
+import { HeaderBell } from '@/components/layout/HeaderBell';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const t = await getTranslations('common');
   return (
     <div className="flex min-h-screen flex-col">
-      <SiteHeader />
+      <SiteHeader bell={<HeaderBell />} />
       <main id="main" className="flex-1">
         {children}
       </main>

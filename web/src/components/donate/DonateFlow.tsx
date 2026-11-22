@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import { CopyButton } from '@/components/campaigns/CopyButton';
 import { DemoBadge } from '@/components/campaigns/DemoBadge';
@@ -79,6 +80,12 @@ export function DonateFlow({
   const [done, setDone] = useState<PledgeView | null>(null);
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
+  // A finished donation: re-render the layout so the header bell shows the new notification at once.
+  const finish = (pledge: PledgeView) => {
+    setDone(pledge);
+    router.refresh();
+  };
 
   const amountOk = /^[1-9][0-9]{0,11}$/.test(amount);
   const ready = method !== null && amountOk;
@@ -272,9 +279,7 @@ export function DonateFlow({
               amountLabel={money(amount)}
               pending={pending}
               error={error}
-              onPay={() =>
-                run(() => demoDonateAction({ ...input, method: method.method }), setDone)
-              }
+              onPay={() => run(() => demoDonateAction({ ...input, method: method.method }), finish)}
             />
           ) : path === 'transfer' && method ? (
             pledge ? (
@@ -282,7 +287,7 @@ export function DonateFlow({
                 result={pledge}
                 amountLabel={money(pledge.pledge.amount)}
                 campaignSlug={campaign.slug}
-                onUploaded={setDone}
+                onUploaded={finish}
               />
             ) : (
               <div className="space-y-3">
@@ -294,7 +299,13 @@ export function DonateFlow({
                   disabled={pending}
                   data-testid="transfer-create"
                   onClick={() =>
-                    run(() => transferPledgeAction({ ...input, method: method.method }), setPledge)
+                    run(
+                      () => transferPledgeAction({ ...input, method: method.method }),
+                      (r: CreatePledgeResult) => {
+                        setPledge(r);
+                        router.refresh();
+                      },
+                    )
                   }
                 >
                   {pending ? t('submitting') : t('transfer.create')}
@@ -349,7 +360,7 @@ export function DonateFlow({
                   data-testid="cash-confirm"
                   onClick={() => {
                     if (!pointId) return setError(t('cash.choosePoint'));
-                    run(() => cashPledgeAction({ ...input, collectionPointId: pointId }), setDone);
+                    run(() => cashPledgeAction({ ...input, collectionPointId: pointId }), finish);
                   }}
                 >
                   {pending ? t('submitting') : t('cash.confirm')}

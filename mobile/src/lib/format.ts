@@ -21,3 +21,15 @@ export const date = (iso: string, locale: 'ar' | 'en') =>
       timeZone: 'Asia/Damascus',
     }),
   );
+
+export const dateTime = (iso: string, locale: 'ar' | 'en') =>
+  latin(
+    new Date(iso).toLocaleString(locale === 'ar' ? 'ar-SY-u-nu-latn' : 'en-GB', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Damascus',
+    }),
+  );
