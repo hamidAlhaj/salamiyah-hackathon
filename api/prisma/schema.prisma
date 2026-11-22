@@ -562,7 +562,8 @@ model PaymentMethodConfig {
   kind                PaymentMethodKind
   labelAr             String            @map("label_ar")
   labelEn             String            @map("label_en")
-  accountName         String?           @map("account_name")
+  accountName         String?           @map("account_name") // Arabic holder name
+  accountNameEn       String?           @map("account_name_en") // English holder name
   accountNumber       String?           @map("account_number")
   instructionsAr      String?           @map("instructions_ar")
   instructionsEn      String?           @map("instructions_en")

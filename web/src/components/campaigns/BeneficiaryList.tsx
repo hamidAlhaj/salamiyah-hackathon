@@ -1,3 +1,4 @@
+import { DATE_MEDIUM } from '@/lib/format';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { formatMoney, type Currency, type PublicBeneficiary } from '@/shared';
 
@@ -48,7 +49,7 @@ export function BeneficiaryList({
                 )}
                 <p>
                   {t('since', {
-                    date: format.dateTime(new Date(b.since), { dateStyle: 'medium' }),
+                    date: format.dateTime(new Date(b.since), DATE_MEDIUM),
                   })}
                 </p>
               </div>

@@ -1,3 +1,4 @@
+import { DATE_MEDIUM } from '@/lib/format';
 import type { Metadata } from 'next';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { buttonClasses } from '@/components/ui/Button';
@@ -86,7 +87,7 @@ export default async function TrackPage({
           </p>
           <p className="mt-1 text-sm text-muted">
             {t('stage')}: <strong className="text-ink">{t(`stages.${result.stage}`)}</strong> (
-            {format.dateTime(new Date(result.updatedAt), { dateStyle: 'medium' })})
+            {format.dateTime(new Date(result.updatedAt), DATE_MEDIUM)})
           </p>
           {current >= 0 && (
             <ol className="mt-5 space-y-3">

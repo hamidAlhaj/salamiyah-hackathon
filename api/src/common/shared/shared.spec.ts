@@ -101,3 +101,18 @@ describe('parseBeneficiaryImportRow', () => {
     });
   });
 });
+
+describe('formatMoney / formatNumber use Western digits in both languages', () => {
+  const ARABIC_INDIC = /[٠-٩۰-۹]/;
+
+  it('Arabic money: 0-9 with the Arabic currency text', () => {
+    const text = Shared.formatMoney('3000000', 'SYP', 'ar');
+    expect(text).not.toMatch(ARABIC_INDIC);
+    expect(text).toContain('3,000,000');
+  });
+
+  it('counts in both languages', () => {
+    expect(Shared.formatNumber(12400, 'ar')).toBe('12,400');
+    expect(Shared.formatNumber(12400, 'en')).toBe('12,400');
+  });
+});

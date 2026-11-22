@@ -8,6 +8,7 @@ type ConfigRow = Pick<
   | 'labelAr'
   | 'labelEn'
   | 'accountName'
+  | 'accountNameEn'
   | 'accountNumber'
   | 'instructionsAr'
   | 'instructionsEn'
@@ -37,7 +38,9 @@ export function mergePaymentAccounts(
       method: c.method,
       kind: c.kind,
       label: en ? c.labelEn : c.labelAr,
-      accountName: override?.accountName ?? c.accountName,
+      // The holder name follows the UI language; an override is a single admin-entered name.
+      accountName:
+        override?.accountName ?? (en ? (c.accountNameEn ?? c.accountName) : c.accountName),
       accountNumber: override?.accountNumber ?? c.accountNumber,
       instructions: (en ? c.instructionsEn : c.instructionsAr) ?? null,
       note: override?.note ?? null,

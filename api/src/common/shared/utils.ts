@@ -29,18 +29,31 @@ export function phoneLast4(phone: string): string {
   return phone.slice(-4);
 }
 
-/** تنسيق مبلغ حسب اللغة والعملة. amount نص عشري (Decimal من الـAPI). */
+/**
+ * Intl locale for numbers: Western digits (0-9) in both languages. Arabic-Indic digits are never used
+ * (their zero reads like a dash in the UI fonts), so Arabic gets the `-u-nu-latn` extension.
+ */
+export function numberLocale(locale: 'ar' | 'en'): string {
+  return locale === 'ar' ? 'ar-SY-u-nu-latn' : 'en-US';
+}
+
+/** Money in the UI language with Western digits: «3,000,000 ل.س.». amount is a decimal string. */
 export function formatMoney(
   amount: string | number,
   currency: 'SYP' | 'USD',
   locale: 'ar' | 'en',
 ): string {
   const value = typeof amount === 'string' ? Number(amount) : amount;
-  return new Intl.NumberFormat(locale === 'ar' ? 'ar-SY' : 'en-US', {
+  return new Intl.NumberFormat(numberLocale(locale), {
     style: 'currency',
     currency,
     maximumFractionDigits: currency === 'SYP' ? 0 : 2,
   }).format(value);
+}
+
+/** Counts and plain numbers with Western digits and the locale's grouping: «12,400». */
+export function formatNumber(value: number, locale: 'ar' | 'en'): string {
+  return new Intl.NumberFormat(numberLocale(locale)).format(value);
 }
 
 /** نسبة التقدم 0..100 (مقربة لأسفل). */

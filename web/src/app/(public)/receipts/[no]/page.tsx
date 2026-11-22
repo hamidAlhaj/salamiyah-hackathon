@@ -1,3 +1,4 @@
+import { DATE_LONG } from '@/lib/format';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
@@ -65,7 +66,7 @@ export default async function ReceiptPage({ params }: Props) {
           </div>
           <div className="flex justify-between gap-4 py-3">
             <dt className="text-muted">{t('date')}</dt>
-            <dd>{format.dateTime(new Date(receipt.verifiedAt), { dateStyle: 'long' })}</dd>
+            <dd>{format.dateTime(new Date(receipt.verifiedAt), DATE_LONG)}</dd>
           </div>
         </dl>
         <footer className="border-t border-border bg-surface-muted px-6 py-4 text-xs text-muted">

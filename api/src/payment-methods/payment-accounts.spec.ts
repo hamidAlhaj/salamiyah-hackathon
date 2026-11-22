@@ -7,7 +7,8 @@ const config = (over: Partial<PaymentMethodConfig>): PaymentMethodConfig => ({
   kind: 'WALLET',
   labelAr: 'سيريتل كاش',
   labelEn: 'Syriatel Cash',
-  accountName: 'Majlis Fund (demo)',
+  accountName: 'المجلس المحلي في السلمية (تجريبي)',
+  accountNameEn: 'Salamiyah Local Council (demo)',
   accountNumber: '0930 000 002 (FAKE)',
   instructionsAr: 'تعليمات',
   instructionsEn: 'Instructions',
@@ -70,6 +71,17 @@ describe('mergePaymentAccounts (campaign receiving details)', () => {
       'ar',
     );
     expect(accounts.map((a) => a.method)).not.toContain('MTN_CASH');
+  });
+
+  it('shows the account holder name in the UI language', () => {
+    const ar = mergePaymentAccounts(configs, [], 'ar').find(
+      (a) => a.method === 'SYRIATEL_CASH',
+    );
+    const en = mergePaymentAccounts(configs, [], 'en').find(
+      (a) => a.method === 'SYRIATEL_CASH',
+    );
+    expect(ar?.accountName).toBe('المجلس المحلي في السلمية (تجريبي)');
+    expect(en?.accountName).toBe('Salamiyah Local Council (demo)');
   });
 
   it('flags demo-capable and receipt-capable methods', () => {

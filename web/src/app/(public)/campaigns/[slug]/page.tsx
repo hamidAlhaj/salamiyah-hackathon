@@ -1,3 +1,4 @@
+import { DATE_MEDIUM } from '@/lib/format';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
@@ -138,7 +139,7 @@ export default async function CampaignPage({ params }: Props) {
                 {campaign.updates.map((u) => (
                   <li key={u.id}>
                     <time className="text-xs text-muted" dateTime={u.createdAt}>
-                      {format.dateTime(new Date(u.createdAt), { dateStyle: 'medium' })}
+                      {format.dateTime(new Date(u.createdAt), DATE_MEDIUM)}
                     </time>
                     <p className="mt-0.5">{u.body}</p>
                   </li>
