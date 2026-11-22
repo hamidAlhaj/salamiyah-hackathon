@@ -417,6 +417,8 @@ export class CasesService {
           titleEn: dto.titleEn,
           summaryAr: dto.redactedSummary,
           summaryEn: dto.summaryEn,
+          coverKey: dto.coverKey,
+          area: dto.area?.trim(),
           priority: c.priority ?? 'NORMAL',
           targetAmount: c.approvedAmount,
           currency: c.currency,

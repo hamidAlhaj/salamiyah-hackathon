@@ -9,7 +9,7 @@ import {
   Matches,
   ValidateIf,
 } from 'class-validator';
-import { toLatinDigits } from '../common/shared';
+import { COVER_KEYS, toLatinDigits, type CoverKey } from '../common/shared';
 import {
   CASE_CATEGORIES,
   CASE_ROUTES,
@@ -180,6 +180,20 @@ export class PublishCaseDto {
   @IsOptional()
   @IsBoolean()
   isAnonymous?: boolean;
+
+  @ApiPropertyOptional({
+    enum: COVER_KEYS,
+    description: 'Bundled illustration (never a photo)',
+  })
+  @IsOptional()
+  @IsIn(COVER_KEYS)
+  coverKey?: CoverKey;
+
+  @ApiPropertyOptional({ example: 'السلمية', description: 'A neighbourhood at most' })
+  @IsOptional()
+  @IsString()
+  @Length(2, 60)
+  area?: string;
 }
 
 export class TrackCaseQueryDto {

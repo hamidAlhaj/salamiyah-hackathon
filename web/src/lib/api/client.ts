@@ -25,9 +25,11 @@ export class ApiError extends Error {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   token?: string | null;
   body?: unknown;
+  /** multipart/form-data (file uploads). Mutually exclusive with `body`. */
+  form?: FormData;
   query?: Record<string, string | undefined>;
 }
 
@@ -42,7 +44,7 @@ function buildUrl(path: string, query?: RequestOptions['query']) {
 }
 
 export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', token, body, query } = options;
+  const { method = 'GET', token, body, form, query } = options;
 
   const headers: Record<string, string> = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
@@ -51,7 +53,8 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   const response = await fetch(buildUrl(path, query), {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    // fetch sets the multipart boundary itself for FormData.
+    body: form ?? (body !== undefined ? JSON.stringify(body) : undefined),
     cache: 'no-store',
   });
 

@@ -8,3 +8,8 @@ export function getCampaignAccounts(campaignId: string, lang: 'ar' | 'en') {
     query: { lang },
   });
 }
+
+/** Active payment methods with their default (fake) receiving accounts. */
+export function listPaymentMethods(lang: 'ar' | 'en') {
+  return apiFetch<PaymentAccount[]>('/payment-methods', { query: { lang } });
+}

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Badge } from '@/components/ui/Badge';
 import { StarLattice } from '@/components/ui/StarLattice';
 import * as authApi from '@/lib/api/auth';
 import { requireSessionToken } from '@/lib/session';
+import { linksFor } from '@/lib/workspace';
 
 interface Task {
   title: string;
@@ -15,14 +17,19 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('dashboard') };
 }
 
-/** Placeholder dashboard per role: who you are and what you will do here. Real screens: P05+. */
+/**
+ * Workspace home per role: links to the role's screens; roles without web screens yet (donor,
+ * collector) see what is coming.
+ */
 export default async function DashboardPage() {
   const token = await requireSessionToken();
   const user = await authApi.me(token);
   const t = await getTranslations('dash');
   const tRoles = await getTranslations('roles');
   const tCommon = await getTranslations('common');
+  const tWorkspace = await getTranslations('workspace');
   const tasks = t.raw(`tasks.${user.role}`) as Task[];
+  const links = linksFor(user.role).filter((l) => l.key !== 'home');
 
   return (
     <div
@@ -44,17 +51,35 @@ export default async function DashboardPage() {
       </section>
 
       <h2 className="mt-10 font-display text-xl font-bold">{t('tasksTitle')}</h2>
-      <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
-        {tasks.map((task) => (
-          <li key={task.title} className="flex items-start justify-between gap-4 px-5 py-4 sm:px-6">
-            <div>
-              <p className="font-semibold">{task.title}</p>
-              <p className="mt-0.5 max-w-[65ch] text-sm text-muted">{task.body}</p>
-            </div>
-            <Badge className="mt-1 flex-shrink-0">{tCommon('soon')}</Badge>
-          </li>
-        ))}
-      </ul>
+      {links.length > 0 ? (
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="workspace-links">
+          {links.map((l) => (
+            <li key={l.key}>
+              <Link
+                href={l.href}
+                className="block h-full rounded-2xl border border-border bg-surface px-5 py-4 font-semibold shadow-card transition hover:border-brand-600 hover:text-accent"
+              >
+                {tWorkspace(l.key)}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
+          {tasks.map((task) => (
+            <li
+              key={task.title}
+              className="flex items-start justify-between gap-4 px-5 py-4 sm:px-6"
+            >
+              <div>
+                <p className="font-semibold">{task.title}</p>
+                <p className="mt-0.5 max-w-[65ch] text-sm text-muted">{task.body}</p>
+              </div>
+              <Badge className="mt-1 flex-shrink-0">{tCommon('soon')}</Badge>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

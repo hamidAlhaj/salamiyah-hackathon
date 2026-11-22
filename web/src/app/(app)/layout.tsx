@@ -1,19 +1,51 @@
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 import { SiteHeader } from '@/components/layout/SiteHeader';
-import * as authApi from '@/lib/api/auth';
-import { requireSessionToken } from '@/lib/session';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { requireUser } from '@/lib/auth';
+
+/**
+ * Message namespaces the staff Client Components use, sent only on workspace pages (public pages get
+ * the smaller root set, so staff form labels never reach them).
+ */
+const STAFF_CLIENT_NAMESPACES = [
+  'auth',
+  'errors',
+  'language',
+  'nav',
+  'roles',
+  'theme',
+  'toast',
+  'workspace',
+  'common',
+  'adminCategories',
+  'adminCampaigns',
+  'cases',
+  'intake',
+  'finance',
+  'imports',
+  'priority',
+  'category',
+  'campaign',
+] as const;
 
 /** Every page in (app) needs a valid session: no cookie → /login; a rejected token → /login. */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const token = await requireSessionToken();
-  // Confirms the token with the API (apiFetch redirects to /login on 401).
-  await authApi.me(token);
+  const { user } = await requireUser();
+  const all = await getMessages();
+  const messages = Object.fromEntries(STAFF_CLIENT_NAMESPACES.map((ns) => [ns, all[ns]]));
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-      <main id="main" className="flex-1">
-        {children}
-      </main>
-    </div>
+    <NextIntlClientProvider messages={messages}>
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <div className="flex flex-1 flex-col lg:flex-row">
+          <Sidebar role={user.role} />
+          <main id="main" className="min-w-0 flex-1">
+            {children}
+          </main>
+        </div>
+      </div>
+    </NextIntlClientProvider>
   );
 }

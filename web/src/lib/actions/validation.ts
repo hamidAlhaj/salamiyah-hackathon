@@ -21,8 +21,30 @@ export function readString(formData: FormData, field: string, maxLength = 5000):
   return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
 }
 
-// Only these paths may be revalidated; P05+ adds its routes here.
-const REVALIDATE_PATH_PATTERNS: RegExp[] = [/^\/$/, /^\/dashboard$/];
+/** An optional trimmed field: undefined when empty (so the API applies its default). */
+export function readOptional(
+  formData: FormData,
+  field: string,
+  maxLength = 5000,
+): string | undefined {
+  const value = readString(formData, field, maxLength);
+  return value === '' ? undefined : value;
+}
+
+const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+
+// Only these paths may be revalidated; add new routes here.
+const REVALIDATE_PATH_PATTERNS: RegExp[] = [
+  /^\/$/,
+  /^\/dashboard$/,
+  /^\/dashboard\/admin\/categories$/,
+  /^\/dashboard\/admin\/campaigns$/,
+  /^\/dashboard\/admin\/campaigns\/new$/,
+  /^\/dashboard\/cases$/,
+  new RegExp(`^/dashboard/cases/${UUID}$`),
+  /^\/dashboard\/finance$/,
+  /^\/campaigns\/[a-z0-9_-]{3,60}$/,
+];
 
 export function isKnownRoutePath(path: string): boolean {
   return REVALIDATE_PATH_PATTERNS.some((re) => re.test(path));
