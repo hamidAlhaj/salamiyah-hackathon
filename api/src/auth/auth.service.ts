@@ -27,6 +27,7 @@ export class AuthService {
         passwordHash: await bcrypt.hash(dto.password, BCRYPT_ROUNDS),
         role: 'DONOR',
         locale: dto.locale ?? 'ar',
+        whatsappOptIn: dto.whatsappOptIn ?? false,
       },
     });
     return this.issueToken(user);

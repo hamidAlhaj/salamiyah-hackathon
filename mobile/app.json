@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "مجلس فند",
+    "slug": "majlis-fund",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "majlisfund",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#eef2ef",
+    "android": {
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0f3d2a"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "نحتاج الكاميرا لتصوير إيصال التحويل.",
+          "photosPermission": "نحتاج الصور لاختيار إيصال التحويل."
+        }
+      ],
+      [
+        "expo-localization",
+        {
+          "supportsRTL": true
+        }
+      ],
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "experiments": {
+      "reactCompiler": true
+    }
+  }
+}

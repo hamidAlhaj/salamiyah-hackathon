@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import * as Prisma from '@prisma/client';
 import * as Shared from '.';
 
@@ -114,5 +116,17 @@ describe('formatMoney / formatNumber use Western digits in both languages', () =
   it('counts in both languages', () => {
     expect(Shared.formatNumber(12400, 'ar')).toBe('12,400');
     expect(Shared.formatNumber(12400, 'en')).toBe('12,400');
+  });
+});
+
+describe('mobile/src/shared is an exact copy of this folder (no shared packages)', () => {
+  // The web copy has its own Vitest check (web/src/shared/shared.test.ts); mobile has no test runner,
+  // so its copy is checked here.
+  const mobileShared = join(__dirname, '../../../../mobile/src/shared');
+
+  it.each(['enums.ts', 'constants.ts', 'utils.ts', 'types.ts'])('%s', (file) => {
+    expect(readFileSync(join(mobileShared, file), 'utf8')).toBe(
+      readFileSync(join(__dirname, file), 'utf8'),
+    );
   });
 });

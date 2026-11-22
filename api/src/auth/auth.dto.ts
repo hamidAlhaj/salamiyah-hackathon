@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsIn,
   IsOptional,
   IsString,
@@ -32,6 +33,15 @@ export class RegisterDto {
   @IsOptional()
   @IsIn(['ar', 'en'])
   locale?: 'ar' | 'en';
+
+  @ApiPropertyOptional({
+    default: false,
+    description:
+      'Consent to WhatsApp messages: receipts and new-campaign alerts (sent from the council phone)',
+  })
+  @IsOptional()
+  @IsBoolean()
+  whatsappOptIn?: boolean;
 }
 
 export class LoginDto {

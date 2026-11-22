@@ -110,9 +110,18 @@ Set `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_SITE_URL` to your PC's LAN IP (`ipcon
 npm ci
 ```
 ```powershell
-npx expo start
+$env:REACT_NATIVE_PACKAGER_HOSTNAME = "192.168.1.10"; npx expo start
 ```
-Scan the QR code with Expo Go. Allow Node through Windows Firewall on ports 4000, 3000 and 8081 (private network).
+Use your own LAN IP. Setting it makes the QR code use the Wi-Fi address even when a VPN or VirtualBox adapter is
+present. Scan the QR code with Expo Go (the API must be running). On first launch, if the layout is left-to-right,
+reload once from the Expo Go menu: Arabic right-to-left takes effect after a restart.
+
+Windows Firewall blocks the phone until you allow the dev ports on the local network. Run once in an **administrator**
+PowerShell:
+```powershell
+New-NetFirewallRule -DisplayName "Majlis Fund dev (API 4000, Metro 8081)" -Direction Inbound -Protocol TCP -LocalPort 4000,8081 -RemoteAddress LocalSubnet -Action Allow -Profile Private,Public
+```
+Remove it after the hackathon: `Remove-NetFirewallRule -DisplayName "Majlis Fund dev (API 4000, Metro 8081)"`.
 
 ### 7. Demo accounts
 `npm run seed` prints one fictional account per role (DONOR, STAFF, CASE_OFFICER, FINANCE_VERIFIER, ADMIN, COLLECTOR).
@@ -126,8 +135,10 @@ cd api; npm run lint; npm test; npm run build
 cd web; npm run lint; npm test; npm run build
 ```
 ```powershell
-cd mobile; npx tsc --noEmit; npx expo lint
+cd mobile; npx tsc --noEmit; npx expo lint; npx expo install --check; npx expo-doctor
 ```
+TypeScript stays on 5.9.3 (team decision) although Expo 58 suggests 6.0: `expo.install.exclude` in `mobile/package.json`
+skips it in the version check.
 
 ## Hackathon-only notes
 - **Demo payments:** ShamCash, PayPal and Visa are **simulated** and always carry a «Demo» badge. Demo money is shown
@@ -155,6 +166,9 @@ Libraries used here that the b4f reference does not have. Each one is pinned to 
 | `@types/multer` (dev) | api | Types for `Express.Multer.File` (matches the multer 2.0.x bundled with `@nestjs/platform-express` 10.4.22) | 2.0.0 | P02 |
 | `next-intl` | web | Arabic/English text (cookie locale, no URL routing) | 4.15.1 | P04 |
 | `i18next`, `react-i18next` | mobile | Arabic/English text | 27.2.1 / 18.0.3 | P06 |
+| `react-native-svg` | mobile | Category icons and cover illustrations drawn like the web SVGs (Expo 58 bundled version) | 15.16.0 | P09 |
+| `expo-clipboard` | mobile | Copy a receiving account number (Expo 58 SDK module) | ~58.0.4 | P09 |
+| `@expo-google-fonts/ibm-plex-sans-arabic`, `@expo-google-fonts/noto-kufi-arabic` | mobile | The web fonts (IBM Plex Sans Arabic body, Noto Kufi Arabic headings) bundled for expo-font | 0.4.2 / 0.4.3 | P09 |
 | `qrcode` | api or web | QR verification code on official receipts | pinned exactly in P11 | P11 |
 
 ## Docs
