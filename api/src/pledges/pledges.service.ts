@@ -114,10 +114,10 @@ export class PledgesService {
           currency: await this.campaignCurrency(tx, dto.campaignId),
           channel: 'PLATFORM',
           method: dto.method,
-          status: 'VERIFIED',
+          // Simulated payment: confirmed for the demo, never verified money.
+          status: 'DEMO_CONFIRMED',
           isDemo: true,
           officialReceiptNo: `DEMO-${ref}`,
-          verifiedAt: new Date(),
         },
         include: pledgeInclude,
       });

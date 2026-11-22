@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsIn, IsOptional, IsString, Length, Matches } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  Matches,
+} from 'class-validator';
 import { CAMPAIGN_STATUSES, CURRENCIES, PRIORITIES } from '../common/shared';
 import type { CampaignStatus, Currency, Priority } from '@prisma/client';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
@@ -26,6 +34,12 @@ export class LangQueryDto {
 
 /** حملة مستمرة بلا حالة فردية (مثل برنامج مرضى السرطان). */
 export class CreateOngoingCampaignDto {
+  @ApiProperty({
+    description: 'CampaignCategory id (an active category without requiresMedicalCase)',
+  })
+  @IsUUID()
+  categoryId: string;
+
   @ApiProperty({ example: 'دعم جرعات ونقل مرضى السرطان' })
   @IsString()
   @Length(5, 160)

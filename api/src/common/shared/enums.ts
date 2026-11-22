@@ -1,6 +1,7 @@
 /**
  * Shared enums. Must match the Prisma enums in api/prisma/schema.prisma exactly,
  * and the copies in web/src/shared and mobile/src/shared.
+ * Campaign categories are data (CampaignCategory table), not an enum: they are not listed here.
  */
 
 const values = <T extends Record<string, string>>(obj: T): [T[keyof T], ...T[keyof T][]] =>
@@ -24,11 +25,6 @@ export const LOCALES = values(Locale);
 export const Currency = { SYP: 'SYP', USD: 'USD' } as const;
 export type Currency = (typeof Currency)[keyof typeof Currency];
 export const CURRENCIES = values(Currency);
-
-/** MEDICAL فقط حالياً (قرار المجلس). القيم المستقبلية تُضاف هنا وفي Prisma. */
-export const CampaignType = { MEDICAL: 'MEDICAL' } as const;
-export type CampaignType = (typeof CampaignType)[keyof typeof CampaignType];
-export const CAMPAIGN_TYPES = values(CampaignType);
 
 export const CampaignStatus = {
   DRAFT: 'DRAFT',
@@ -83,7 +79,7 @@ export const DocumentKind = {
   MEDICAL_REPORT: 'MEDICAL_REPORT',
   ID_DOCUMENT: 'ID_DOCUMENT',
   HOSPITAL_QUOTE: 'HOSPITAL_QUOTE',
-  HOSPITAL_INVOICE: 'HOSPITAL_INVOICE',
+  EXPENDITURE_PROOF: 'EXPENDITURE_PROOF',
   OTHER: 'OTHER',
 } as const;
 export type DocumentKind = (typeof DocumentKind)[keyof typeof DocumentKind];
@@ -111,26 +107,41 @@ export const PLEDGE_CHANNELS = values(PledgeChannel);
 export const PaymentMethod = {
   BEMO_TRANSFER: 'BEMO_TRANSFER',
   BANK_TRANSFER: 'BANK_TRANSFER',
-  E_WALLET: 'E_WALLET',
-  CASH: 'CASH',
   SHAM_CASH: 'SHAM_CASH',
+  SYRIATEL_CASH: 'SYRIATEL_CASH',
+  MTN_CASH: 'MTN_CASH',
   PAYPAL: 'PAYPAL',
   VISA: 'VISA',
+  CASH: 'CASH',
 } as const;
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];
 export const PAYMENT_METHODS = values(PaymentMethod);
 
-/** طرق متاحة فعلياً في Pledge & Verify (غير المحاكاة). */
-export const REAL_PAYMENT_METHODS = [
+export const PaymentMethodKind = {
+  TRANSFER: 'TRANSFER',
+  WALLET: 'WALLET',
+  CARD: 'CARD',
+  CASH: 'CASH',
+} as const;
+export type PaymentMethodKind = (typeof PaymentMethodKind)[keyof typeof PaymentMethodKind];
+export const PAYMENT_METHOD_KINDS = values(PaymentMethodKind);
+
+/** Methods that can use Pledge & Verify (transfer, then upload the receipt). PaymentMethodConfig decides per method. */
+export const RECEIPT_PAYMENT_METHODS = [
   PaymentMethod.BEMO_TRANSFER,
   PaymentMethod.BANK_TRANSFER,
-  PaymentMethod.E_WALLET,
+  PaymentMethod.SHAM_CASH,
+  PaymentMethod.SYRIATEL_CASH,
+  PaymentMethod.MTN_CASH,
 ] as const;
 
-/** طرق تظهر فقط في وضع العرض (DEMO_MODE). */
+/** Methods that can run as a simulated instant payment («Demo» badge, never counted as verified). */
 export const DEMO_PAYMENT_METHODS = [
   PaymentMethod.BEMO_TRANSFER,
+  PaymentMethod.BANK_TRANSFER,
   PaymentMethod.SHAM_CASH,
+  PaymentMethod.SYRIATEL_CASH,
+  PaymentMethod.MTN_CASH,
   PaymentMethod.PAYPAL,
   PaymentMethod.VISA,
 ] as const;
@@ -140,6 +151,7 @@ export const PledgeStatus = {
   RECEIPT_UPLOADED: 'RECEIPT_UPLOADED',
   COLLECTED: 'COLLECTED',
   VERIFIED: 'VERIFIED',
+  DEMO_CONFIRMED: 'DEMO_CONFIRMED',
   REJECTED: 'REJECTED',
   CANCELLED: 'CANCELLED',
 } as const;
@@ -165,3 +177,33 @@ export const ImportStatus = {
 } as const;
 export type ImportStatus = (typeof ImportStatus)[keyof typeof ImportStatus];
 export const IMPORT_STATUSES = values(ImportStatus);
+
+export const BeneficiaryKind = {
+  PATIENT: 'PATIENT',
+  ORPHAN: 'ORPHAN',
+  FAMILY: 'FAMILY',
+  OTHER: 'OTHER',
+} as const;
+export type BeneficiaryKind = (typeof BeneficiaryKind)[keyof typeof BeneficiaryKind];
+export const BENEFICIARY_KINDS = values(BeneficiaryKind);
+
+export const PayeeType = {
+  HOSPITAL: 'HOSPITAL',
+  CONTRACTOR: 'CONTRACTOR',
+  SUPPLIER: 'SUPPLIER',
+  BENEFICIARY_FAMILY: 'BENEFICIARY_FAMILY',
+  OTHER: 'OTHER',
+} as const;
+export type PayeeType = (typeof PayeeType)[keyof typeof PayeeType];
+export const PAYEE_TYPES = values(PayeeType);
+
+export const MessageChannel = { WHATSAPP: 'WHATSAPP' } as const;
+export type MessageChannel = (typeof MessageChannel)[keyof typeof MessageChannel];
+export const MESSAGE_CHANNELS = values(MessageChannel);
+
+export const OutboundStatus = {
+  QUEUED: 'QUEUED',
+  OPENED: 'OPENED',
+} as const;
+export type OutboundStatus = (typeof OutboundStatus)[keyof typeof OutboundStatus];
+export const OUTBOUND_STATUSES = values(OutboundStatus);

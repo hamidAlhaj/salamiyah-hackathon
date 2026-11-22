@@ -33,3 +33,8 @@ export function newCampaignSlug(prefix: string): string {
     .slice(0, 30);
   return `${clean || 'case'}-${randomCode(5).toLowerCase()}`;
 }
+
+/** Public beneficiary code: B-7K3Q. The only beneficiary identifier ever shown publicly. */
+export function newBeneficiaryCode(): string {
+  return `B-${randomCode(4)}`;
+}

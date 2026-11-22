@@ -8,9 +8,6 @@ CREATE TYPE "Locale" AS ENUM ('ar', 'en');
 CREATE TYPE "Currency" AS ENUM ('SYP', 'USD');
 
 -- CreateEnum
-CREATE TYPE "CampaignType" AS ENUM ('MEDICAL');
-
--- CreateEnum
 CREATE TYPE "CampaignStatus" AS ENUM ('DRAFT', 'ACTIVE', 'FUNDED', 'COMPLETED', 'CLOSED');
 
 -- CreateEnum
@@ -26,7 +23,7 @@ CREATE TYPE "CaseRoute" AS ENUM ('CROWDFUNDING', 'AGA_KHAN_REFERRAL', 'MONTHLY_B
 CREATE TYPE "Priority" AS ENUM ('VERY_URGENT', 'URGENT', 'NORMAL');
 
 -- CreateEnum
-CREATE TYPE "DocumentKind" AS ENUM ('MEDICAL_REPORT', 'ID_DOCUMENT', 'HOSPITAL_QUOTE', 'HOSPITAL_INVOICE', 'OTHER');
+CREATE TYPE "DocumentKind" AS ENUM ('MEDICAL_REPORT', 'ID_DOCUMENT', 'HOSPITAL_QUOTE', 'EXPENDITURE_PROOF', 'OTHER');
 
 -- CreateEnum
 CREATE TYPE "CollectionPointType" AS ENUM ('MOSQUE', 'CENTER', 'OFFICE', 'SHOP', 'OTHER');
@@ -35,10 +32,13 @@ CREATE TYPE "CollectionPointType" AS ENUM ('MOSQUE', 'CENTER', 'OFFICE', 'SHOP',
 CREATE TYPE "PledgeChannel" AS ENUM ('PLATFORM', 'COUNCIL', 'COLLECTOR');
 
 -- CreateEnum
-CREATE TYPE "PaymentMethod" AS ENUM ('BEMO_TRANSFER', 'BANK_TRANSFER', 'E_WALLET', 'CASH', 'SHAM_CASH', 'PAYPAL', 'VISA');
+CREATE TYPE "PaymentMethod" AS ENUM ('BEMO_TRANSFER', 'BANK_TRANSFER', 'SHAM_CASH', 'SYRIATEL_CASH', 'MTN_CASH', 'PAYPAL', 'VISA', 'CASH');
 
 -- CreateEnum
-CREATE TYPE "PledgeStatus" AS ENUM ('PLEDGED', 'RECEIPT_UPLOADED', 'COLLECTED', 'VERIFIED', 'REJECTED', 'CANCELLED');
+CREATE TYPE "PaymentMethodKind" AS ENUM ('TRANSFER', 'WALLET', 'CARD', 'CASH');
+
+-- CreateEnum
+CREATE TYPE "PledgeStatus" AS ENUM ('PLEDGED', 'RECEIPT_UPLOADED', 'COLLECTED', 'VERIFIED', 'DEMO_CONFIRMED', 'REJECTED', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "VerificationStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
@@ -48,6 +48,18 @@ CREATE TYPE "ImportKind" AS ENUM ('BENEFICIARIES');
 
 -- CreateEnum
 CREATE TYPE "ImportStatus" AS ENUM ('PREVIEW', 'COMMITTED', 'FAILED');
+
+-- CreateEnum
+CREATE TYPE "BeneficiaryKind" AS ENUM ('PATIENT', 'ORPHAN', 'FAMILY', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "PayeeType" AS ENUM ('HOSPITAL', 'CONTRACTOR', 'SUPPLIER', 'BENEFICIARY_FAMILY', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "MessageChannel" AS ENUM ('WHATSAPP');
+
+-- CreateEnum
+CREATE TYPE "OutboundStatus" AS ENUM ('QUEUED', 'OPENED');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -60,6 +72,7 @@ CREATE TABLE "users" (
     "locale" "Locale" NOT NULL DEFAULT 'ar',
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "local_council" TEXT,
+    "whatsapp_opt_in" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -69,6 +82,9 @@ CREATE TABLE "users" (
 -- CreateTable
 CREATE TABLE "beneficiaries" (
     "id" UUID NOT NULL,
+    "public_code" TEXT NOT NULL,
+    "kind" "BeneficiaryKind" NOT NULL DEFAULT 'OTHER',
+    "area" TEXT,
     "full_name" TEXT NOT NULL,
     "phone" TEXT,
     "national_id_hash" TEXT,
@@ -125,10 +141,31 @@ CREATE TABLE "cases" (
 );
 
 -- CreateTable
+CREATE TABLE "campaign_categories" (
+    "id" UUID NOT NULL,
+    "code" TEXT NOT NULL,
+    "name_ar" TEXT NOT NULL,
+    "name_en" TEXT NOT NULL,
+    "description_ar" TEXT,
+    "description_en" TEXT,
+    "icon" TEXT NOT NULL,
+    "sort_order" INTEGER NOT NULL DEFAULT 0,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "is_system" BOOLEAN NOT NULL DEFAULT false,
+    "requires_medical_case" BOOLEAN NOT NULL DEFAULT false,
+    "locked_payee_hospital" BOOLEAN NOT NULL DEFAULT false,
+    "supports_monthly_sponsorship" BOOLEAN NOT NULL DEFAULT false,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "campaign_categories_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "campaigns" (
     "id" UUID NOT NULL,
     "slug" TEXT NOT NULL,
-    "type" "CampaignType" NOT NULL DEFAULT 'MEDICAL',
+    "category_id" UUID NOT NULL,
     "case_id" UUID,
     "is_ongoing" BOOLEAN NOT NULL DEFAULT false,
     "title_ar" TEXT NOT NULL,
@@ -142,7 +179,9 @@ CREATE TABLE "campaigns" (
     "status" "CampaignStatus" NOT NULL DEFAULT 'DRAFT',
     "accepts_pledges" BOOLEAN NOT NULL DEFAULT true,
     "verified_amount" DECIMAL(14,2) NOT NULL DEFAULT 0,
-    "disbursed_amount" DECIMAL(14,2) NOT NULL DEFAULT 0,
+    "spent_amount" DECIMAL(14,2) NOT NULL DEFAULT 0,
+    "cover_key" TEXT,
+    "area" TEXT,
     "published_at" TIMESTAMP(3),
     "created_by_id" UUID NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -235,19 +274,23 @@ CREATE TABLE "verifications" (
 );
 
 -- CreateTable
-CREATE TABLE "disbursements" (
+CREATE TABLE "expenditures" (
     "id" UUID NOT NULL,
     "campaign_id" UUID NOT NULL,
-    "hospital_id" UUID NOT NULL,
+    "payee_type" "PayeeType" NOT NULL,
+    "payee_label" TEXT NOT NULL,
+    "hospital_id" UUID,
+    "beneficiary_id" UUID,
     "amount" DECIMAL(14,2) NOT NULL,
     "currency" "Currency" NOT NULL,
-    "invoice_document_id" UUID NOT NULL,
-    "note" TEXT,
+    "description" TEXT NOT NULL,
     "paid_at" TIMESTAMP(3) NOT NULL,
+    "period_month" TEXT,
+    "proof_document_id" UUID NOT NULL,
     "recorded_by_id" UUID NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "disbursements_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "expenditures_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -310,6 +353,68 @@ CREATE TABLE "notifications" (
 );
 
 -- CreateTable
+CREATE TABLE "campaign_beneficiaries" (
+    "id" UUID NOT NULL,
+    "campaign_id" UUID NOT NULL,
+    "beneficiary_id" UUID NOT NULL,
+    "monthly_amount" DECIMAL(14,2),
+    "started_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "ended_at" TIMESTAMP(3),
+
+    CONSTRAINT "campaign_beneficiaries_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "payment_method_configs" (
+    "id" UUID NOT NULL,
+    "method" "PaymentMethod" NOT NULL,
+    "kind" "PaymentMethodKind" NOT NULL,
+    "label_ar" TEXT NOT NULL,
+    "label_en" TEXT NOT NULL,
+    "account_name" TEXT,
+    "account_number" TEXT,
+    "instructions_ar" TEXT,
+    "instructions_en" TEXT,
+    "allows_receipt_upload" BOOLEAN NOT NULL DEFAULT false,
+    "allows_demo_checkout" BOOLEAN NOT NULL DEFAULT false,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "sort_order" INTEGER NOT NULL DEFAULT 0,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "payment_method_configs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "campaign_payment_accounts" (
+    "id" UUID NOT NULL,
+    "campaign_id" UUID NOT NULL,
+    "method" "PaymentMethod" NOT NULL,
+    "account_name" TEXT NOT NULL,
+    "account_number" TEXT NOT NULL,
+    "note" TEXT,
+
+    CONSTRAINT "campaign_payment_accounts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "outbound_messages" (
+    "id" UUID NOT NULL,
+    "user_id" UUID,
+    "phone" TEXT NOT NULL,
+    "channel" "MessageChannel" NOT NULL DEFAULT 'WHATSAPP',
+    "template" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "link" TEXT,
+    "status" "OutboundStatus" NOT NULL DEFAULT 'QUEUED',
+    "related_type" TEXT,
+    "related_id" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "opened_at" TIMESTAMP(3),
+
+    CONSTRAINT "outbound_messages_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_CollectorPoints" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL
@@ -320,6 +425,9 @@ CREATE UNIQUE INDEX "users_phone_key" ON "users"("phone");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "beneficiaries_public_code_key" ON "beneficiaries"("public_code");
 
 -- CreateIndex
 CREATE INDEX "beneficiaries_national_id_hash_idx" ON "beneficiaries"("national_id_hash");
@@ -334,13 +442,19 @@ CREATE UNIQUE INDEX "cases_tracking_no_key" ON "cases"("tracking_no");
 CREATE INDEX "cases_status_priority_idx" ON "cases"("status", "priority");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "campaign_categories_code_key" ON "campaign_categories"("code");
+
+-- CreateIndex
+CREATE INDEX "campaign_categories_is_active_sort_order_idx" ON "campaign_categories"("is_active", "sort_order");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "campaigns_slug_key" ON "campaigns"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "campaigns_case_id_key" ON "campaigns"("case_id");
 
 -- CreateIndex
-CREATE INDEX "campaigns_status_type_priority_idx" ON "campaigns"("status", "type", "priority");
+CREATE INDEX "campaigns_status_category_id_priority_idx" ON "campaigns"("status", "category_id", "priority");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "documents_storage_key_key" ON "documents"("storage_key");
@@ -367,13 +481,31 @@ CREATE INDEX "receipts_sha256_idx" ON "receipts"("sha256");
 CREATE INDEX "verifications_status_created_at_idx" ON "verifications"("status", "created_at");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "disbursements_invoice_document_id_key" ON "disbursements"("invoice_document_id");
+CREATE UNIQUE INDEX "expenditures_proof_document_id_key" ON "expenditures"("proof_document_id");
+
+-- CreateIndex
+CREATE INDEX "expenditures_campaign_id_paid_at_idx" ON "expenditures"("campaign_id", "paid_at");
+
+-- CreateIndex
+CREATE INDEX "expenditures_beneficiary_id_period_month_idx" ON "expenditures"("beneficiary_id", "period_month");
 
 -- CreateIndex
 CREATE INDEX "audit_logs_entity_type_entity_id_idx" ON "audit_logs"("entity_type", "entity_id");
 
 -- CreateIndex
 CREATE INDEX "notifications_user_id_read_at_idx" ON "notifications"("user_id", "read_at");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "campaign_beneficiaries_campaign_id_beneficiary_id_key" ON "campaign_beneficiaries"("campaign_id", "beneficiary_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "payment_method_configs_method_key" ON "payment_method_configs"("method");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "campaign_payment_accounts_campaign_id_method_key" ON "campaign_payment_accounts"("campaign_id", "method");
+
+-- CreateIndex
+CREATE INDEX "outbound_messages_status_created_at_idx" ON "outbound_messages"("status", "created_at");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_CollectorPoints_AB_unique" ON "_CollectorPoints"("A", "B");
@@ -395,6 +527,9 @@ ALTER TABLE "cases" ADD CONSTRAINT "cases_submitted_by_id_fkey" FOREIGN KEY ("su
 
 -- AddForeignKey
 ALTER TABLE "cases" ADD CONSTRAINT "cases_reviewed_by_id_fkey" FOREIGN KEY ("reviewed_by_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "campaigns" ADD CONSTRAINT "campaigns_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "campaign_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "campaigns" ADD CONSTRAINT "campaigns_case_id_fkey" FOREIGN KEY ("case_id") REFERENCES "cases"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -439,16 +574,19 @@ ALTER TABLE "verifications" ADD CONSTRAINT "verifications_receipt_id_fkey" FOREI
 ALTER TABLE "verifications" ADD CONSTRAINT "verifications_reviewer_id_fkey" FOREIGN KEY ("reviewer_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "disbursements" ADD CONSTRAINT "disbursements_campaign_id_fkey" FOREIGN KEY ("campaign_id") REFERENCES "campaigns"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "expenditures" ADD CONSTRAINT "expenditures_campaign_id_fkey" FOREIGN KEY ("campaign_id") REFERENCES "campaigns"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "disbursements" ADD CONSTRAINT "disbursements_hospital_id_fkey" FOREIGN KEY ("hospital_id") REFERENCES "hospitals"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "expenditures" ADD CONSTRAINT "expenditures_hospital_id_fkey" FOREIGN KEY ("hospital_id") REFERENCES "hospitals"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "disbursements" ADD CONSTRAINT "disbursements_invoice_document_id_fkey" FOREIGN KEY ("invoice_document_id") REFERENCES "documents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "expenditures" ADD CONSTRAINT "expenditures_beneficiary_id_fkey" FOREIGN KEY ("beneficiary_id") REFERENCES "beneficiaries"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "disbursements" ADD CONSTRAINT "disbursements_recorded_by_id_fkey" FOREIGN KEY ("recorded_by_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "expenditures" ADD CONSTRAINT "expenditures_proof_document_id_fkey" FOREIGN KEY ("proof_document_id") REFERENCES "documents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "expenditures" ADD CONSTRAINT "expenditures_recorded_by_id_fkey" FOREIGN KEY ("recorded_by_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "campaign_updates" ADD CONSTRAINT "campaign_updates_campaign_id_fkey" FOREIGN KEY ("campaign_id") REFERENCES "campaigns"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -464,6 +602,18 @@ ALTER TABLE "import_jobs" ADD CONSTRAINT "import_jobs_created_by_id_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "campaign_beneficiaries" ADD CONSTRAINT "campaign_beneficiaries_campaign_id_fkey" FOREIGN KEY ("campaign_id") REFERENCES "campaigns"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "campaign_beneficiaries" ADD CONSTRAINT "campaign_beneficiaries_beneficiary_id_fkey" FOREIGN KEY ("beneficiary_id") REFERENCES "beneficiaries"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "campaign_payment_accounts" ADD CONSTRAINT "campaign_payment_accounts_campaign_id_fkey" FOREIGN KEY ("campaign_id") REFERENCES "campaigns"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "outbound_messages" ADD CONSTRAINT "outbound_messages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_CollectorPoints" ADD CONSTRAINT "_CollectorPoints_A_fkey" FOREIGN KEY ("A") REFERENCES "collection_points"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -9,6 +9,7 @@ datasource db {
 
 // ───────────── Enums ─────────────
 // Keep in sync with api/src/common/shared/enums.ts (and the web/mobile copies).
+// Campaign categories are DATA (CampaignCategory table), not an enum.
 
 enum Role {
   DONOR
@@ -27,11 +28,6 @@ enum Locale {
 enum Currency {
   SYP
   USD
-}
-
-/// Medical only for the PoC; future campaign types are added here.
-enum CampaignType {
-  MEDICAL
 }
 
 enum CampaignStatus {
@@ -77,7 +73,7 @@ enum DocumentKind {
   MEDICAL_REPORT
   ID_DOCUMENT
   HOSPITAL_QUOTE
-  HOSPITAL_INVOICE
+  EXPENDITURE_PROOF // public-safe invoice or photo attached to an expenditure
   OTHER
 }
 
@@ -95,14 +91,24 @@ enum PledgeChannel {
   COLLECTOR
 }
 
+/// Every method except CASH can run as a simulated instant payment (isDemo, «Demo» badge) when its
+/// PaymentMethodConfig allows it; transfers and wallets can also use Pledge & Verify (receipt upload).
 enum PaymentMethod {
   BEMO_TRANSFER
   BANK_TRANSFER
-  E_WALLET
+  SHAM_CASH
+  SYRIATEL_CASH
+  MTN_CASH
+  PAYPAL
+  VISA
   CASH
-  SHAM_CASH // demo simulation only
-  PAYPAL // demo simulation only
-  VISA // demo simulation only
+}
+
+enum PaymentMethodKind {
+  TRANSFER
+  WALLET
+  CARD
+  CASH
 }
 
 enum PledgeStatus {
@@ -110,6 +116,7 @@ enum PledgeStatus {
   RECEIPT_UPLOADED
   COLLECTED
   VERIFIED
+  DEMO_CONFIRMED // simulated payment done; never counted as verified money
   REJECTED
   CANCELLED
 }
@@ -130,20 +137,45 @@ enum ImportStatus {
   FAILED
 }
 
+enum BeneficiaryKind {
+  PATIENT
+  ORPHAN
+  FAMILY
+  OTHER
+}
+
+enum PayeeType {
+  HOSPITAL
+  CONTRACTOR
+  SUPPLIER
+  BENEFICIARY_FAMILY
+  OTHER
+}
+
+enum MessageChannel {
+  WHATSAPP
+}
+
+enum OutboundStatus {
+  QUEUED
+  OPENED
+}
+
 // ───────────── Models ─────────────
 
 model User {
-  id           String   @id @default(uuid()) @db.Uuid
-  fullName     String   @map("full_name")
-  phone        String   @unique
-  email        String?  @unique
-  passwordHash String?  @map("password_hash")
-  role         Role     @default(DONOR)
-  locale       Locale   @default(ar)
-  isActive     Boolean  @default(true) @map("is_active")
-  localCouncil String?  @map("local_council")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid()) @db.Uuid
+  fullName      String   @map("full_name")
+  phone         String   @unique
+  email         String?  @unique
+  passwordHash  String?  @map("password_hash")
+  role          Role     @default(DONOR)
+  locale        Locale   @default(ar)
+  isActive      Boolean  @default(true) @map("is_active")
+  localCouncil  String?  @map("local_council")
+  whatsappOptIn Boolean  @default(false) @map("whatsapp_opt_in")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   pledges          Pledge[]          @relation("DonorPledges")
   recordedPledges  Pledge[]          @relation("RecordedPledges")
@@ -153,32 +185,39 @@ model User {
   reviewedCases    Case[]            @relation("ReviewedCases")
   campaigns        Campaign[]
   documents        Document[]
-  disbursements    Disbursement[]
+  expenditures     Expenditure[]
   campaignUpdates  CampaignUpdate[]
   collectionPoints CollectionPoint[] @relation("CollectorPoints")
   auditLogs        AuditLog[]
   importJobs       ImportJob[]
   notifications    Notification[]
+  outboundMessages OutboundMessage[]
 
   @@map("users")
 }
 
+/// Identity fields are private. Public pages only ever show publicCode, kind and area.
 model Beneficiary {
-  id              String   @id @default(uuid()) @db.Uuid
-  fullName        String   @map("full_name")
+  id              String          @id @default(uuid()) @db.Uuid
+  publicCode      String          @unique @map("public_code") // B-XXXX
+  kind            BeneficiaryKind @default(OTHER)
+  area            String? // neighbourhood at most
+  fullName        String          @map("full_name")
   phone           String?
-  nationalIdHash  String?  @map("national_id_hash")
-  nationalIdLast4 String?  @map("national_id_last4")
-  localCouncil    String?  @map("local_council")
-  otherPrograms   String[] @map("other_programs")
-  isSuspended     Boolean  @default(false) @map("is_suspended")
-  suspensionNote  String?  @map("suspension_note")
-  importJobId     String?  @map("import_job_id") @db.Uuid
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  nationalIdHash  String?         @map("national_id_hash")
+  nationalIdLast4 String?         @map("national_id_last4")
+  localCouncil    String?         @map("local_council")
+  otherPrograms   String[]        @map("other_programs")
+  isSuspended     Boolean         @default(false) @map("is_suspended")
+  suspensionNote  String?         @map("suspension_note")
+  importJobId     String?         @map("import_job_id") @db.Uuid
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
 
-  cases     Case[]
-  importJob ImportJob? @relation(fields: [importJobId], references: [id], onDelete: SetNull)
+  cases         Case[]
+  campaignLinks CampaignBeneficiary[]
+  expenditures  Expenditure[]
+  importJob     ImportJob?            @relation(fields: [importJobId], references: [id], onDelete: SetNull)
 
   @@index([nationalIdHash])
   @@index([phone])
@@ -193,9 +232,9 @@ model Hospital {
   isPrivate Boolean @default(false) @map("is_private")
   isActive  Boolean @default(true) @map("is_active")
 
-  cases         Case[]
-  campaigns     Campaign[]
-  disbursements Disbursement[]
+  cases        Case[]
+  campaigns    Campaign[]
+  expenditures Expenditure[]
 
   @@map("hospitals")
 }
@@ -235,37 +274,68 @@ model Case {
   @@map("cases")
 }
 
+/// Campaign categories are data, not an enum. Business rules read the behaviour flags, never the code.
+/// System categories (seeded) can be deactivated but never deleted.
+model CampaignCategory {
+  id                         String   @id @default(uuid()) @db.Uuid
+  code                       String   @unique // e.g. MEDICAL_AID
+  nameAr                     String   @map("name_ar")
+  nameEn                     String   @map("name_en")
+  descriptionAr              String?  @map("description_ar")
+  descriptionEn              String?  @map("description_en")
+  icon                       String // key from the fixed icon set (CATEGORY_ICONS), no uploads
+  sortOrder                  Int      @default(0) @map("sort_order")
+  isActive                   Boolean  @default(true) @map("is_active")
+  isSystem                   Boolean  @default(false) @map("is_system")
+  // Behaviour flags (new categories get none: generic campaign, any payee type)
+  requiresMedicalCase        Boolean  @default(false) @map("requires_medical_case")
+  lockedPayeeHospital        Boolean  @default(false) @map("locked_payee_hospital")
+  supportsMonthlySponsorship Boolean  @default(false) @map("supports_monthly_sponsorship")
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @updatedAt @map("updated_at")
+
+  campaigns Campaign[]
+
+  @@index([isActive, sortOrder])
+  @@map("campaign_categories")
+}
+
 model Campaign {
-  id              String         @id @default(uuid()) @db.Uuid
-  slug            String         @unique
-  type            CampaignType   @default(MEDICAL)
-  caseId          String?        @unique @map("case_id") @db.Uuid
-  isOngoing       Boolean        @default(false) @map("is_ongoing")
-  titleAr         String         @map("title_ar")
-  titleEn         String?        @map("title_en")
-  summaryAr       String         @map("summary_ar")
-  summaryEn       String?        @map("summary_en")
-  priority        Priority       @default(NORMAL)
-  targetAmount    Decimal        @map("target_amount") @db.Decimal(14, 2)
-  currency        Currency       @default(SYP)
-  hospitalId      String?        @map("hospital_id") @db.Uuid
-  status          CampaignStatus @default(DRAFT)
-  acceptsPledges  Boolean        @default(true) @map("accepts_pledges")
-  verifiedAmount  Decimal        @default(0) @map("verified_amount") @db.Decimal(14, 2)
-  disbursedAmount Decimal        @default(0) @map("disbursed_amount") @db.Decimal(14, 2)
-  publishedAt     DateTime?      @map("published_at")
-  createdById     String         @map("created_by_id") @db.Uuid
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
+  id             String         @id @default(uuid()) @db.Uuid
+  slug           String         @unique
+  categoryId     String         @map("category_id") @db.Uuid
+  caseId         String?        @unique @map("case_id") @db.Uuid
+  isOngoing      Boolean        @default(false) @map("is_ongoing")
+  titleAr        String         @map("title_ar")
+  titleEn        String?        @map("title_en")
+  summaryAr      String         @map("summary_ar")
+  summaryEn      String?        @map("summary_en")
+  priority       Priority       @default(NORMAL)
+  targetAmount   Decimal        @map("target_amount") @db.Decimal(14, 2)
+  currency       Currency       @default(SYP)
+  hospitalId     String?        @map("hospital_id") @db.Uuid
+  status         CampaignStatus @default(DRAFT)
+  acceptsPledges Boolean        @default(true) @map("accepts_pledges")
+  verifiedAmount Decimal        @default(0) @map("verified_amount") @db.Decimal(14, 2) // real, verified money only
+  spentAmount    Decimal        @default(0) @map("spent_amount") @db.Decimal(14, 2) // remaining = verified - spent
+  coverKey       String?        @map("cover_key") // bundled illustration key, never a photo
+  area           String?
+  publishedAt    DateTime?      @map("published_at")
+  createdById    String         @map("created_by_id") @db.Uuid
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
-  case          Case?            @relation(fields: [caseId], references: [id], onDelete: Restrict)
-  hospital      Hospital?        @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
-  createdBy     User             @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  pledges       Pledge[]
-  updates       CampaignUpdate[]
-  disbursements Disbursement[]
+  category        CampaignCategory         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  case            Case?                    @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  hospital        Hospital?                @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  createdBy       User                     @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  pledges         Pledge[]
+  updates         CampaignUpdate[]
+  expenditures    Expenditure[]
+  beneficiaries   CampaignBeneficiary[]
+  paymentAccounts CampaignPaymentAccount[]
 
-  @@index([status, type, priority])
+  @@index([status, categoryId, priority])
   @@map("campaigns")
 }
 
@@ -281,9 +351,9 @@ model Document {
   uploadedById String       @map("uploaded_by_id") @db.Uuid
   createdAt    DateTime     @default(now()) @map("created_at")
 
-  case         Case?         @relation(fields: [caseId], references: [id], onDelete: Restrict)
-  uploadedBy   User          @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
-  disbursement Disbursement?
+  case        Case?        @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  uploadedBy  User         @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  expenditure Expenditure?
 
   @@map("documents")
 }
@@ -373,24 +443,33 @@ model Verification {
   @@map("verifications")
 }
 
-model Disbursement {
-  id                String   @id @default(uuid()) @db.Uuid
-  campaignId        String   @map("campaign_id") @db.Uuid
-  hospitalId        String   @map("hospital_id") @db.Uuid
-  amount            Decimal  @db.Decimal(14, 2)
-  currency          Currency
-  invoiceDocumentId String   @unique @map("invoice_document_id") @db.Uuid
-  note              String?
-  paidAt            DateTime @map("paid_at")
-  recordedById      String   @map("recorded_by_id") @db.Uuid
-  createdAt         DateTime @default(now()) @map("created_at")
+/// Spending from a campaign (replaces the hospital-only Disbursement). Rules read the campaign category's
+/// flags: lockedPayeeHospital → payee HOSPITAL = the approved hospital; supportsMonthlySponsorship → periodMonth rows.
+model Expenditure {
+  id              String    @id @default(uuid()) @db.Uuid
+  campaignId      String    @map("campaign_id") @db.Uuid
+  payeeType       PayeeType @map("payee_type")
+  payeeLabel      String    @map("payee_label") // public-safe text, never a private person's name
+  hospitalId      String?   @map("hospital_id") @db.Uuid
+  beneficiaryId   String?   @map("beneficiary_id") @db.Uuid
+  amount          Decimal   @db.Decimal(14, 2)
+  currency        Currency
+  description     String
+  paidAt          DateTime  @map("paid_at")
+  periodMonth     String?   @map("period_month") // YYYY-MM, monthly sponsorship
+  proofDocumentId String    @unique @map("proof_document_id") @db.Uuid
+  recordedById    String    @map("recorded_by_id") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at")
 
-  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
-  hospital        Hospital @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
-  invoiceDocument Document @relation(fields: [invoiceDocumentId], references: [id], onDelete: Restrict)
-  recordedBy      User     @relation(fields: [recordedById], references: [id], onDelete: Restrict)
+  campaign      Campaign     @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  hospital      Hospital?    @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  beneficiary   Beneficiary? @relation(fields: [beneficiaryId], references: [id], onDelete: Restrict)
+  proofDocument Document     @relation(fields: [proofDocumentId], references: [id], onDelete: Restrict)
+  recordedBy    User         @relation(fields: [recordedById], references: [id], onDelete: Restrict)
 
-  @@map("disbursements")
+  @@index([campaignId, paidAt])
+  @@index([beneficiaryId, periodMonth])
+  @@map("expenditures")
 }
 
 model CampaignUpdate {
@@ -410,7 +489,7 @@ model CampaignUpdate {
 model AuditLog {
   id         String   @id @default(uuid()) @db.Uuid
   actorId    String?  @map("actor_id") @db.Uuid
-  action     String // e.g. case.approve, pledge.verify, campaign.hospital_change
+  action     String // e.g. case.approve, pledge.verify, expenditure.create
   entityType String   @map("entity_type")
   entityId   String   @map("entity_id")
   before     Json?
@@ -458,4 +537,76 @@ model Notification {
 
   @@index([userId, readAt])
   @@map("notifications")
+}
+
+/// Anonymised beneficiaries linked to a campaign (public: code, kind, area and counts only).
+model CampaignBeneficiary {
+  id            String    @id @default(uuid()) @db.Uuid
+  campaignId    String    @map("campaign_id") @db.Uuid
+  beneficiaryId String    @map("beneficiary_id") @db.Uuid
+  monthlyAmount Decimal?  @map("monthly_amount") @db.Decimal(14, 2) // monthly sponsorship only
+  startedAt     DateTime  @default(now()) @map("started_at")
+  endedAt       DateTime? @map("ended_at")
+
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Restrict)
+
+  @@unique([campaignId, beneficiaryId])
+  @@map("campaign_beneficiaries")
+}
+
+/// Receiving details shown to donors per method. All account data is FAKE for the hackathon.
+model PaymentMethodConfig {
+  id                  String            @id @default(uuid()) @db.Uuid
+  method              PaymentMethod     @unique
+  kind                PaymentMethodKind
+  labelAr             String            @map("label_ar")
+  labelEn             String            @map("label_en")
+  accountName         String?           @map("account_name")
+  accountNumber       String?           @map("account_number")
+  instructionsAr      String?           @map("instructions_ar")
+  instructionsEn      String?           @map("instructions_en")
+  allowsReceiptUpload Boolean           @default(false) @map("allows_receipt_upload") // Pledge & Verify
+  allowsDemoCheckout  Boolean           @default(false) @map("allows_demo_checkout") // simulated instant payment
+  isActive            Boolean           @default(true) @map("is_active")
+  sortOrder           Int               @default(0) @map("sort_order")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+
+  @@map("payment_method_configs")
+}
+
+/// Per-campaign override of the receiving account for one method.
+model CampaignPaymentAccount {
+  id            String        @id @default(uuid()) @db.Uuid
+  campaignId    String        @map("campaign_id") @db.Uuid
+  method        PaymentMethod
+  accountName   String        @map("account_name")
+  accountNumber String        @map("account_number")
+  note          String?
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, method])
+  @@map("campaign_payment_accounts")
+}
+
+/// Internal WhatsApp outbox: staff send each message with a one-tap wa.me link (no WhatsApp API).
+model OutboundMessage {
+  id          String         @id @default(uuid()) @db.Uuid
+  userId      String?        @map("user_id") @db.Uuid
+  phone       String
+  channel     MessageChannel @default(WHATSAPP)
+  template    String // e.g. donation.received, receipt.issued, campaign.new
+  body        String
+  link        String?
+  status      OutboundStatus @default(QUEUED)
+  relatedType String?        @map("related_type")
+  relatedId   String?        @map("related_id")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  openedAt    DateTime?      @map("opened_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("outbound_messages")
 }

@@ -14,6 +14,7 @@ import {
   LIMITS,
 } from '../common/shared';
 import { AuditService } from '../audit/audit.service';
+import { allocateBeneficiaryCodes } from '../common/utils/beneficiary-codes';
 import { hashNationalId } from '../common/utils/national-id';
 import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
@@ -122,8 +123,10 @@ export class ImportsService {
     const result = await this.run(table, mapping);
 
     const created = await this.prisma.$transaction(async (tx) => {
+      const codes = await allocateBeneficiaryCodes(tx, result.valid.length);
       const { count } = await tx.beneficiary.createMany({
-        data: result.valid.map((r) => ({
+        data: result.valid.map((r, i) => ({
+          publicCode: codes[i],
           fullName: r.data.fullName,
           phone: r.data.phone ?? null,
           nationalIdHash: r.nationalIdHash,

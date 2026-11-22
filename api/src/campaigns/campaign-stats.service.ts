@@ -38,7 +38,7 @@ export class CampaignStatsService {
       by: ['campaignId', 'status', 'isDemo'],
       where: {
         campaignId: { in: campaignIds },
-        status: { in: ['RECEIPT_UPLOADED', 'COLLECTED', 'VERIFIED'] },
+        status: { in: ['RECEIPT_UPLOADED', 'COLLECTED', 'VERIFIED', 'DEMO_CONFIRMED'] },
       },
       _sum: { amount: true },
       _count: { _all: true },
@@ -49,7 +49,7 @@ export class CampaignStatsService {
       if (!stats) continue;
       const sum = g._sum.amount ?? new Prisma.Decimal(0);
       if (g.isDemo) {
-        if (this.demoMode && g.status === 'VERIFIED') {
+        if (this.demoMode && g.status === 'DEMO_CONFIRMED') {
           stats.demo = stats.demo.plus(sum);
           stats.donorsCount += g._count._all;
         }

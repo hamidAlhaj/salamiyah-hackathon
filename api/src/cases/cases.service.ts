@@ -11,6 +11,7 @@ import { DEFAULT_SLA_DAYS } from '../common/shared';
 import { AuditService } from '../audit/audit.service';
 import { newCampaignSlug, newTrackingNo } from '../common/utils/codes';
 import { money, toDecimal } from '../common/utils/money';
+import { allocateBeneficiaryCodes } from '../common/utils/beneficiary-codes';
 import { hashNationalId } from '../common/utils/national-id';
 import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
@@ -80,8 +81,11 @@ export class CasesService {
       });
 
       if (!beneficiary) {
+        const [publicCode] = await allocateBeneficiaryCodes(tx, 1);
         beneficiary = await tx.beneficiary.create({
           data: {
+            publicCode,
+            kind: 'PATIENT',
             fullName: dto.beneficiaryName,
             phone: dto.beneficiaryPhone,
             nationalIdHash: hash,
@@ -395,10 +399,19 @@ export class CasesService {
       if (!c.approvedAmount || !c.hospitalId)
         throw new ConflictException('missing_approval_data');
 
+      // The category is chosen by its behaviour flag, never by its code.
+      const category = await tx.campaignCategory.findFirst({
+        where: { requiresMedicalCase: true, isActive: true },
+        orderBy: { sortOrder: 'asc' },
+        select: { id: true },
+      });
+      if (!category) throw new ConflictException('no_medical_category');
+
       const isAnonymous = dto.isAnonymous ?? true;
       const campaign = await tx.campaign.create({
         data: {
           slug: newCampaignSlug(c.category),
+          categoryId: category.id,
           caseId: c.id,
           titleAr: dto.titleAr,
           titleEn: dto.titleEn,

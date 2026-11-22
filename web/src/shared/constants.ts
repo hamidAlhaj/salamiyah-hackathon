@@ -16,3 +16,21 @@ export type AllowedUploadMime = (typeof ALLOWED_UPLOAD_MIME)[number];
 
 /** المدة الافتراضية قبل اعتبار الطلب متأخراً (FR-11). */
 export const DEFAULT_SLA_DAYS = 7;
+
+/**
+ * The fixed icon set for campaign categories (CampaignCategory.icon). ADMIN picks one of these keys;
+ * there are no icon uploads. Web and mobile map each key to a bundled icon.
+ */
+export const CATEGORY_ICONS = [
+  'heart-pulse',
+  'child',
+  'home',
+  'hands',
+  'book',
+  'basket',
+  'water',
+  'sun',
+  'users',
+  'star',
+] as const;
+export type CategoryIcon = (typeof CATEGORY_ICONS)[number];

@@ -6,7 +6,6 @@ describe('enum sync: src/common/shared matches the Prisma enums exactly', () => 
     ['Role', Prisma.Role, Shared.Role],
     ['Locale', Prisma.Locale, Shared.Locale],
     ['Currency', Prisma.Currency, Shared.Currency],
-    ['CampaignType', Prisma.CampaignType, Shared.CampaignType],
     ['CampaignStatus', Prisma.CampaignStatus, Shared.CampaignStatus],
     ['CaseCategory', Prisma.CaseCategory, Shared.CaseCategory],
     ['CaseStatus', Prisma.CaseStatus, Shared.CaseStatus],
@@ -20,6 +19,11 @@ describe('enum sync: src/common/shared matches the Prisma enums exactly', () => 
     ['VerificationStatus', Prisma.VerificationStatus, Shared.VerificationStatus],
     ['ImportKind', Prisma.ImportKind, Shared.ImportKind],
     ['ImportStatus', Prisma.ImportStatus, Shared.ImportStatus],
+    ['PaymentMethodKind', Prisma.PaymentMethodKind, Shared.PaymentMethodKind],
+    ['BeneficiaryKind', Prisma.BeneficiaryKind, Shared.BeneficiaryKind],
+    ['PayeeType', Prisma.PayeeType, Shared.PayeeType],
+    ['MessageChannel', Prisma.MessageChannel, Shared.MessageChannel],
+    ['OutboundStatus', Prisma.OutboundStatus, Shared.OutboundStatus],
   ];
 
   it.each(pairs)('%s', (_name, prismaEnum, sharedEnum) => {
@@ -31,8 +35,18 @@ describe('enum sync: src/common/shared matches the Prisma enums exactly', () => 
     expect(pairs.map(([name]) => name).sort()).toEqual(prismaEnumNames);
   });
 
-  it('keeps the hackathon scope medical-only', () => {
-    expect(Object.values(Prisma.CampaignType)).toEqual(['MEDICAL']);
+  it('treats campaign categories as data, not as an enum', () => {
+    expect(Object.keys(Prisma.$Enums)).not.toContain('CampaignType');
+    expect(Object.keys(Prisma.$Enums)).not.toContain('CampaignCategory');
+    expect(Object.keys(Shared)).not.toContain('CampaignType');
+    expect(Object.keys(Shared)).not.toContain('CAMPAIGN_TYPES');
+  });
+
+  it('keeps demo-capable and receipt-capable methods inside PaymentMethod, never CASH', () => {
+    for (const m of [...Shared.DEMO_PAYMENT_METHODS, ...Shared.RECEIPT_PAYMENT_METHODS]) {
+      expect(Object.values(Prisma.PaymentMethod)).toContain(m);
+      expect(m).not.toBe('CASH');
+    }
   });
 });
 

@@ -8,7 +8,7 @@ import { CampaignsModule } from './campaigns/campaigns.module';
 import { CasesModule } from './cases/cases.module';
 import { AccessModule } from './common/access/access.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { DisbursementsModule } from './disbursements/disbursements.module';
+import { ExpendituresModule } from './expenditures/expenditures.module';
 import { HealthController } from './health.controller';
 import { LookupsModule } from './hospitals/lookups.module';
 import { ImportsModule } from './imports/imports.module';
@@ -34,7 +34,7 @@ import { VerificationsModule } from './verifications/verifications.module';
     CasesModule,
     PledgesModule,
     VerificationsModule,
-    DisbursementsModule,
+    ExpendituresModule,
     LookupsModule,
     UsersModule,
     ImportsModule,

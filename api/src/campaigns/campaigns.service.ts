@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type { Paginated, PublicCampaign, PublicCampaignDetail } from '../common/shared';
 import { AuditService } from '../audit/audit.service';
@@ -16,6 +16,7 @@ import type {
 } from './campaigns.dto';
 
 const publicInclude = {
+  category: { select: { id: true, code: true, nameAr: true, nameEn: true, icon: true } },
   hospital: { select: { nameAr: true, nameEn: true } },
   case: { select: { category: true, isAnonymous: true, trackingNo: true } },
 } satisfies Prisma.CampaignInclude;
@@ -35,8 +36,8 @@ export class CampaignsService {
   ) {}
 
   async listPublic(query: ListCampaignsQueryDto): Promise<Paginated<PublicCampaign>> {
+    // All categories are public (the category filter arrives with the categories API in P06).
     const where: Prisma.CampaignWhereInput = {
-      type: 'MEDICAL',
       status: { in: [...PUBLIC_STATUSES] },
       ...(query.priority ? { priority: query.priority } : {}),
     };
@@ -78,14 +79,16 @@ export class CampaignsService {
     };
   }
 
-  /** الشفافية: المتحقق، بانتظار التحقق، المصروف ولأي مشفى (FR-23). */
+  /** Per-campaign transparency: verified, pending, demo (separate), spent and the public-safe spending list. */
   async transparency(id: string) {
     const campaign = await this.prisma.campaign.findUnique({
       where: { id },
       include: {
-        disbursements: {
+        expenditures: {
           select: {
             id: true,
+            payeeType: true,
+            payeeLabel: true,
             amount: true,
             currency: true,
             paidAt: true,
@@ -101,27 +104,43 @@ export class CampaignsService {
       campaignId: id,
       currency: campaign.currency,
       targetAmount: money(campaign.targetAmount),
-      verifiedAmount: money(campaign.verifiedAmount.plus(stats?.demo ?? 0)),
+      verifiedAmount: money(campaign.verifiedAmount),
       pendingAmount: money(stats?.pending),
-      disbursedAmount: money(campaign.disbursedAmount),
-      disbursements: campaign.disbursements.map((d) => ({
-        id: d.id,
-        amount: money(d.amount),
-        currency: d.currency,
-        paidAt: d.paidAt.toISOString(),
-        hospital: d.hospital.nameAr,
-        hospitalEn: d.hospital.nameEn,
+      demoAmount: money(stats?.demo),
+      spentAmount: money(campaign.spentAmount),
+      remainingAmount: money(campaign.verifiedAmount.minus(campaign.spentAmount)),
+      expenditures: campaign.expenditures.map((e) => ({
+        id: e.id,
+        payeeType: e.payeeType,
+        payee: e.payeeLabel,
+        hospital: e.hospital?.nameAr ?? null,
+        hospitalEn: e.hospital?.nameEn ?? null,
+        amount: money(e.amount),
+        currency: e.currency,
+        paidAt: e.paidAt.toISOString(),
       })),
     };
   }
 
+  /**
+   * ADMIN creates a direct (ongoing) campaign in an active category. Categories whose campaigns come from
+   * the medical case pipeline (`requiresMedicalCase`) are refused here. Full create API: P06.
+   */
   async createOngoing(dto: CreateOngoingCampaignDto, actor: AuthenticatedUser) {
     this.access.requireRole(actor, ['ADMIN']);
     const actorId = actor.id;
+    const category = await this.prisma.campaignCategory.findUnique({
+      where: { id: dto.categoryId },
+      select: { id: true, isActive: true, requiresMedicalCase: true },
+    });
+    if (!category || !category.isActive) throw new NotFoundException('category_not_found');
+    if (category.requiresMedicalCase)
+      throw new ConflictException('category_requires_medical_case');
     return this.prisma.$transaction(async (tx) => {
       const campaign = await tx.campaign.create({
         data: {
           slug: newCampaignSlug('program'),
+          categoryId: category.id,
           isOngoing: true,
           titleAr: dto.titleAr,
           titleEn: dto.titleEn,
@@ -208,7 +227,8 @@ export class CampaignsService {
         currency: true,
         targetAmount: true,
         verifiedAmount: true,
-        disbursedAmount: true,
+        spentAmount: true,
+        category: { select: { id: true, code: true, nameAr: true, icon: true } },
         hospital: { select: { id: true, nameAr: true } },
       },
     });
@@ -223,18 +243,27 @@ export class CampaignsService {
     return {
       id: row.id,
       slug: row.slug,
-      type: row.type,
+      category: {
+        id: row.category.id,
+        code: row.category.code,
+        name: en ? row.category.nameEn : row.category.nameAr,
+        icon: row.category.icon,
+      },
       isOngoing: row.isOngoing,
       title: en && row.titleEn ? row.titleEn : row.titleAr,
       summary: en && row.summaryEn ? row.summaryEn : row.summaryAr,
-      category: row.case?.category ?? null,
+      coverKey: row.coverKey,
+      area: row.area,
+      caseCategory: row.case?.category ?? null,
       priority: row.priority,
       status: row.status,
       currency: row.currency,
       targetAmount: money(row.targetAmount),
-      verifiedAmount: money(row.verifiedAmount.plus(stats?.demo ?? 0)),
+      // Demo money is reported separately and never added to verified money.
+      verifiedAmount: money(row.verifiedAmount),
       pendingAmount: money(stats?.pending),
-      disbursedAmount: money(row.disbursedAmount),
+      demoAmount: money(stats?.demo),
+      spentAmount: money(row.spentAmount),
       hospitalName: row.hospital
         ? en && row.hospital.nameEn
           ? row.hospital.nameEn

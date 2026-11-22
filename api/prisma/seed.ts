@@ -1,6 +1,7 @@
 /**
  * Fictional development/demo data — nothing here is real.
- * 5 medical cases (2 anonymous) + an ongoing campaign + one user per role + Pledge & Verify scenarios.
+ * 3 system campaign categories, fake payment accounts, 5 medical cases (2 anonymous), one orphan
+ * sponsorship and one home renovation campaign, one user per role, Pledge & Verify scenarios. Full demo seed: P16.
  *
  * Run: npm run seed (refuses to run unless DATABASE_URL is the local majlis_fund database).
  */
@@ -20,6 +21,7 @@ import {
   checkSeedDatabaseUrl,
   SEED_SAFETY_OVERRIDE_ENV_VAR,
 } from '../src/common/seed-safety.util';
+import { allocateBeneficiaryCodes } from '../src/common/utils/beneficiary-codes';
 
 /** كلمة مرور تجريبية موحّدة لكل حسابات الـseed (تطوير فقط). */
 export const SEED_PASSWORD = 'Majlis@2026';
@@ -86,13 +88,18 @@ async function reset() {
   assertSafeToResetDemoData();
   await prisma.$transaction([
     prisma.notification.deleteMany(),
+    prisma.outboundMessage.deleteMany(),
     prisma.auditLog.deleteMany(),
     prisma.verification.deleteMany(),
     prisma.receipt.deleteMany(),
     prisma.pledge.deleteMany(),
-    prisma.disbursement.deleteMany(),
+    prisma.expenditure.deleteMany(),
     prisma.campaignUpdate.deleteMany(),
+    prisma.campaignBeneficiary.deleteMany(),
+    prisma.campaignPaymentAccount.deleteMany(),
     prisma.campaign.deleteMany(),
+    prisma.campaignCategory.deleteMany(),
+    prisma.paymentMethodConfig.deleteMany(),
     prisma.document.deleteMany(),
     prisma.case.deleteMany(),
     prisma.beneficiary.deleteMany(),
@@ -166,6 +173,129 @@ async function main() {
       collectors: { connect: { id: collector.id } },
     },
   });
+
+  // ── System campaign categories (data, not an enum). Rules read the flags, never the code. ──
+  const mkCategory = (data: Prisma.CampaignCategoryCreateInput) =>
+    prisma.campaignCategory.create({ data: { isSystem: true, ...data } });
+  const medicalAid = await mkCategory({
+    code: 'MEDICAL_AID',
+    nameAr: 'مساعدات طبية',
+    nameEn: 'Medical aid',
+    descriptionAr: 'حالات طبية مدققة من هيئة الإنعاش، والصرف للمشفى المعتمد فقط.',
+    descriptionEn:
+      'Medical cases vetted by the welfare board; payment only to the approved hospital.',
+    icon: 'heart-pulse',
+    sortOrder: 30,
+    requiresMedicalCase: true,
+    lockedPayeeHospital: true,
+  });
+  const orphanSponsorship = await mkCategory({
+    code: 'ORPHAN_SPONSORSHIP',
+    nameAr: 'كفالة أيتام',
+    nameEn: 'Orphan sponsorship',
+    descriptionAr: 'كفالة شهرية لأيتام من السلمية، تُصرف لأسرهم كل شهر.',
+    descriptionEn:
+      'Monthly sponsorship for orphans in Salamiyah, paid to their families each month.',
+    icon: 'child',
+    sortOrder: 10,
+    supportsMonthlySponsorship: true,
+  });
+  const homeRenovation = await mkCategory({
+    code: 'HOME_RENOVATION',
+    nameAr: 'ترميم منازل',
+    nameEn: 'Home renovation',
+    descriptionAr: 'ترميم منازل أسر محتاجة، والصرف للمقاول أو المورد مع الفاتورة.',
+    descriptionEn:
+      'Repairing the homes of families in need; paid to the contractor or supplier with an invoice.',
+    icon: 'home',
+    sortOrder: 20,
+  });
+
+  // ── Receiving details per method. Every account name and number is FAKE (hackathon only). ──
+  const methods: Prisma.PaymentMethodConfigCreateManyInput[] = [
+    {
+      method: 'BEMO_TRANSFER',
+      kind: 'TRANSFER',
+      labelAr: 'حوالة بنك بيمو',
+      labelEn: 'Bemo bank transfer',
+      accountName: 'المجلس المحلي في السلمية (مثال)',
+      accountNumber: '0000-1111-2222 (FAKE)',
+      instructionsAr: 'اكتب رقم مرجع التبرع في ملاحظة الحوالة، ثم ارفع صورة الإيصال.',
+      instructionsEn:
+        'Write the donation reference in the transfer note, then upload the receipt.',
+      allowsReceiptUpload: true,
+      allowsDemoCheckout: true,
+      sortOrder: 10,
+    },
+    {
+      method: 'BANK_TRANSFER',
+      kind: 'TRANSFER',
+      labelAr: 'حوالة مصرفية',
+      labelEn: 'Bank transfer',
+      accountName: 'المجلس المحلي في السلمية (مثال)',
+      accountNumber: 'SY00 0000 0000 0000 (FAKE)',
+      allowsReceiptUpload: true,
+      allowsDemoCheckout: true,
+      sortOrder: 20,
+    },
+    {
+      method: 'SHAM_CASH',
+      kind: 'WALLET',
+      labelAr: 'شام كاش',
+      labelEn: 'ShamCash',
+      accountName: 'Majlis Fund (demo)',
+      accountNumber: '0930 000 001 (FAKE)',
+      allowsReceiptUpload: true,
+      allowsDemoCheckout: true,
+      sortOrder: 30,
+    },
+    {
+      method: 'SYRIATEL_CASH',
+      kind: 'WALLET',
+      labelAr: 'سيريتل كاش',
+      labelEn: 'Syriatel Cash',
+      accountName: 'Majlis Fund (demo)',
+      accountNumber: '0930 000 002 (FAKE)',
+      allowsReceiptUpload: true,
+      allowsDemoCheckout: true,
+      sortOrder: 40,
+    },
+    {
+      method: 'MTN_CASH',
+      kind: 'WALLET',
+      labelAr: 'MTN كاش',
+      labelEn: 'MTN Cash',
+      accountName: 'Majlis Fund (demo)',
+      accountNumber: '0940 000 003 (FAKE)',
+      allowsReceiptUpload: true,
+      allowsDemoCheckout: true,
+      sortOrder: 50,
+    },
+    {
+      method: 'PAYPAL',
+      kind: 'CARD',
+      labelAr: 'PayPal',
+      labelEn: 'PayPal',
+      allowsDemoCheckout: true,
+      sortOrder: 60,
+    },
+    {
+      method: 'VISA',
+      kind: 'CARD',
+      labelAr: 'بطاقة Visa',
+      labelEn: 'Visa card',
+      allowsDemoCheckout: true,
+      sortOrder: 70,
+    },
+    {
+      method: 'CASH',
+      kind: 'CASH',
+      labelAr: 'نقداً في نقطة جمع',
+      labelEn: 'Cash at a collection point',
+      sortOrder: 80,
+    },
+  ];
+  await prisma.paymentMethodConfig.createMany({ data: methods });
 
   // ── 5 حالات طبية ──
   interface SeedCase {
@@ -292,8 +422,12 @@ async function main() {
       `Case #${i}`,
       `Category: ${c.category}`,
     ]);
+    const [publicCode] = await allocateBeneficiaryCodes(prisma, 1);
     const beneficiary = await prisma.beneficiary.create({
       data: {
+        publicCode,
+        kind: 'PATIENT',
+        area: 'السلمية',
         fullName: c.name,
         phone: c.phone,
         localCouncil: 'المجلس المحلي - السلمية',
@@ -338,6 +472,7 @@ async function main() {
       const campaign = await prisma.campaign.create({
         data: {
           slug: `${c.category.toLowerCase()}-demo${i}`,
+          categoryId: medicalAid.id,
           caseId: created.id,
           titleAr: c.titleAr,
           titleEn: c.titleEn,
@@ -355,22 +490,59 @@ async function main() {
     }
   }
 
-  // ── حملة مستمرة: برنامج مرضى السرطان (600 مريض) ──
+  // ── Minimal non-medical campaigns (one per new category; the full demo seed is P16) ──
+  const anonymised = async (kind: 'ORPHAN' | 'FAMILY', area: string, count: number) => {
+    const codes = await allocateBeneficiaryCodes(prisma, count);
+    return Promise.all(
+      codes.map((publicCode, n) =>
+        prisma.beneficiary.create({
+          data: { publicCode, kind, area, fullName: `مستفيد تجريبي ${n + 1} (مثال)` },
+        }),
+      ),
+    );
+  };
+  const orphans = await anonymised('ORPHAN', 'حي الشيخ بدر', 4);
   const ongoing = await prisma.campaign.create({
     data: {
-      slug: 'oncology-program',
+      slug: 'orphans-2027',
+      categoryId: orphanSponsorship.id,
       isOngoing: true,
-      titleAr: 'دعم جرعات ونقل مرضى السرطان',
-      titleEn: 'Chemotherapy & transport for cancer patients',
-      summaryAr:
-        'برنامج مستمر يخدم قرابة 600 مريض سرطان في السلمية: تحاليل وجرعات حسب الوضع المادي، ونقل للعلاج.',
+      titleAr: 'كفالة أيتام حي الشيخ بدر لعام 2027',
+      titleEn: 'Sponsoring orphans in Sheikh Badr for 2027',
+      summaryAr: 'كفالة شهرية لأربعة أيتام في حي الشيخ بدر تُصرف لأسرهم كل شهر طوال العام.',
       summaryEn:
-        'An ongoing programme serving about 600 cancer patients in Salamiyah: tests, doses and transport.',
-      priority: 'URGENT',
-      targetAmount: 50_000_000,
+        'Monthly sponsorship for four orphans in Sheikh Badr, paid to their families every month.',
+      priority: 'NORMAL',
+      targetAmount: 9_600_000,
+      coverKey: 'orphans-1',
+      area: 'حي الشيخ بدر',
       status: 'ACTIVE',
       publishedAt: new Date(Date.now() - 10 * 86_400_000),
       createdById: admin.id,
+      beneficiaries: {
+        create: orphans.map((b) => ({ beneficiaryId: b.id, monthlyAmount: 200_000 })),
+      },
+    },
+  });
+  const [family] = await anonymised('FAMILY', 'حي البعث', 1);
+  await prisma.campaign.create({
+    data: {
+      slug: 'roof-repair-albaath',
+      categoryId: homeRenovation.id,
+      titleAr: 'ترميم سقف منزل أسرة في حي البعث',
+      titleEn: 'Repairing a family home roof in Al-Baath',
+      summaryAr:
+        'سقف منزل أسرة من خمسة أفراد تضرر من الأمطار ويحتاج إلى عزل وترميم قبل الشتاء.',
+      summaryEn:
+        'The roof of a family of five was damaged by rain and needs repair before winter.',
+      priority: 'URGENT',
+      targetAmount: 7_500_000,
+      coverKey: 'home-1',
+      area: 'حي البعث',
+      status: 'ACTIVE',
+      publishedAt: new Date(Date.now() - 3 * 86_400_000),
+      createdById: admin.id,
+      beneficiaries: { create: [{ beneficiaryId: family.id }] },
     },
   });
 

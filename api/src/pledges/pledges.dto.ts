@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsIn, IsOptional, IsString, Length, Matches } from 'class-validator';
-import { DEMO_PAYMENT_METHODS, REAL_PAYMENT_METHODS } from '../common/shared';
+import { DEMO_PAYMENT_METHODS, RECEIPT_PAYMENT_METHODS } from '../common/shared';
 import type { PaymentMethod } from '@prisma/client';
 import {
   AMOUNT_REGEX,
@@ -19,8 +19,8 @@ export class CreatePledgeDto {
   @Matches(AMOUNT_REGEX, { message: 'invalid_amount' })
   amount: string;
 
-  @ApiProperty({ enum: REAL_PAYMENT_METHODS, default: 'BEMO_TRANSFER' })
-  @IsIn(REAL_PAYMENT_METHODS)
+  @ApiProperty({ enum: RECEIPT_PAYMENT_METHODS, default: 'BEMO_TRANSFER' })
+  @IsIn(RECEIPT_PAYMENT_METHODS)
   method: PaymentMethod;
 
   @ApiPropertyOptional({

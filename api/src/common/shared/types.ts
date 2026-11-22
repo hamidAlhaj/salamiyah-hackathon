@@ -1,7 +1,6 @@
 /** أشكال الردود العامة من الـAPI (تستهلكها الويب والموبايل). المبالغ نصوص عشرية. */
 import type {
   CampaignStatus,
-  CampaignType,
   CaseCategory,
   Currency,
   PaymentMethod,
@@ -32,22 +31,36 @@ export interface AuthResponse {
   user: CurrentUser;
 }
 
+/** A campaign category as the public sees it (categories are data, see CampaignCategory). */
+export interface PublicCampaignCategory {
+  id: string;
+  code: string;
+  name: string;
+  icon: string;
+}
+
 export interface PublicCampaign {
   id: string;
   slug: string;
-  type: CampaignType;
+  category: PublicCampaignCategory;
   isOngoing: boolean;
   title: string;
   summary: string;
-  category: CaseCategory | null;
+  coverKey: string | null;
+  area: string | null;
+  /** Medical cases only: the case category (surgery, medication, …). */
+  caseCategory: CaseCategory | null;
   priority: Priority;
   status: CampaignStatus;
   currency: Currency;
   targetAmount: string;
+  /** Real, verified money only. */
   verifiedAmount: string;
   /** تعهدات بإيصال أو حصيلة نقاط جمع بانتظار التحقق. */
   pendingAmount: string;
-  disbursedAmount: string;
+  /** Simulated payments («Demo»): shown separately, never part of verifiedAmount. */
+  demoAmount: string;
+  spentAmount: string;
   hospitalName: string | null;
   acceptsPledges: boolean;
   isAnonymousCase: boolean;
