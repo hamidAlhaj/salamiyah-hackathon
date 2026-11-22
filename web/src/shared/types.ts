@@ -265,3 +265,75 @@ export interface PublicExpenditure {
   periodMonth: string | null;
   proof: { mimeType: string } | null;
 }
+
+/** Where verified money came in: online/transfer, cash at a collection point, or the council office. */
+export type TransparencyChannel = 'TRANSFER' | 'COLLECTION_POINT' | 'COUNCIL';
+
+/** Platform totals in one currency. Demo money is reported apart and never added. */
+export interface TransparencyTotals {
+  currency: Currency;
+  targetAmount: string;
+  verifiedAmount: string;
+  pendingAmount: string;
+  spentAmount: string;
+  remainingAmount: string;
+  /** spent ÷ verified × 100, one decimal ("0.0" when nothing is verified). */
+  spentPercent: string;
+  /** Simulated payments (DEMO_MODE only): shown in their own note, never part of any total. */
+  demoAmount: string;
+}
+
+export interface TransparencyCategory {
+  code: string;
+  name: string;
+  icon: string;
+  campaignsCount: number;
+  targetAmount: string;
+  verifiedAmount: string;
+  spentAmount: string;
+  remainingAmount: string;
+  beneficiariesCount: number;
+}
+
+export interface TransparencyMonth {
+  /** YYYY-MM */
+  month: string;
+  verifiedAmount: string;
+  spentAmount: string;
+}
+
+export interface TransparencyExpenditure extends PublicExpenditure {
+  campaign: { id: string; slug: string; title: string; categoryIcon: string };
+}
+
+export interface TransparencyDonation {
+  amount: string;
+  currency: Currency;
+  verifiedAt: string;
+  category: { code: string; name: string; icon: string };
+  campaign: { slug: string; title: string };
+  /** The donor's first name when they chose to be shown; null = «فاعل خير». */
+  displayName: string | null;
+}
+
+/** GET /stats/transparency: public aggregates only, never an identity. */
+export interface TransparencyStats {
+  generatedAt: string;
+  /** Totals in the primary currency (every breakdown below uses it). */
+  totals: TransparencyTotals;
+  /** Any other campaign currency, totalled apart and never converted. */
+  otherCurrencies: TransparencyTotals[];
+  campaigns: { active: number; funded: number; completed: number; total: number };
+  categories: TransparencyCategory[];
+  channels: { channel: TransparencyChannel; amount: string; count: number }[];
+  payeeTypes: { payeeType: PayeeType; amount: string; count: number }[];
+  /** The last 12 calendar months, oldest first: verified money (by verification date) vs spending. */
+  monthly: TransparencyMonth[];
+  beneficiaries: {
+    /** Distinct beneficiaries with an active link to a public campaign (codes only, no identities). */
+    total: number;
+    byKind: { kind: BeneficiaryKind; count: number }[];
+  };
+  recentExpenditures: TransparencyExpenditure[];
+  recentDonations: TransparencyDonation[];
+}

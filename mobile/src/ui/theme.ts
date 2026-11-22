@@ -30,6 +30,8 @@ export interface Palette {
   givePending: string;
   /** Simulated «Demo» money (stripes on the web). */
   demo: string;
+  /** Transparency chart series (web --series-spent): money spent. Remaining uses `give`. */
+  seriesSpent: string;
   /** Cover illustration shades (web CampaignCover). */
   coverSky: string;
   coverInk: string;
@@ -59,6 +61,7 @@ const light: Palette = {
   giveInk: '#ffffff',
   givePending: '#fdba74',
   demo: '#9aa59f',
+  seriesSpent: '#18734b',
   coverSky: '#dceee5',
   coverInk: '#135b3c',
   coverMid: '#1f8a5b',
@@ -87,6 +90,7 @@ const dark: Palette = {
   giveInk: '#1a0f05',
   givePending: '#b45512',
   demo: '#5d6b64',
+  seriesSpent: '#46a27a',
   coverSky: '#163628',
   coverInk: '#79bf9f',
   coverMid: '#1f8a5b',

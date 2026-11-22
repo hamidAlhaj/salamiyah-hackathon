@@ -40,6 +40,12 @@ export function SiteHeader({ bell }: { bell?: React.ReactNode }) {
             {t('campaigns')}
           </Link>
           <Link
+            href="/transparency"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-surface-muted hover:text-ink"
+          >
+            {t('transparency')}
+          </Link>
+          <Link
             href="/track"
             className="rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-surface-muted hover:text-ink"
           >
@@ -54,6 +60,15 @@ export function SiteHeader({ bell }: { bell?: React.ReactNode }) {
             </Link>
           )}
         </nav>
+
+        {/* Phones hide the main nav; the transparency dashboard stays one tap away. */}
+        <Link
+          href="/transparency"
+          className="rounded-lg px-1.5 py-2 text-sm font-medium text-muted hover:bg-surface-muted hover:text-ink md:hidden"
+          data-testid="nav-transparency-mobile"
+        >
+          {t('transparency')}
+        </Link>
 
         <div className="ms-auto flex items-center gap-1">
           <LanguageSwitch />

@@ -43,6 +43,16 @@ function HeaderActions() {
           {t('language')}
         </AppText>
       </Pressable>
+      <Link
+        href="/transparency"
+        testID="nav-transparency"
+        accessibilityLabel={t('transparency.nav')}
+        style={{ paddingHorizontal: 6, paddingVertical: 6 }}
+      >
+        <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={c.panelInk} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <Path d="M4 20h16M7 16v-5M12 16V6M17 16v-8" />
+        </Svg>
+      </Link>
       {user && <BellButton />}
       <Link
         href={user ? '/donations' : '/login'}
@@ -135,6 +145,7 @@ function AppStack() {
       <Stack.Screen name="donations" options={{ title: t('myDonations') }} />
       <Stack.Screen name="notifications" options={{ title: t('notifications.title') }} />
       <Stack.Screen name="login" options={{ title: t('login') }} />
+      <Stack.Screen name="transparency" options={{ title: t('transparency.title') }} />
     </Stack>
   );
 }

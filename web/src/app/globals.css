@@ -33,6 +33,9 @@
     --panel-ink: 228 242 235;
     --lattice: rgb(255 255 255 / 0.09); /* star lattice lines on the panel */
     --lattice-soft: rgb(19 91 60 / 0.07); /* star lattice on light surfaces */
+    /* Chart series (validated for CVD separation and contrast on the surface): money in, money out. */
+    --series-collected: 217 111 26; /* give-600 #d96f1a */
+    --series-spent: 24 115 75; /* brand-600 #18734b */
     --shadow-card: 0 1px 2px rgb(16 40 28 / 0.05), 0 2px 8px -2px rgb(16 40 28 / 0.08);
     --shadow-lift: 0 14px 30px -12px rgb(16 40 28 / 0.25), 0 3px 8px rgb(16 40 28 / 0.06);
   }
@@ -64,6 +67,8 @@
     --panel-ink: 214 236 225;
     --lattice: rgb(255 255 255 / 0.06);
     --lattice-soft: rgb(121 191 159 / 0.06);
+    --series-collected: 217 111 26; /* #d96f1a */
+    --series-spent: 70 162 122; /* brand-400 #46a27a */
     --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.03);
     --shadow-lift: 0 0 0 1px rgb(255 255 255 / 0.07), 0 14px 32px -12px rgb(0 0 0 / 0.7);
   }
@@ -172,6 +177,9 @@
     --panel-ink: 228 242 235;
     --lattice: rgb(255 255 255 / 0.09); /* star lattice lines on the panel */
     --lattice-soft: rgb(19 91 60 / 0.07); /* star lattice on light surfaces */
+    /* Chart series (validated for CVD separation and contrast on the surface): money in, money out. */
+    --series-collected: 217 111 26; /* give-600 #d96f1a */
+    --series-spent: 24 115 75; /* brand-600 #18734b */
     --shadow-card: 0 1px 2px rgb(16 40 28 / 0.05), 0 2px 8px -2px rgb(16 40 28 / 0.08);
     --shadow-lift: 0 14px 30px -12px rgb(16 40 28 / 0.25), 0 3px 8px rgb(16 40 28 / 0.06);
   }

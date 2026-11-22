@@ -609,7 +609,18 @@ async function main() {
     donorName?: string;
     donorPhone?: string;
     anonymous?: boolean;
+    /** Verified this many months ago, so the transparency chart has a history. */
+    monthsAgo?: number;
   }) {
+    const now = new Date();
+    const verifiedAt = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth() - (opts.monthsAgo ?? 0),
+        Math.min(now.getUTCDate(), 15),
+        10,
+      ),
+    );
     const receiptNo = opts.channel === 'COLLECTOR' ? null : await nextReceiptNo();
     const p = await prisma.pledge.create({
       data: {
@@ -624,7 +635,8 @@ async function main() {
         channel: opts.channel,
         method: opts.channel === 'PLATFORM' ? 'BEMO_TRANSFER' : 'CASH',
         status: 'VERIFIED',
-        verifiedAt: new Date(),
+        verifiedAt,
+        createdAt: verifiedAt,
         officialReceiptNo: receiptNo,
         recordedById:
           opts.channel === 'PLATFORM'
@@ -634,7 +646,7 @@ async function main() {
               : staff.id,
         collectionPointId: opts.channel === 'COLLECTOR' ? pointNorth.id : undefined,
         verifications: {
-          create: { status: 'APPROVED', reviewerId: finance.id, decidedAt: new Date() },
+          create: { status: 'APPROVED', reviewerId: finance.id, decidedAt: verifiedAt },
         },
       },
     });
@@ -653,10 +665,12 @@ async function main() {
     donorId: donor.id,
     donorName: donor.fullName,
     donorPhone: donor.phone,
+    monthsAgo: 4,
   });
   await verifiedPledge({
     campaignId: heart.id,
     amount: 3_500_000,
+    monthsAgo: 3,
     channel: 'COUNCIL',
     donorName: 'سليم ح. (مثال)',
     donorPhone: '+963955000111',
@@ -668,6 +682,7 @@ async function main() {
     channel: 'COUNCIL',
     donorName: 'هالة م. (مثال)',
     donorPhone: '+963955000222',
+    monthsAgo: 2,
   });
   await verifiedPledge({
     campaignId: medication.id,
@@ -676,6 +691,7 @@ async function main() {
     donorId: diaspora.id,
     donorName: diaspora.fullName,
     donorPhone: diaspora.phone,
+    monthsAgo: 1,
   });
   await prisma.campaign.update({ where: { id: medication.id }, data: { status: 'FUNDED' } });
   await verifiedPledge({ campaignId: ongoing.id, amount: 3_000_000, channel: 'COLLECTOR' });

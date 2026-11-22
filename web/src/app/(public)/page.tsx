@@ -5,9 +5,9 @@ import { CategoryTabs, filterHref, PriorityFilter } from '@/components/campaigns
 import { buttonClasses } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { StarLattice } from '@/components/ui/StarLattice';
-import { listAllCampaigns, listCampaigns } from '@/lib/api/campaigns';
+import { listCampaigns } from '@/lib/api/campaigns';
 import { listCategories } from '@/lib/api/categories';
-import { sumMoney } from '@/lib/money';
+import { transparencyStats } from '@/lib/api/stats';
 import { formatMoney, PRIORITIES, type Priority } from '@/shared';
 
 interface Step {
@@ -38,21 +38,16 @@ export default async function HomePage({
     ? (params.priority as Priority)
     : undefined;
 
-  const [page, all] = await Promise.all([
+  const [page, stats] = await Promise.all([
     listCampaigns({ lang: locale, category, priority, pageSize: 24 }),
-    listAllCampaigns(locale),
+    transparencyStats(locale),
   ]);
 
-  // Platform totals in SYP (campaigns in another currency are not mixed in).
-  const syp = all.filter((c) => c.currency === 'SYP');
-  const collected = sumMoney(syp.map((c) => c.verifiedAmount));
-  const spent = sumMoney(syp.map((c) => c.spentAmount));
-  const remaining = sumMoney([collected, `-${spent}`]);
-  const demo = sumMoney(syp.map((c) => c.demoAmount));
-  const beneficiaries = all.reduce((n, c) => n + c.beneficiariesCount, 0);
-  const spentShare = Number(collected) > 0 ? (Number(spent) / Number(collected)) * 100 : 0;
+  // Platform totals from the API (the sum of the public campaign ledgers, demo money apart).
+  const { totals } = stats;
+  const spentShare = Math.min(100, Number(totals.spentPercent));
   const steps = t.raw('steps') as Step[];
-  const money = (v: string) => formatMoney(v, 'SYP', locale);
+  const money = (v: string) => formatMoney(v, totals.currency, locale);
 
   return (
     <>
@@ -84,32 +79,40 @@ export default async function HomePage({
             <div>
               <dt className="text-sm text-panel-ink/80">{t('ledgerCollected')}</dt>
               <dd className="font-display text-3xl font-bold tabular-nums text-white sm:text-4xl">
-                {money(collected)}
+                {money(totals.verifiedAmount)}
               </dd>
             </div>
             <div className="flex h-2.5 overflow-hidden rounded-full bg-white/15" aria-hidden="true">
-              <span
-                className="h-full bg-white/80"
-                style={{ width: `${Math.min(100, spentShare)}%` }}
-              />
+              <span className="h-full bg-white/80" style={{ width: `${spentShare}%` }} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <dt className="text-sm text-panel-ink/80">{t('ledgerSpent')}</dt>
-                <dd className="text-xl font-bold tabular-nums text-white">{money(spent)}</dd>
+                <dd className="text-xl font-bold tabular-nums text-white">
+                  {money(totals.spentAmount)}
+                </dd>
               </div>
               <div>
                 <dt className="text-sm text-panel-ink/80">{t('ledgerRemaining')}</dt>
-                <dd className="text-xl font-bold tabular-nums text-white">{money(remaining)}</dd>
+                <dd className="text-xl font-bold tabular-nums text-white">
+                  {money(totals.remainingAmount)}
+                </dd>
               </div>
             </div>
           </dl>
           <p className="mt-6 border-t border-white/15 pt-4 text-sm text-panel-ink/85">
-            {t('ledgerBeneficiaries', { count: beneficiaries })}
+            {t('ledgerBeneficiaries', { count: stats.beneficiaries.total })}
           </p>
           <p className="mt-1 text-xs text-panel-ink/70">
-            {t('ledgerNote')} {t('ledgerDemo', { amount: money(demo) })}
+            {t('ledgerNote')} {t('ledgerDemo', { amount: money(totals.demoAmount) })}
           </p>
+          <Link
+            href="/transparency"
+            className="mt-5 inline-flex items-center rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10"
+            data-testid="ledger-transparency-link"
+          >
+            {t('ledgerMore')}
+          </Link>
         </div>
       </section>
 

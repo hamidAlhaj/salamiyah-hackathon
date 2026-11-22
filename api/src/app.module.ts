@@ -19,6 +19,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentMethodsModule } from './payment-methods/payment-methods.module';
 import { PledgesModule } from './pledges/pledges.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { StatsModule } from './stats/stats.module';
 import { StorageModule } from './storage/storage.module';
 import { UsersModule } from './users/users.module';
 import { VerificationsModule } from './verifications/verifications.module';
@@ -43,6 +44,7 @@ import { VerificationsModule } from './verifications/verifications.module';
     CollectorModule,
     VerificationsModule,
     ExpendituresModule,
+    StatsModule,
     LookupsModule,
     UsersModule,
     ImportsModule,

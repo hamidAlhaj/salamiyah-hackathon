@@ -11,7 +11,8 @@
     "dashboard": "Dashboard",
     "logout": "Log out",
     "main": "Main navigation",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "transparency": "Transparency"
   },
   "home": {
     "filterAll": "All",
@@ -52,7 +53,8 @@
     "priorityLabel": "Priority",
     "categoriesLabel": "Campaign categories",
     "emptyAction": "Show all campaigns",
-    "count": "{count, plural, =0 {No campaigns} one {# campaign} other {# campaigns}}"
+    "count": "{count, plural, =0 {No campaigns} one {# campaign} other {# campaigns}}",
+    "ledgerMore": "Where did it go? Open the transparency dashboard"
   },
   "priority": {
     "VERY_URGENT": "Critical",
@@ -970,5 +972,77 @@
     "proofIsPrivate": "Staff only",
     "viewProof": "View proof",
     "proofKeptByCouncil": "Proof kept by the council"
+  },
+  "transparency": {
+    "metaTitle": "Transparency dashboard",
+    "metaDescription": "Total donations verified by the Local Council in Salamiyah, what was spent, and how many beneficiaries were helped, without revealing anyone’s identity.",
+    "kicker": "Transparency dashboard",
+    "title": "Every pound: where it came from, where it went",
+    "lead": "Live figures from the published campaign accounts. No donation counts until a finance verifier has matched it, and no spending is recorded without an invoice or photo.",
+    "collected": "Collected and verified by the council",
+    "spent": "Spent, with proof",
+    "remaining": "Remaining in campaign accounts",
+    "beneficiaries": "beneficiaries, never named",
+    "unit": "SYP",
+    "spentShare": "{percent}% of what was collected has been spent",
+    "spentShareLabel": "Share of collected money spent",
+    "pending": "Awaiting verification: {amount}. It joins the total once a finance verifier matches it.",
+    "campaignsLine": "{total, plural, =0 {No published campaigns} one {# published campaign} other {# published campaigns}}: {active} open, {funded} fully funded, {completed} completed.",
+    "updated": "Updated {time}",
+    "downloadCsv": "Download the figures (CSV)",
+    "otherCurrency": "Campaigns in {currency}: {verified} collected, {spent} spent. Never converted or added to the pound totals.",
+    "categoriesTitle": "By campaign category",
+    "categoriesIntro": "Each bar is what was collected in that category; the green part has been spent, the orange part is still in the account.",
+    "legendSpent": "Spent",
+    "legendRemaining": "Remaining",
+    "legendCollected": "Collected and verified",
+    "campaignsCount": "{count, plural, =0 {No campaigns yet} one {# campaign} other {# campaigns}}",
+    "beneficiariesCount": "{count, plural, =0 {No beneficiaries yet} one {# beneficiary} other {# beneficiaries}}",
+    "categoryBar": "{name}: {collected} collected, {spent} spent",
+    "monthlyTitle": "Collected and spent over twelve months",
+    "monthlyIntro": "Donations by the date they were verified, spending by the date it was paid, {from} to {to}.",
+    "monthlyDesc": "Paired monthly columns: money collected and verified, and money spent, for each month from {from} to {to}.",
+    "monthlyTable": "Show the figures as a table",
+    "month": "Month",
+    "monthlyEmpty": "No money has moved in these months yet.",
+    "channelsTitle": "How donations arrived",
+    "channelsIntro": "Donations verified by the council, by how they came in.",
+    "channels": {
+      "TRANSFER": "Transfer or e-wallet",
+      "COLLECTION_POINT": "Cash at collection points",
+      "COUNCIL": "Cash at the council office"
+    },
+    "payeesTitle": "Who received the spending",
+    "payeesIntro": "Every amount spent, by the party that received it.",
+    "kindsTitle": "Beneficiaries",
+    "kindsIntro": "Beneficiaries linked to published campaigns, by kind. Each one is shown by a code only.",
+    "count": "{count, plural, =0 {No payments} one {# payment} other {# payments}}",
+    "nothingYet": "Nothing yet.",
+    "recentSpendingTitle": "Latest spending",
+    "recentSpendingEmpty": "No spending recorded yet. The first payment will appear here with its proof.",
+    "recentDonationsTitle": "Latest donations verified by the council",
+    "recentDonationsEmpty": "No verified donations yet.",
+    "anonymous": "A well-wisher",
+    "howTitle": "How these figures are checked",
+    "how": [
+      {
+        "title": "Every donation matched",
+        "body": "A finance verifier matches the receipt or the cash received before any amount joins the total, and nobody verifies a donation they recorded themselves."
+      },
+      {
+        "title": "Official receipt with a QR code",
+        "body": "Every verified donation gets an official receipt number; anyone can scan its code to confirm it on this site."
+      },
+      {
+        "title": "Spending with public proof",
+        "body": "No spending is recorded without an invoice or photo, and never beyond the campaign balance. Proofs that are safe to publish appear in each campaign’s record."
+      },
+      {
+        "title": "Never an identity",
+        "body": "We show a beneficiary’s code and kind only. Names, phone numbers and documents stay with the council and never appear on a public page."
+      }
+    ],
+    "demoNote": "Simulated (Demo) payments used to show the electronic payment methods are not included in any figure on this page.",
+    "demoAmount": "They currently total {amount}, shown here only."
   }
 }

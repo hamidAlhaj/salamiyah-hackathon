@@ -66,6 +66,8 @@ const config: Config = {
         info: { DEFAULT: cssVar('--info'), soft: cssVar('--info-soft') },
         // The deep green of the brand panel and the logo tile (same in both themes).
         panel: { DEFAULT: cssVar('--panel'), ink: cssVar('--panel-ink') },
+        // Chart series only (transparency charts): money collected vs money spent.
+        series: { collected: cssVar('--series-collected'), spent: cssVar('--series-spent') },
       },
       borderColor: { DEFAULT: cssVar('--border') },
       fontFamily: {
