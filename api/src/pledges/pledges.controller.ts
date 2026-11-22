@@ -35,8 +35,8 @@ export class OfficialReceiptsController {
 
   @Get('official-receipts/:no')
   @ApiOperation({ summary: 'الإيصال الرسمي برقمه (FR-16)' })
-  officialReceipt(@Param('no') no: string) {
-    return this.pledges.officialReceipt(no);
+  officialReceipt(@Param('no') no: string, @Query() query: LangQueryDto) {
+    return this.pledges.officialReceipt(no, query.lang);
   }
 }
 

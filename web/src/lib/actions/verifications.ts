@@ -19,6 +19,7 @@ export async function approveVerificationAction(
     const { officialReceiptNo } = await verificationsApi.approveVerification(token, id);
     safeRevalidate('/dashboard/finance');
     safeRevalidate('/');
+    safeRevalidate('/dashboard/donations');
     return {
       ok: true,
       message: officialReceiptNo
@@ -38,9 +39,12 @@ export async function rejectVerificationAction(
   const t = await getTranslations('finance');
   const id = formData.get('id');
   assertUuid(id, 'id');
+  // The donor reads this reason: it is required (the API also asks for 5–500 characters).
+  const reason = readString(formData, 'reason', 500);
+  if (reason.length < 5) return { error: t('reasonRequired') };
   const token = await requireSessionToken();
   try {
-    await verificationsApi.rejectVerification(token, id, readString(formData, 'reason', 1000));
+    await verificationsApi.rejectVerification(token, id, reason);
     safeRevalidate('/dashboard/finance');
     return { ok: true, message: t('rejected') };
   } catch (err) {

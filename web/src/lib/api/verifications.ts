@@ -1,9 +1,10 @@
 import 'server-only';
-import type { VerificationItem } from '@/lib/types/staff';
+import type { VerificationItem, VerificationStatusTab } from '@/lib/types/staff';
 import { apiFetch } from './client';
 
-export function listPendingVerifications(token: string) {
-  return apiFetch<VerificationItem[]>('/verifications', { token, query: { status: 'PENDING' } });
+/** The finance queue by status: PENDING oldest first, decided ones newest first (API order). */
+export function listVerifications(token: string, status: VerificationStatusTab) {
+  return apiFetch<VerificationItem[]>('/verifications', { token, query: { status } });
 }
 
 export function approveVerification(token: string, id: string) {

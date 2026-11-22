@@ -16,6 +16,7 @@ import type {
 import { AuditService } from '../audit/audit.service';
 import { newPledgeRef } from '../common/utils/codes';
 import { money } from '../common/utils/money';
+import { qrSvg } from '../common/utils/qr';
 import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -424,23 +425,70 @@ export class PledgesService {
     return { data: await this.storage.read(r.storageKey), mimeType: r.mimeType };
   }
 
-  /** FR-16: الإيصال الرسمي — عام برقمه. الاسم يُخفى إن اختار «فاعل خير». */
-  async officialReceipt(receiptNo: string): Promise<OfficialReceipt> {
+  /**
+   * FR-16: the public official receipt by number, with a QR code of its own public URL (scanning it
+   * opens the same page). Only VERIFIED pledges have one: demo payments keep their DEMO reference and
+   * are never found here. «فاعل خير» hides the name; the phone is never returned.
+   */
+  async officialReceipt(
+    receiptNo: string,
+    lang: 'ar' | 'en' = 'ar',
+  ): Promise<OfficialReceipt> {
     const p = await this.prisma.pledge.findUnique({
       where: { officialReceiptNo: receiptNo },
-      include: { campaign: { select: { slug: true, titleAr: true } } },
+      include: {
+        campaign: {
+          select: {
+            slug: true,
+            titleAr: true,
+            titleEn: true,
+            category: {
+              select: { id: true, code: true, nameAr: true, nameEn: true, icon: true },
+            },
+          },
+        },
+        collectionPoint: { select: { name: true, type: true } },
+      },
     });
-    if (!p || p.status !== 'VERIFIED' || !p.verifiedAt)
+    if (!p || p.status !== 'VERIFIED' || !p.verifiedAt || p.isDemo)
       throw new NotFoundException('receipt_not_found');
+    const config = await this.prisma.paymentMethodConfig.findUnique({
+      where: { method: p.method },
+      select: { labelAr: true, labelEn: true },
+    });
+    const en = lang === 'en';
+    const url = `${this.publicWebUrl()}/receipts/${encodeURIComponent(receiptNo)}`;
+    const { category } = p.campaign;
     return {
       receiptNo,
       donorName: p.isAnonymousDisplay ? '' : (p.donorName ?? ''),
       amount: money(p.amount),
       currency: p.currency,
-      campaignTitle: p.campaign.titleAr,
+      method: p.method,
+      methodLabel: (en ? config?.labelEn : config?.labelAr) ?? p.method,
+      channel: p.channel,
+      campaignTitle: (en ? p.campaign.titleEn : null) ?? p.campaign.titleAr,
       campaignSlug: p.campaign.slug,
+      category: {
+        id: category.id,
+        code: category.code,
+        name: en ? category.nameEn : category.nameAr,
+        icon: category.icon,
+      },
+      collectionPoint: p.collectionPoint,
+      status: 'VERIFIED',
       verifiedAt: p.verifiedAt.toISOString(),
+      url,
+      qrSvg: await qrSvg(url),
     };
+  }
+
+  /** The public web address (QR codes and WhatsApp links must open from a phone). */
+  private publicWebUrl(): string {
+    return (this.config.get<string>('PUBLIC_WEB_URL') ?? 'http://localhost:3000').replace(
+      /\/+$/,
+      '',
+    );
   }
 
   /**

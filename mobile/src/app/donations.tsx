@@ -97,12 +97,27 @@ export default function DonationsScreen() {
           {(item.status === 'PLEDGED' || item.status === 'REJECTED') && !item.isDemo && item.method !== 'CASH' && (
             <Button title={t('pledge.uploadNow')} onPress={() => router.push(`/receipt/${item.id}`)} />
           )}
-          {item.officialReceiptNo && !item.isDemo && (
-            <Button
-              title={t('donations.official')}
-              variant="secondary"
-              onPress={() => void Linking.openURL(`${SITE_URL}/receipts/${item.officialReceiptNo}`)}
-            />
+          {item.officialReceiptNo && item.status === 'VERIFIED' && !item.isDemo && (
+            <View style={{ gap: 6 }} testID={`official-${item.officialReceiptNo}`}>
+              <View style={[styles.row, { justifyContent: 'space-between' }]}>
+                <AppText size="sm" tone="muted">
+                  {t('donations.receiptNo')}
+                </AppText>
+                <AppText weight="bold" style={{ writingDirection: 'ltr' }}>
+                  {item.officialReceiptNo}
+                </AppText>
+              </View>
+              {/* The public receipt page (with its QR code) opens in the browser. */}
+              <Button
+                title={t('donations.official')}
+                variant="secondary"
+                onPress={() =>
+                  void Linking.openURL(
+                    `${SITE_URL}/receipts/${encodeURIComponent(item.officialReceiptNo ?? '')}`,
+                  )
+                }
+              />
+            </View>
           )}
         </Card>
       )}

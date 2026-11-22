@@ -4,6 +4,7 @@ import type {
   CaseCategory,
   CaseRoute,
   CaseStatus,
+  CollectionPointType,
   Currency,
   PaymentMethod,
   PledgeChannel,
@@ -120,10 +121,17 @@ export interface CreateCaseResult {
   };
 }
 
+export type VerificationStatusTab = 'PENDING' | 'APPROVED' | 'REJECTED';
+
 export interface VerificationItem {
   id: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: VerificationStatusTab;
+  reason: string | null;
   createdAt: string;
+  decidedAt: string | null;
+  reviewer: string | null;
+  /** The caller recorded or donated this entry: they may not decide it (separation of duties). */
+  ownEntry: boolean;
   receipt: { id: string; mimeType: string; transferRef: string | null } | null;
   pledge: {
     id: string;
@@ -132,10 +140,17 @@ export interface VerificationItem {
     currency: Currency;
     channel: PledgeChannel;
     method: PaymentMethod;
+    isAnonymousDisplay: boolean;
+    officialReceiptNo: string | null;
     donorName: string | null;
     donorPhone: string | null;
     campaign: { slug: string; titleAr: string };
-    collectionPoint: { name: string; type: string; contactName: string | null } | null;
+    collectionPoint: {
+      name: string;
+      type: CollectionPointType;
+      area: string;
+      contactName: string | null;
+    } | null;
     recordedBy: { fullName: string; role: Role } | null;
   };
 }

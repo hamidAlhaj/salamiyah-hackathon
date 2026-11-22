@@ -131,9 +131,24 @@
     "print": "Print",
     "sendWhatsapp": "Send to myself on WhatsApp",
     "thanks": "Thank you. This receipt is issued after the finance verifier confirmed the funds were received.",
-    "notFound": "Receipt not found.",
+    "notFound": "We could not find this receipt",
     "verifyNote": "Anyone can check this receipt by opening its link.",
-    "backHome": "Home page"
+    "backHome": "Home page",
+    "council": "Salamiyah Local Council",
+    "verified": "Verified",
+    "method": "Payment method",
+    "pointTypes": {
+      "MOSQUE": "Mosque",
+      "CENTER": "Centre",
+      "OFFICE": "Office",
+      "SHOP": "Shop",
+      "OTHER": "Point"
+    },
+    "scan": "Scan to verify",
+    "verifyTitle": "Check this receipt",
+    "verifyBody": "The council issues this receipt after the finance verifier matched the amount. The QR code opens this same page on the council's website: if it shows the same details, the receipt is genuine.",
+    "shareText": "My official donation receipt {no} from the Salamiyah Local Council: {url}",
+    "notFoundBody": "There is no official receipt numbered {no}. Check the number, or scan the QR code printed on the receipt."
   },
   "track": {
     "title": "Track an aid request",
@@ -262,8 +277,12 @@
   },
   "finance": {
     "title": "Finance verification queue",
-    "intro": "Oldest first. Match the receipt against the bank statement, then approve or reject with a clear reason.",
-    "empty": "Nothing is waiting for verification.",
+    "intro": "Oldest first. Match the receipt or the cash received against the statement, then approve to issue the official receipt, or reject with a clear reason.",
+    "empty": {
+      "PENDING": "Nothing awaiting verification.",
+      "APPROVED": "No approved requests yet.",
+      "REJECTED": "No rejected requests."
+    },
     "pledge": "Pledge",
     "channel": {
       "PLATFORM": "Platform",
@@ -282,7 +301,7 @@
     "approved": "Approved — receipt {no}",
     "approvedNoReceipt": "Approved",
     "rejected": "Rejected",
-    "ownEntry": "You cannot verify an entry you recorded yourself.",
+    "ownEntry": "You cannot decide an entry you recorded or donated yourself. Another verifier approves it (separation of duties).",
     "count": "{count, plural, =0 {No requests} one {# request} other {# requests}}",
     "method": "Payment method",
     "point": "Collection point",
@@ -294,7 +313,44 @@
       "OFFICE": "Office",
       "SHOP": "Shop",
       "OTHER": "Point"
-    }
+    },
+    "tabsLabel": "Request status",
+    "tabs": {
+      "PENDING": "Awaiting verification",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "channelTitle": {
+      "transfer": "Transfer with receipt",
+      "point": "Cash at a collection point",
+      "box": "Box total",
+      "council": "In person at the council"
+    },
+    "channelHint": {
+      "transfer": "Waiting for the receipt.",
+      "point": "The donor handed it to the collector.",
+      "box": "Recorded by the collector without a donor name.",
+      "council": "Handed over in cash at the council office."
+    },
+    "methods": {
+      "BEMO_TRANSFER": "Bemo bank transfer",
+      "BANK_TRANSFER": "Bank transfer",
+      "SHAM_CASH": "ShamCash",
+      "SYRIATEL_CASH": "Syriatel Cash",
+      "MTN_CASH": "MTN Cash",
+      "PAYPAL": "PayPal",
+      "VISA": "Visa",
+      "CASH": "Cash"
+    },
+    "decidedAt": "Decided",
+    "officialReceipt": "Official receipt",
+    "noOfficialReceipt": "Approved without an individual receipt (box total without a donor name).",
+    "rejectedBecause": "Reason: {reason}",
+    "rejectTitle": "Reject pledge {reference}",
+    "rejectIntro": "The donor receives this reason with a link to upload a new receipt. Write a clear reason that helps them.",
+    "rejectConfirm": "Reject and send the reason",
+    "reasonHint": "e.g. The amount on the receipt does not match the pledge.",
+    "reasonRequired": "Write the reason (at least 5 characters)."
   },
   "cases": {
     "title": "Case review",

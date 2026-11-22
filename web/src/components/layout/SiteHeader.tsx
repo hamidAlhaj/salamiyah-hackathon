@@ -19,7 +19,7 @@ export function SiteHeader({ bell }: { bell?: React.ReactNode }) {
   const user = useAppSelector((state) => state.currentUser.user);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-surface/85 backdrop-blur supports-[backdrop-filter]:bg-surface/75">
+    <header className="sticky top-0 z-30 border-b print:hidden border-border bg-surface/85 backdrop-blur supports-[backdrop-filter]:bg-surface/75">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-3 focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2"

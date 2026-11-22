@@ -133,14 +133,28 @@ export interface CreatePledgeResult {
   instructions: PaymentInstructions[];
 }
 
+/**
+ * GET /official-receipts/:no: a verified donation's public receipt. Never the donor's phone or any
+ * beneficiary identity; `donorName` is '' for «فاعل خير». `url` is the public page the QR encodes.
+ */
 export interface OfficialReceipt {
   receiptNo: string;
   donorName: string;
   amount: string;
   currency: Currency;
+  method: PaymentMethod;
+  methodLabel: string;
+  channel: PledgeChannel;
   campaignTitle: string;
   campaignSlug: string;
+  category: PublicCampaignCategory;
+  /** Cash handed over at a collection point: where (name and type only). */
+  collectionPoint: { name: string; type: CollectionPointType } | null;
+  status: 'VERIFIED';
   verifiedAt: string;
+  url: string;
+  /** The QR code of `url` as an inline SVG (generated on the server). */
+  qrSvg: string;
 }
 
 /**

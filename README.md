@@ -187,7 +187,7 @@ Libraries used here that the b4f reference does not have. Each one is pinned to 
 | `react-native-svg` | mobile | Category icons and cover illustrations drawn like the web SVGs (Expo 58 bundled version) | 15.16.0 | P09 |
 | `expo-clipboard` | mobile | Copy a receiving account number (Expo 58 SDK module) | ~58.0.4 | P09 |
 | `@expo-google-fonts/ibm-plex-sans-arabic`, `@expo-google-fonts/noto-kufi-arabic` | mobile | The web fonts (IBM Plex Sans Arabic body, Noto Kufi Arabic headings) bundled for expo-font | 0.4.2 / 0.4.3 | P09 |
-| `qrcode` | api or web | QR verification code on official receipts | pinned exactly in P11 | P11 |
+| `qrcode`, `@types/qrcode` (dev) | api | QR code (server-side SVG) on official receipts, encoding the public receipt URL | 1.5.4 / 1.5.6 | P13 |
 
 ## Docs
 - `docs/input/`: council PoC proposal (**primary requirement source**), full system specification, team brief (ar/en),

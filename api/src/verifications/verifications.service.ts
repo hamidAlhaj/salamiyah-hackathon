@@ -36,7 +36,9 @@ export class VerificationsService {
         pledge: {
           include: {
             campaign: { select: { id: true, slug: true, titleAr: true } },
-            collectionPoint: { select: { name: true, type: true, contactName: true } },
+            collectionPoint: {
+              select: { name: true, type: true, area: true, contactName: true },
+            },
             recordedBy: { select: { id: true, fullName: true, role: true } },
           },
         },
@@ -50,6 +52,8 @@ export class VerificationsService {
       decidedAt: v.decidedAt?.toISOString() ?? null,
       reviewer: v.reviewer?.fullName ?? null,
       receipt: v.receipt,
+      // Separation of duties: shown as a disabled approve button with the reason.
+      ownEntry: v.pledge.recordedById === actor.id || v.pledge.donorId === actor.id,
       pledge: {
         id: v.pledge.id,
         referenceNo: v.pledge.referenceNo,
@@ -57,6 +61,8 @@ export class VerificationsService {
         currency: v.pledge.currency,
         channel: v.pledge.channel,
         method: v.pledge.method,
+        isAnonymousDisplay: v.pledge.isAnonymousDisplay,
+        officialReceiptNo: v.pledge.officialReceiptNo,
         donorName: v.pledge.donorName,
         donorPhone: v.pledge.donorPhone,
         campaign: v.pledge.campaign,
@@ -90,7 +96,9 @@ export class VerificationsService {
         if (!['RECEIPT_UPLOADED', 'COLLECTED'].includes(pledge.status))
           throw new ConflictException('pledge_not_pending');
 
-        // إيصال رسمي باسم المتبرع للمنصة والمجلس؛ حصيلة الصناديق بلا إيصال فردي (قرار الفريق)
+        // Official receipt R-YYYY-NNNNNN for a named donation: platform transfers, donor-chosen cash
+        // confirmed by a collector (channel PLATFORM) and council in-person cash. Anonymous box totals
+        // recorded by a collector (channel COLLECTOR, no donor) get none (team decision).
         let receiptNo: string | null = null;
         if (pledge.channel !== 'COLLECTOR') {
           const [seq] = await tx.$queryRaw<

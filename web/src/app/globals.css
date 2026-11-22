@@ -137,3 +137,51 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Printing an official receipt: white paper, no header, navigation or toasts; colours kept exact. */
+@media print {
+  @page {
+    size: A5;
+    margin: 12mm;
+  }
+  /* Paper is always light: the dark theme's tokens are replaced by the light ones. */
+  :root,
+  .dark {
+    color-scheme: light;
+    --page: 238 242 239; /* #eef2ef */
+    --surface: 249 251 249; /* #f9fbf9 cards, inputs, header */
+    --surface-muted: 228 234 229; /* #e4eae5 recessed panels */
+    --border: 211 220 213; /* #d3dcd5 */
+    --track: 203 213 205; /* #cbd5cd progress track, skeletons */
+    --control: 123 138 128; /* #7b8a80 input outlines */
+    --text: 22 35 29; /* #16231d green-black ink */
+    --text-muted: 79 95 86; /* #4f5f56 */
+    --ring: 24 115 75; /* brand-600 */
+    --accent: 19 91 60; /* brand-700: links, active text */
+    --accent-strong: 17 74 50; /* brand-800 */
+    --accent-soft: 220 238 229; /* #dceee5 chips, selected */
+    --danger: 163 39 28;
+    --danger-soft: 245 222 214;
+    --danger-line: 233 195 184;
+    --warning: 133 70 11;
+    --warning-soft: 244 227 193;
+    --warning-line: 229 204 151;
+    --info: 15 76 110;
+    --info-soft: 217 232 238;
+    --panel: 15 61 42; /* brand-900: brand panel, logo tile */
+    --panel-ink: 228 242 235;
+    --lattice: rgb(255 255 255 / 0.09); /* star lattice lines on the panel */
+    --lattice-soft: rgb(19 91 60 / 0.07); /* star lattice on light surfaces */
+    --shadow-card: 0 1px 2px rgb(16 40 28 / 0.05), 0 2px 8px -2px rgb(16 40 28 / 0.08);
+    --shadow-lift: 0 14px 30px -12px rgb(16 40 28 / 0.25), 0 3px 8px rgb(16 40 28 / 0.06);
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

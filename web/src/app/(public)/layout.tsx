@@ -10,7 +10,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <main id="main" className="flex-1">
         {children}
       </main>
-      <footer className="border-t border-border">
+      <footer className="border-t border-border print:hidden">
         <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-muted sm:px-6">{t('council')}</div>
       </footer>
     </div>

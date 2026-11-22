@@ -106,6 +106,7 @@ const ar = {
     empty: 'لم تتبرع بعد. اختر حملة وابدأ.',
     rejection: 'السبب: {{reason}}',
     official: 'عرض الإيصال الرسمي',
+    receiptNo: 'رقم الإيصال الرسمي',
     point: 'نقطة الجمع: {{name}} — {{area}}',
   },
   status: {
@@ -310,6 +311,7 @@ const en: Messages = {
     empty: 'You have not donated yet. Pick a campaign to start.',
     rejection: 'Reason: {{reason}}',
     official: 'View official receipt',
+    receiptNo: 'Official receipt no.',
     point: 'Collection point: {{name}} — {{area}}',
   },
   status: {
