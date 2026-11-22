@@ -22,10 +22,11 @@ describe('workspace links per role', () => {
     expect(keys('FINANCE_VERIFIER')).toEqual(['home', 'finance']);
   });
 
-  it('donors and collectors have no staff screens on the web yet', () => {
-    expect(keys('DONOR')).toEqual(['home']);
+  it('donors see their donations; collectors have no web screens yet', () => {
+    expect(keys('DONOR')).toEqual(['home', 'donations']);
     expect(keys('COLLECTOR')).toEqual(['home']);
     expect(canUse('DONOR', 'categories')).toBe(false);
     expect(canUse('CASE_OFFICER', 'finance')).toBe(false);
+    expect(canUse('STAFF', 'donations')).toBe(false);
   });
 });

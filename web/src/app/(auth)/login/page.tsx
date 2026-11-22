@@ -5,6 +5,7 @@ import { LanguageSwitch } from '@/components/layout/LanguageSwitch';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Logo } from '@/components/ui/Logo';
 import { StarLattice } from '@/components/ui/StarLattice';
+import { safeNextPath } from '@/lib/next-path';
 import { LoginForm } from './LoginForm';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,7 +13,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title') };
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  const { next } = await searchParams;
   const t = await getTranslations('auth');
   const points = t.raw('panelPoints') as string[];
 
@@ -60,7 +66,7 @@ export default async function LoginPage() {
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           <h1 className="font-display text-3xl font-bold">{t('title')}</h1>
           <p className="mt-2 text-muted">{t('subtitle')}</p>
-          <LoginForm />
+          <LoginForm next={typeof next === 'string' ? safeNextPath(next) : undefined} />
           <p className="mt-8 text-sm text-muted lg:hidden">{t('donorHint')}</p>
         </div>
       </main>

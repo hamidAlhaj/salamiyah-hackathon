@@ -3,7 +3,9 @@ import {
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
+  Query,
   StreamableFile,
   UploadedFile,
   UseGuards,
@@ -14,7 +16,9 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nes
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { LIMITS } from '../common/shared';
 import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
+import { LangQueryDto } from '../campaigns/campaigns.dto';
 import {
+  CashPledgeDto,
   CollectorPledgeDto,
   CouncilPledgeDto,
   CreatePledgeDto,
@@ -56,6 +60,14 @@ export class PledgesController {
     return this.pledges.createDemo(dto, user);
   }
 
+  @Post('pledges/cash')
+  @ApiOperation({
+    summary: 'Cash at an active collection point: a reference to show the collector (DONOR)',
+  })
+  createCash(@Body() dto: CashPledgeDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.pledges.createCash(dto, user);
+  }
+
   @Post('pledges/council')
   @ApiOperation({ summary: 'تبرع حضوري في المجلس (STAFF, FINANCE_VERIFIER, FR-18)' })
   createCouncil(@Body() dto: CouncilPledgeDto, @CurrentUser() user: AuthenticatedUser) {
@@ -82,8 +94,12 @@ export class PledgesController {
 
   @Get('pledges/:id')
   @ApiOperation({ summary: 'تفاصيل تعهد (المالك أو المالية)' })
-  get(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.pledges.get(id, user);
+  get(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: LangQueryDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.pledges.get(id, user, query.lang);
   }
 
   @Post('pledges/:id/receipts')

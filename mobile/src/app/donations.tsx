@@ -78,7 +78,7 @@ export default function DonationsScreen() {
             <AppText weight="bold">{money(item.amount, item.currency, lang)}</AppText>
             <View style={styles.row}>
               <AppText size="sm" weight="bold" tone={TONE[item.status]}>
-                {t(`status.${item.status}`)}
+                {t(`status.${item.status === 'PLEDGED' && item.method === 'CASH' ? 'PLEDGED_CASH' : item.status}`)}
               </AppText>
               {item.isDemo && <DemoBadge />}
             </View>
@@ -86,10 +86,15 @@ export default function DonationsScreen() {
           <AppText size="xs" tone="muted">
             {`${item.referenceNo} — ${date(item.createdAt, lang)}`}
           </AppText>
+          {item.collectionPoint && (
+            <AppText size="xs" tone="muted">
+              {t('donations.point', { name: item.collectionPoint.name, area: item.collectionPoint.area })}
+            </AppText>
+          )}
           {item.rejectionReason && (
             <Notice tone="danger">{t('donations.rejection', { reason: item.rejectionReason })}</Notice>
           )}
-          {(item.status === 'PLEDGED' || item.status === 'REJECTED') && !item.isDemo && (
+          {(item.status === 'PLEDGED' || item.status === 'REJECTED') && !item.isDemo && item.method !== 'CASH' && (
             <Button title={t('pledge.uploadNow')} onPress={() => router.push(`/receipt/${item.id}`)} />
           )}
           {item.officialReceiptNo && !item.isDemo && (

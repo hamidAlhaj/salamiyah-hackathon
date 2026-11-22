@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
+import type { PublicCollectionPoint } from '../common/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateCollectionPointDto, CreateHospitalDto } from './lookups.controller';
 
@@ -29,6 +30,18 @@ export class LookupsService {
     return this.prisma.collectionPoint.findMany({
       orderBy: { name: 'asc' },
       include: { collectors: { select: { id: true, fullName: true } } },
+    });
+  }
+
+  /**
+   * Public: active collection points where a donor can hand over cash, grouped by the client by area.
+   * Only public fields: never the collectors or the contact person.
+   */
+  activeCollectionPoints(): Promise<PublicCollectionPoint[]> {
+    return this.prisma.collectionPoint.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, type: true, area: true },
+      orderBy: [{ area: 'asc' }, { name: 'asc' }],
     });
   }
 

@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import * as authApi from '../api/auth';
 import { ApiError } from '../api/client';
+import { safeNextPath } from '../next-path';
 import { clearSessionToken, setSessionToken } from '../session';
 import { readString, safeRevalidate } from './validation';
 
@@ -34,7 +35,9 @@ export async function loginAction(_prevState: FormState, formData: FormData): Pr
   }
 
   safeRevalidate('/');
-  redirect('/dashboard');
+  // Back to where the donor started (e.g. the donate page); only known in-app paths are accepted.
+  const next = formData.get('next');
+  redirect((typeof next === 'string' && safeNextPath(next)) || '/dashboard');
 }
 
 export async function logoutAction() {

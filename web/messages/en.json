@@ -447,9 +447,123 @@
   },
   "donate": {
     "title": "Donate to: {title}",
-    "intro": "Online, transfer and cash donation steps arrive in the next release.",
-    "meanwhile": "You can already transfer to one of the receiving accounts below and keep a photo of the receipt.",
-    "back": "Back to the campaign"
+    "back": "Back to the campaign",
+    "intro": "Choose how to pay and how much. Every donation is recorded in the campaign's open account.",
+    "loginTitle": "Log in to donate",
+    "loginBody": "Your account lets us send the receipt confirmation and official receipt, and you can follow it in “My donations”.",
+    "loginCta": "Log in",
+    "staffTitle": "Donate from a donor account",
+    "staffBody": "You are signed in with a council staff account. Donating on the platform is for donor accounts only.",
+    "notAccepting": "This campaign is not accepting donations right now.",
+    "stepPath": "How would you like to give?",
+    "stepAmount": "How much?",
+    "stepFinish": "Complete your donation",
+    "paths": {
+      "demo": {
+        "title": "Pay online now",
+        "body": "Local wallet, card or PayPal. A simulation for the hackathon demo."
+      },
+      "transfer": {
+        "title": "Transfer, then receipt",
+        "body": "Transfer to the campaign account, then upload the receipt for the council to verify."
+      },
+      "cash": {
+        "title": "Cash at a collection point",
+        "body": "Pick a nearby collection point and hand over the cash with your reference."
+      }
+    },
+    "methodLabel": "Payment method",
+    "presetsLabel": "Suggested amounts",
+    "customAmount": "Or type another amount",
+    "amountHint": "Digits only, in the campaign currency ({currency}).",
+    "invalidAmount": "Enter a whole amount above zero.",
+    "anonymous": "Show me as “Anonymous donor”",
+    "anonymousHint": "Your name is not shown publicly. The official receipt stays in your name.",
+    "summaryTitle": "Your donation",
+    "summaryAmount": "Amount",
+    "summaryMethod": "Method",
+    "summaryName": "Shown as",
+    "summaryAnonymous": "Anonymous donor",
+    "summaryYou": "Your name",
+    "chooseFirst": "Choose a payment method and an amount first.",
+    "demoNote": "Demo payment: no real money moves. The amount shows separately in the campaign account and never counts as verified money.",
+    "submitting": "Sending…",
+    "wallet": {
+      "title": "Pay with {method}",
+      "phone": "Wallet number",
+      "phoneHint": "For the simulation only; it is not sent anywhere.",
+      "sendCode": "Send confirmation code",
+      "codeSent": "A demo confirmation code was sent to {phone}.",
+      "code": "Confirmation code",
+      "demoCode": "Demo code: {code}",
+      "wrongCode": "Wrong code. Type the demo code shown above.",
+      "invalidPhone": "Enter a valid wallet number, e.g. 0930000000.",
+      "confirm": "Confirm payment of {amount}",
+      "changePhone": "Change number"
+    },
+    "card": {
+      "title": "Pay with a {method} card",
+      "testNote": "A prefilled test card. Never type real card details in any demo.",
+      "number": "Card number",
+      "expiry": "Expiry",
+      "cvc": "CVC",
+      "holder": "Name on card",
+      "holderValue": "DEMO DONOR",
+      "pay": "Pay {amount}"
+    },
+    "paypal": {
+      "title": "PayPal",
+      "signedIn": "Demo PayPal account",
+      "payTo": "Pay to",
+      "merchant": "Majlis Fund (demo)",
+      "approve": "Approve and pay {amount}"
+    },
+    "transfer": {
+      "create": "Show the transfer account and reference",
+      "accountTitle": "Transfer to this account",
+      "amountToSend": "Amount to transfer",
+      "holder": "Account holder",
+      "number": "Account number",
+      "reference": "Reference",
+      "referenceHint": "Write it in the transfer note so we can match your donation.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyNumber": "Copy the account number",
+      "copyReference": "Copy the reference",
+      "receiptTitle": "Upload the receipt photo",
+      "camera": "Photograph the receipt",
+      "gallery": "Or choose a photo or PDF from your device",
+      "receiptHint": "JPG, PNG or PDF up to 5 MB.",
+      "transferRef": "Transfer number (optional)",
+      "upload": "Send the receipt",
+      "noFile": "Choose the receipt photo first.",
+      "later": "I will upload the receipt later from “My donations”"
+    },
+    "cash": {
+      "pointsTitle": "Choose a collection point",
+      "noPoints": "No active collection points right now. Choose another method.",
+      "confirm": "Get my reference",
+      "choosePoint": "Choose a collection point first."
+    },
+    "pointTypes": {
+      "MOSQUE": "Mosque",
+      "CENTER": "Centre",
+      "OFFICE": "Office",
+      "SHOP": "Shop",
+      "OTHER": "Point"
+    },
+    "done": {
+      "demoTitle": "Demo payment done",
+      "demoBody": "The amount shows on the campaign bar as a separate demo part and never counts as real money.",
+      "transferTitle": "We received your receipt",
+      "transferBody": "The finance verifier will match the transfer; you get the official receipt after verification.",
+      "cashTitle": "Your reference is ready",
+      "cashBody": "Hand over the cash at “{point}” ({area}) and tell the collector your reference.",
+      "reference": "Reference",
+      "status": "Status",
+      "backToCampaign": "Back to the campaign",
+      "myDonations": "My donations"
+    }
   },
   "workspace": {
     "label": "Workspace",
@@ -462,7 +576,8 @@
     "finance": "Finance verification",
     "imports": "Excel import",
     "publicSite": "Public site",
-    "forbidden": "This page is not part of your role."
+    "forbidden": "This page is not part of your role.",
+    "donations": "My donations"
   },
   "apiErrors": {
     "generic": "The request could not be completed. Check the data and try again.",
@@ -489,7 +604,17 @@
     "invalid_phone": "The phone number is not valid.",
     "invalid_national_id": "The national ID is not valid.",
     "invalid_amount": "The amount is not valid.",
-    "role_not_allowed": "This action is not part of your role."
+    "role_not_allowed": "This action is not part of your role.",
+    "payment_method_unavailable": "This payment method is not available right now. Choose another one.",
+    "collection_point_unavailable": "This collection point is not available. Choose another one.",
+    "campaign_not_accepting_pledges": "This campaign is not accepting donations right now.",
+    "duplicate_receipt": "This receipt was already uploaded for another donation.",
+    "receipt_not_applicable": "This donation does not need a receipt.",
+    "receipt_already_pending_or_verified": "A receipt is already uploaded and being verified.",
+    "demo_mode_disabled": "Demo payments are switched off.",
+    "unsupported_file_type": "Unsupported file type. Use JPG, PNG or PDF.",
+    "file_too_large": "The file is larger than 5 MB.",
+    "demo_not_verifiable": "Demo payments are never verified."
   },
   "adminCategories": {
     "title": "Campaign categories",
@@ -582,5 +707,27 @@
     },
     "paused": "Donations paused",
     "openPublic": "Public page"
+  },
+  "myDonations": {
+    "title": "My donations",
+    "intro": "All your donations and the status of each. The official receipt comes after the council verifies.",
+    "empty": "You have not donated yet. Pick a campaign to start.",
+    "browse": "Browse campaigns",
+    "reference": "Reference",
+    "official": "Official receipt",
+    "rejection": "Reason: {reason}",
+    "point": "Collection point: {name} — {area}",
+    "uploadTitle": "Upload the receipt for this transfer",
+    "demo": "Demo payment, never counted as real money",
+    "status": {
+      "PLEDGED": "Awaiting payment",
+      "PLEDGED_CASH": "Awaiting hand-over at the collection point",
+      "RECEIPT_UPLOADED": "Being verified",
+      "COLLECTED": "Received, awaiting verification",
+      "VERIFIED": "Verified",
+      "DEMO_CONFIRMED": "Demo payment",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    }
   }
 }

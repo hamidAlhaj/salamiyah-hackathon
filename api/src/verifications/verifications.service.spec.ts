@@ -78,5 +78,16 @@ describe('VerificationsService authorization', () => {
         serviceWith(prismaFinding(own)).reject(VERIFICATION_ID, 'reason text', verifier),
       ).rejects.toThrow('cannot_verify_own_entry');
     });
+
+    it('refuses to verify a simulated («Demo») payment, so demo never reaches verifiedAmount', async () => {
+      const demo = {
+        status: 'PENDING',
+        pledge: { isDemo: true, status: 'DEMO_CONFIRMED', donorId: 'x', campaign: {} },
+      };
+      const prisma = prismaFinding(demo);
+      await expect(serviceWith(prisma).approve(VERIFICATION_ID, verifier)).rejects.toThrow(
+        'demo_not_verifiable',
+      );
+    });
   });
 });

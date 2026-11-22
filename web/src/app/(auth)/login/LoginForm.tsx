@@ -8,13 +8,14 @@ import { loginAction, type FormState } from '@/lib/actions/auth';
 
 const initialState: FormState = {};
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const t = useTranslations('auth');
   const [state, formAction] = useActionState(loginAction, initialState);
 
   return (
     <form action={formAction} className="mt-8 space-y-5" noValidate>
       <FormError message={state.error} />
+      {next && <input type="hidden" name="next" value={next} />}
       <Field
         label={t('phone')}
         name="phone"

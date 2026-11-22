@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsIn, IsOptional, IsString, Length, Matches } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  Matches,
+} from 'class-validator';
 import { DEMO_PAYMENT_METHODS, RECEIPT_PAYMENT_METHODS } from '../common/shared';
 import type { PaymentMethod } from '@prisma/client';
 import {
@@ -45,6 +53,30 @@ export class DemoPledgeDto {
   @ApiProperty({ enum: DEMO_PAYMENT_METHODS })
   @IsIn(DEMO_PAYMENT_METHODS)
   method: PaymentMethod;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
+  isAnonymousDisplay?: boolean;
+}
+
+/**
+ * A donor promises cash and hands it over at an active collection point. The collector confirms
+ * receipt later (P12) and finance verifies; until then the pledge is only PLEDGED.
+ */
+export class CashPledgeDto {
+  @ApiProperty()
+  @IsUUID()
+  campaignId: string;
+
+  @ApiProperty({ example: '250000' })
+  @NormalizeAmount()
+  @Matches(AMOUNT_REGEX, { message: 'invalid_amount' })
+  amount: string;
+
+  @ApiProperty({ description: 'An active collection point (GET /collection-points/active)' })
+  @IsUUID()
+  collectionPointId: string;
 
   @ApiPropertyOptional({ default: false })
   @IsOptional()

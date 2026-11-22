@@ -8,6 +8,7 @@ import { linksFor, type WorkspaceKey } from '@/lib/workspace';
 
 const ICONS: Record<WorkspaceKey, React.ReactNode> = {
   home: <path d="M4 11 12 4l8 7M6 10v10h12V10" />,
+  donations: <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />,
   categories: (
     <>
       <rect x="4" y="4" width="7" height="7" rx="1.5" />

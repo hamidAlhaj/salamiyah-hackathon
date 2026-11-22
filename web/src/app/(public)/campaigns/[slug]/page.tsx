@@ -1,7 +1,8 @@
 import { DATE_MEDIUM } from '@/lib/format';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
+import { NextIntlClientProvider } from 'next-intl';
+import { getFormatter, getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { BeneficiaryList } from '@/components/campaigns/BeneficiaryList';
 import { CampaignCover } from '@/components/campaigns/CampaignCover';
 import { CategoryIcon } from '@/components/campaigns/CategoryIcon';
@@ -39,6 +40,8 @@ export default async function CampaignPage({ params }: Props) {
   const t = await getTranslations('campaign');
   const tPriority = await getTranslations('priority');
   const format = await getFormatter();
+  // The live ledger is a Client Component: it only needs the campaign texts.
+  const { campaign: campaignMessages } = await getMessages();
 
   const siteUrl = process.env.SITE_URL ?? 'http://localhost:3000';
   const { verifiedPercent } = fundingSegments({
@@ -150,11 +153,13 @@ export default async function CampaignPage({ params }: Props) {
         </div>
 
         <aside className="order-first space-y-5 lg:order-none lg:sticky lg:top-24 lg:self-start">
-          <LedgerCard
-            ledger={ledger}
-            acceptsPledges={campaign.acceptsPledges}
-            donateHref={`/campaigns/${campaign.slug}/donate`}
-          />
+          <NextIntlClientProvider messages={{ campaign: campaignMessages }}>
+            <LedgerCard
+              ledger={ledger}
+              acceptsPledges={campaign.acceptsPledges}
+              donateHref={`/campaigns/${campaign.slug}/donate`}
+            />
+          </NextIntlClientProvider>
           <a
             href={shareUrl}
             target="_blank"

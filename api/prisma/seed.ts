@@ -173,6 +173,14 @@ async function main() {
       collectors: { connect: { id: collector.id } },
     },
   });
+  await prisma.collectionPoint.create({
+    data: {
+      name: 'مكتب المجلس المحلي',
+      type: 'OFFICE',
+      contactName: 'موظف الاستقبال (مثال)',
+      area: 'وسط المدينة',
+    },
+  });
 
   // ── System campaign categories (data, not an enum). Rules read the flags, never the code. ──
   const mkCategory = (data: Prisma.CampaignCategoryCreateInput) =>

@@ -55,6 +55,19 @@ export class CreateCollectionPointDto {
   area: string;
 }
 
+/** Public: where a donor can pay cash (no guard). */
+@ApiTags('collection-points')
+@Controller()
+export class PublicCollectionPointsController {
+  constructor(private readonly lookups: LookupsService) {}
+
+  @Get('collection-points/active')
+  @ApiOperation({ summary: 'Active collection points for cash donations (public)' })
+  active() {
+    return this.lookups.activeCollectionPoints();
+  }
+}
+
 /** Reference data: hospitals and collection points. Roles are checked in LookupsService. */
 @ApiTags('lookups')
 @ApiBearerAuth()

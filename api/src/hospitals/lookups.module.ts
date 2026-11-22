@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { LookupsController } from './lookups.controller';
+import { LookupsController, PublicCollectionPointsController } from './lookups.controller';
 import { LookupsService } from './lookups.service';
 
 @Module({
-  controllers: [LookupsController],
+  controllers: [PublicCollectionPointsController, LookupsController],
   providers: [LookupsService],
 })
 export class LookupsModule {}

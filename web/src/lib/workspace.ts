@@ -3,6 +3,7 @@ import type { Role } from '@/shared';
 /** The staff workspace pages and the roles that use them (the API still enforces every rule). */
 export const WORKSPACE_LINKS = [
   { key: 'home', href: '/dashboard', roles: null },
+  { key: 'donations', href: '/dashboard/donations', roles: ['DONOR'] },
   { key: 'categories', href: '/dashboard/admin/categories', roles: ['ADMIN'] },
   { key: 'campaigns', href: '/dashboard/admin/campaigns', roles: ['ADMIN'] },
   { key: 'newCampaign', href: '/dashboard/admin/campaigns/new', roles: ['ADMIN'] },

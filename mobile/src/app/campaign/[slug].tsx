@@ -2,7 +2,7 @@ import * as Clipboard from 'expo-clipboard';
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Linking, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import {
   type CampaignLedger,
   type PaymentAccount,
@@ -49,6 +49,7 @@ export default function CampaignScreen() {
   const { user } = useAuth();
   const [data, setData] = useState<Loaded | null>(null);
   const [error, setError] = useState<'notFound' | 'generic' | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -112,7 +113,19 @@ export default function CampaignScreen() {
     );
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: c.page }} contentContainerStyle={{ paddingBottom: 32 }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: c.page }}
+      contentContainerStyle={{ paddingBottom: 32 }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            void load().finally(() => setRefreshing(false));
+          }}
+        />
+      }
+    >
       <Stack.Screen options={{ title: cp.category.name }} />
       <CampaignCover coverKey={cp.coverKey} height={180} />
       <View style={{ padding: 16, gap: 14 }}>

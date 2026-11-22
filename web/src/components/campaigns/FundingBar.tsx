@@ -1,5 +1,8 @@
 import { fundingSegments } from './funding';
 
+/** Live updates slide each segment to its new width (instant when reduced motion is asked for). */
+const GROW = 'transition-[width] duration-700 ease-out motion-reduce:transition-none';
+
 const DEMO_STRIPES =
   'bg-[repeating-linear-gradient(135deg,rgb(var(--text-muted)/0.45)_0_4px,transparent_4px_8px)]';
 
@@ -41,14 +44,20 @@ export function FundingBar({
           className={`flex flex-1 overflow-hidden rounded-full bg-track ${size === 'sm' ? 'h-2' : 'h-3'}`}
         >
           <span
-            className="h-full animate-grow bg-give-600 ltr:origin-left rtl:origin-right dark:bg-give-500"
+            className={`h-full animate-grow bg-give-600 ltr:origin-left rtl:origin-right dark:bg-give-500 ${GROW}`}
             style={{ width: `${s.verified}%` }}
+            data-segment="verified"
           />
           <span
-            className="h-full bg-give-300 dark:bg-give-700"
+            className={`h-full bg-give-300 dark:bg-give-700 ${GROW}`}
             style={{ width: `${s.pending}%` }}
+            data-segment="pending"
           />
-          <span className={`h-full ${DEMO_STRIPES}`} style={{ width: `${s.demo}%` }} />
+          <span
+            className={`h-full ${DEMO_STRIPES} ${GROW}`}
+            style={{ width: `${s.demo}%` }}
+            data-segment="demo"
+          />
         </div>
         <span className="min-w-[3rem] text-end text-sm font-semibold tabular-nums" dir="ltr">
           {s.verifiedPercent}%

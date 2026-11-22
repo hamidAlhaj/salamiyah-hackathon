@@ -3,6 +3,7 @@ import type {
   CampaignStatus,
   BeneficiaryKind,
   CaseCategory,
+  CollectionPointType,
   Currency,
   PaymentMethod,
   PaymentMethodKind,
@@ -111,8 +112,18 @@ export interface PledgeView {
   isAnonymousDisplay: boolean;
   officialReceiptNo: string | null;
   rejectionReason: string | null;
+  /** Cash pledges: the collection point the donor chose (shown to the collector with the reference). */
+  collectionPoint: Pick<PublicCollectionPoint, 'name' | 'area' | 'type'> | null;
   createdAt: string;
   verifiedAt: string | null;
+}
+
+/** GET /collection-points/active: where a donor can hand over cash (active points only). */
+export interface PublicCollectionPoint {
+  id: string;
+  name: string;
+  type: CollectionPointType;
+  area: string;
 }
 
 export interface CreatePledgeResult {

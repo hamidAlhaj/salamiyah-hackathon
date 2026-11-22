@@ -82,6 +82,8 @@ export class VerificationsService {
         if (!v) throw new NotFoundException('verification_not_found');
         if (v.status !== 'PENDING') throw new ConflictException('already_decided');
         const { pledge } = v;
+        // Simulated («Demo») money is never verified: it must not reach verifiedAmount.
+        if (pledge.isDemo) throw new ConflictException('demo_not_verifiable');
         if (pledge.recordedById === actor.id || pledge.donorId === actor.id) {
           throw new ForbiddenException('cannot_verify_own_entry');
         }

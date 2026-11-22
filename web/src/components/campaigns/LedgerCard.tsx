@@ -1,16 +1,60 @@
+'use client';
+
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { formatMoney, type CampaignLedger } from '@/shared';
 import { buttonClasses } from '@/components/ui/Button';
 import { DemoBadge } from './DemoBadge';
 import { FundingBar } from './FundingBar';
 
+/** How often the open campaign page refreshes its ledger (only while the tab is visible). */
+const POLL_MS = 5000;
+
+/**
+ * Keeps the ledger live: polls the same-origin /api/campaigns/:id/ledger route every ~5 s while the
+ * page is visible, and once more when the tab becomes visible again. Failures keep the last values.
+ */
+function useLiveLedger(initial: CampaignLedger): CampaignLedger {
+  const [ledger, setLedger] = useState(initial);
+  useEffect(() => {
+    let stopped = false;
+    let timer: number | undefined;
+    const tick = async () => {
+      if (document.visibilityState === 'visible') {
+        try {
+          const res = await fetch(`/api/campaigns/${initial.campaignId}/ledger`, {
+            cache: 'no-store',
+          });
+          if (res.ok && !stopped) setLedger((await res.json()) as CampaignLedger);
+        } catch {
+          // offline: keep showing the last ledger
+        }
+      }
+      if (!stopped) timer = window.setTimeout(tick, POLL_MS);
+    };
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      window.clearTimeout(timer);
+      void tick();
+    };
+    timer = window.setTimeout(tick, POLL_MS);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      stopped = true;
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [initial.campaignId]);
+  return ledger;
+}
+
 /**
  * The campaign account as a statement: collected (verified), pending, demo (separate, «Demo»),
- * spent and remaining = verified − spent. Values come straight from GET /campaigns/:id/ledger.
+ * spent and remaining = verified − spent. Values come from GET /campaigns/:id/ledger and stay live.
  */
 export function LedgerCard({
-  ledger,
+  ledger: initial,
   donateHref,
   acceptsPledges,
 }: {
@@ -18,6 +62,7 @@ export function LedgerCard({
   donateHref: string;
   acceptsPledges: boolean;
 }) {
+  const ledger = useLiveLedger(initial);
   const t = useTranslations('campaign');
   const locale = useLocale() === 'en' ? 'en' : 'ar';
   const money = (v: string) => formatMoney(v, ledger.currency, locale);

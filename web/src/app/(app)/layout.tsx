@@ -27,6 +27,8 @@ const STAFF_CLIENT_NAMESPACES = [
   'priority',
   'category',
   'campaign',
+  'donate',
+  'myDonations',
 ] as const;
 
 /** Every page in (app) needs a valid session: no cookie → /login; a rejected token → /login. */
