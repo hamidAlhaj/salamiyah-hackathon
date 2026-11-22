@@ -542,11 +542,25 @@ and can run in parallel branches (merge P17 before P19 if both touch the Sidebar
 
 ### Backlog after P20 (only if time remains; not part of any cut line)
 
-**P21 — Light mode** — team backlog item, recorded as given; to be scoped by the team before starting (the theme already
-ships light and dark from P04).
+**P21 — Light mode redesign** *(final team decision)*
+- Goal: redesign the existing light theme, which the team finds dull and greyish: a clean near-white page background,
+  pure-white cards with a subtle border and a soft shadow, fresh Salamiyah green accents, strong text contrast (WCAG AA for
+  every text pair). Only the light tokens in `globals.css` (and any light-only classes) change. **The dark mode is approved
+  and must not change.**
+- Accept: Std web; before/after screenshots of every route in light mode (1280 px and 375 px); measured contrast ratios
+  recorded; dark-mode screenshots unchanged.
+- Deps: P19 (or any time after P16).
 
-**P22 — Google sign-in** — team backlog item, recorded as given; needs a team decision first (it is an extra library and a
-second auth path next to the frozen phone + password contract).
+**P22 — Google (Gmail) sign-in as an additional option** *(final team decision)*
+- Goal: "Sign in with Google" next to phone + password. Phone + password stays the primary method (staff, collectors,
+  older users) and its API contract (`POST /auth/login` → `{ accessToken, user }`, Bearer token, 8h) stays unchanged.
+  The API adds the Google OAuth flow with `passport-google-oauth20` (exact pinned version, added to README "Additions
+  beyond b4f" first) and issues the same app JWT; a Google user is created as DONOR. Donors who sign in with Google must
+  add their phone number in their profile before donating (needed for WhatsApp receipts and alerts): the donate actions
+  refuse with a stable code until a phone is set. The team confirmed Google sign-in is usable for our users.
+- Accept: Std api/web/mobile; Google sign-in creates a DONOR and returns the app session; donating without a phone is
+  refused with the stable code; phone + password login unchanged (existing specs green).
+- Deps: P16.
 
 ---
 
