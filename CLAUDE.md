@@ -32,9 +32,16 @@ rules live here and in `docs/_analysis/01-reference-b4f.md`.
 - Platform for the Local (Ismaili) Council in Salamiyah, Syria: the council creates donation campaigns, donors give,
   the council verifies money, records spending with proof, and a public transparency dashboard shows it all.
   Deliverables: web (Next.js) + donor mobile app (Expo).
-- **Scope (hackathon):** campaign types `ORPHAN_SPONSORSHIP`, `HOME_RENOVATION`, `MEDICAL_AID` (enum kept extensible).
-  ADMIN creates campaigns of any type (CASE_OFFICER: medical) with a target amount, category, anonymised summary and a cover
-  illustration. The medical intake → review → publish pipeline produces `MEDICAL_AID` campaigns.
+- **Scope (hackathon):** campaigns belong to a **campaign category**. Categories are **data** (`CampaignCategory` table),
+  not an enum: `code`, `nameAr`/`nameEn`, optional descriptions, `icon` (key from a fixed icon set, no uploads),
+  `sortOrder`, `isActive`, `isSystem` (system categories can be deactivated, never deleted). Three system categories are
+  seeded: `MEDICAL_AID`, `ORPHAN_SPONSORSHIP`, `HOME_RENOVATION`; ADMIN adds more at runtime.
+- **Business rules read the category's behaviour flags, never its code:** `requiresMedicalCase` (the campaign comes from
+  the intake → review → publish pipeline; MEDICAL_AID), `lockedPayeeHospital` (expenditures only to the approved hospital;
+  MEDICAL_AID), `supportsMonthlySponsorship` (beneficiaries with `monthlyAmount` + `periodMonth` expenditures;
+  ORPHAN_SPONSORSHIP). New categories get no flags (generic campaign, any payee type).
+- ADMIN creates campaigns in any category (CASE_OFFICER: categories with `requiresMedicalCase`) with a target amount,
+  anonymised summary and a cover illustration.
 - Every campaign has a **campaign account**: a ledger (collected = verified, pending, demo shown separately, spent,
   remaining = verified − spent) and receiving details for donors (transfer / local wallet account names and numbers, all
   **fake**, from `PaymentMethodConfig`, optionally overridden per campaign).
@@ -46,7 +53,8 @@ rules live here and in `docs/_analysis/01-reference-b4f.md`.
 ## Repository
 - `api/` NestJS · `web/` Next.js · `mobile/` Expo. Three separate npm projects, each with its own package-lock.json.
 - No shared packages. Enums/types are copied into `api/src/common/shared`, `web/src/shared`, `mobile/src/shared`;
-  change all three plus `schema.prisma` together (the api enum-sync test must pass).
+  change all three plus `schema.prisma` together (the api enum-sync test must pass). Campaign categories are data, not a
+  shared enum.
 - npm only (no pnpm, no turbo, no workspaces). Node 24.12.0 (`.nvmrc`, `engines`).
 - Database: the **locally installed PostgreSQL** (Windows service, port 5432). **No Docker.**
   Role + database are created once with `api/prisma/dev-db-setup.sql` (see README).

@@ -11,6 +11,14 @@ planned collector flow, WhatsApp outbox, QR receipts, web + mobile.
 
 **State at the time of writing:** P01–P04 merged on `main` (`92f96fb`). **P05 not started** (no branch, no stash, clean tree).
 
+> **Decision update (P05, 2026-11-22) — campaign categories are data, not an enum.** Wherever this report says
+> `CampaignType` enum, read: a `CampaignCategory` table (`code` unique, `nameAr`/`nameEn`, optional descriptions, `icon`
+> from a fixed icon set, `sortOrder`, `isActive`, `isSystem`) with behaviour flags `requiresMedicalCase`,
+> `lockedPayeeHospital`, `supportsMonthlySponsorship`. Three system categories are seeded (MEDICAL_AID: medical case +
+> locked hospital; ORPHAN_SPONSORSHIP: monthly sponsorship; HOME_RENOVATION: no flags). `Campaign.categoryId` replaces the
+> type; business rules read the flags, never the code; categories are not in the shared enum copies. ADMIN manages
+> categories at runtime (API in P06, screen in P08, shown live in the demo).
+
 ---
 
 ## 1. The official idea

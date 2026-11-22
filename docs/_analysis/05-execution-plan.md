@@ -432,13 +432,13 @@ checks. **Std checks:** `api` = `npm run lint && npm test && npm run build`; `we
 > unchanged. Requirement IDs `H1–H24` refer to 06 §2; the demo steps refer to 06 §5. Each prompt is one session.
 
 **P05 — Schema for the new scope + shared enums**
-- Goal: one Prisma migration per 06 §3.1: `CampaignType` = `MEDICAL_AID`/`ORPHAN_SPONSORSHIP`/`HOME_RENOVATION`; `Campaign.spentAmount` (was `disbursedAmount`), `coverKey`, `area`; `BeneficiaryKind` + `Beneficiary.publicCode` (`B-XXXX`) / `kind` / `area`; `CampaignBeneficiary` (with `monthlyAmount`); `PayeeType` + **`Expenditure` replacing `Disbursement`**; `DocumentKind.EXPENDITURE_PROOF`; `PaymentMethod` with SHAM_CASH/SYRIATEL_CASH/MTN_CASH/PAYPAL/VISA (no `E_WALLET`); `PledgeStatus.DEMO_CONFIRMED`; `PaymentMethodConfig` + `CampaignPaymentAccount`; `OutboundMessage`; `User.whatsappOptIn`. Update the three shared copies, the api services that used the renamed fields (compile + existing specs), and a minimal seed so `migrate reset` + seed still run (full demo seed is P16).
+- Goal: one Prisma migration per 06 §3.1 and the categories decision: **`CampaignCategory` table** (code, names, icon, order, active, system, flags `requiresMedicalCase`/`lockedPayeeHospital`/`supportsMonthlySponsorship`) replacing the `CampaignType` enum, `Campaign.categoryId`, 3 seeded system categories; `Campaign.spentAmount` (was `disbursedAmount`), `coverKey`, `area`; `BeneficiaryKind` + `Beneficiary.publicCode` (`B-XXXX`) / `kind` / `area`; `CampaignBeneficiary` (with `monthlyAmount`); `PayeeType` + **`Expenditure` replacing `Disbursement`**; `DocumentKind.EXPENDITURE_PROOF`; `PaymentMethod` with SHAM_CASH/SYRIATEL_CASH/MTN_CASH/PAYPAL/VISA (no `E_WALLET`); `PledgeStatus.DEMO_CONFIRMED`; `PaymentMethodConfig` + `CampaignPaymentAccount`; `OutboundMessage`; `User.whatsappOptIn`. Update the three shared copies, the api services that used the renamed fields (compile + existing specs), and a minimal seed so `migrate reset` + seed still run (full demo seed is P16).
 - Inputs: 06 §3.1, §4.
-- Accept: Std api + web; `npx prisma migrate reset --force && npm run seed`; enum-sync spec and web shared-copy test pass; no `MEDICAL` / `Disbursement` / `disbursedAmount` left in api code.
+- Accept: Std api + web; `npx prisma migrate reset --force && npm run seed`; enum-sync spec and web shared-copy test pass; no `CampaignType` / `Disbursement` / `disbursedAmount` left in api code; rules read category flags, never codes.
 - Deps: P04.
 
-**P06 — API: campaign management, campaign account and beneficiaries**
-- Goal: `POST /campaigns` (ADMIN any type; CASE_OFFICER `MEDICAL_AID` only) with type, titles, anonymised summary, target, currency, `coverKey`, area; case publish creates `MEDICAL_AID`; `GET /campaigns?type=&status=` + detail including type/cover/beneficiaries count; `GET /campaigns/:id/ledger` (verified, pending, demo, spent, remaining, donors count); `GET /payment-methods` + `GET /campaigns/:id/payment-accounts` (config merged with overrides, demo-capable methods flagged); beneficiaries: create/link with generated `B-XXXX`, public codes per campaign. Specs for role rules, ledger maths and "no identity fields in public responses".
+**P06 — API: campaign management, categories, campaign account and beneficiaries**
+- Goal: **categories API**: public `GET /campaign-categories` (active, ordered), ADMIN `GET` all / `POST` / `PATCH` (names, descriptions, icon from the fixed set, order, activate/deactivate; flags fixed on system categories; system categories cannot be deleted, new ones start without flags); `POST /campaigns` (ADMIN any category; CASE_OFFICER only categories with `requiresMedicalCase`) with category, titles, anonymised summary, target, currency, `coverKey`, area; case publish creates a campaign in the `requiresMedicalCase` category; `GET /campaigns?category=&status=` + detail including type/cover/beneficiaries count; `GET /campaigns/:id/ledger` (verified, pending, demo, spent, remaining, donors count); `GET /payment-methods` + `GET /campaigns/:id/payment-accounts` (config merged with overrides, demo-capable methods flagged); beneficiaries: create/link with generated `B-XXXX`, public codes per campaign. Specs for role rules, ledger maths and "no identity fields in public responses".
 - Inputs: 06 §2 H5–H9, H11, H19; §3.2.
 - Accept: Std api; Swagger shows the new endpoints; a public campaign response contains no `fullName`/`phone`/`nationalId*` (spec).
 - Deps: P05.
@@ -449,10 +449,10 @@ checks. **Std checks:** `api` = `npm run lint && npm test && npm run build`; `we
 - Accept: Std web; Playwright: home lists all three types and the filter works; detail shows ledger + accounts; AR/EN + dark mode screenshots in `docs/screenshots/p07/`.
 - Deps: P06. Use frontend-design.
 
-**P08 — Web staff workspace: campaigns, cases, intake, import**
-- Goal: role-based Sidebar and real dashboards; `(app)/campaigns` list + "new campaign" form (type, target, cover picker, area, link/create anonymised beneficiaries with monthly amount for orphans); port the medical pipeline screens (intake, cases list/detail with review/publish/hospital change, import wizard, file proxy) so publishing produces a `MEDICAL_AID` campaign; Server Actions per resource.
+**P08 — Web staff workspace: categories, campaigns, cases, intake, import**
+- Goal: role-based Sidebar and real dashboards; **ADMIN categories screen** (list, create, edit names/icon/order, activate/deactivate; part of the demo: "admin adds a new category live"); `(app)/campaigns` list + "new campaign" form (category, target, cover picker, area, link/create anonymised beneficiaries with monthly amount for orphans); port the medical pipeline screens (intake, cases list/detail with review/publish/hospital change, import wizard, file proxy) so publishing produces a `MEDICAL_AID` campaign; Server Actions per resource.
 - Inputs: 02b §1.2, 06 §2 H2/H4/H6–H8.
-- Accept: Std web; ADMIN creates an orphan campaign with 3 beneficiaries → it is on the public home; STAFF intake → CASE_OFFICER publish → a `MEDICAL_AID` campaign appears; hospital change pauses pledges (demo steps 1–2 without the outbox).
+- Accept: Std web; ADMIN adds a new category and it appears in the public filter; ADMIN creates an orphan campaign with 3 beneficiaries → it is on the public home; STAFF intake → CASE_OFFICER publish → a `MEDICAL_AID` campaign appears; hospital change pauses pledges (demo steps 1–2 without the outbox).
 - Deps: P06 (P07 for the public result).
 
 **P09 — Mobile alignment + campaigns of all types** *(can run in parallel with P07/P08)*
@@ -639,3 +639,6 @@ and can run in parallel branches (merge P17 before P19 if both touch the Sidebar
 2. P01–P04 are done and kept as they are. P05 had not started when the scope changed (no branch, no stash, clean tree).
 3. The medical case pipeline stays and produces `MEDICAL_AID` campaigns; `Disbursement` becomes `Expenditure`.
 4. The prompt count is unchanged (P05–P20). The backlog (P21, P22) is recorded at the end of §7 as given by the team.
+5. **(P05) Campaign categories are data**, not an enum: `CampaignCategory` table with behaviour flags
+   (`requiresMedicalCase`, `lockedPayeeHospital`, `supportsMonthlySponsorship`); rules read flags, never codes; categories
+   API in P06, ADMIN categories screen in P08 (demo: "admin adds a new category live").
