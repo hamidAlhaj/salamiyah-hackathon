@@ -1,6 +1,6 @@
 /**
  * Fictional development/demo data — nothing here is real.
- * 3 system campaign categories, fake payment accounts, 5 medical cases (2 anonymous), one orphan
+ * 3 system campaign categories, fake payment accounts, 5 medical cases (all anonymous), one orphan
  * sponsorship and one home renovation campaign, one user per role, Pledge & Verify scenarios. Full demo seed: P16.
  *
  * Run: npm run seed (refuses to run unless DATABASE_URL is the local majlis_fund database).
@@ -362,18 +362,18 @@ async function main() {
       phone: '+963933100203',
       nid: '04010100203',
       category: 'MEDICATION',
-      description: 'أدوية مزمنة لمدة 6 أشهر (بموافقة المستفيد على النشر باسمه).',
+      description: 'أدوية مزمنة لمدة 6 أشهر.',
       amount: 2_400_000,
       priority: 'NORMAL',
       hospitalId: national.id,
       doctor: 'د. سامر (مثال)',
-      anonymous: false,
-      titleAr: 'أدوية مزمنة لأبي سمير لستة أشهر',
-      titleEn: 'Six months of chronic medication for Abu Samir',
+      anonymous: true,
+      titleAr: 'أدوية مزمنة لمريض مسن لستة أشهر',
+      titleEn: 'Six months of chronic medication for an elderly patient',
       summaryAr:
-        'أبو سمير يحتاج أدوية مزمنة شهرية. وافق على نشر حالته باسمه لتشجيع المتبرعين.',
+        'مريض مسن من السلمية يحتاج أدوية مزمنة شهرية لستة أشهر، والصرف للمشفى المعتمد.',
       summaryEn:
-        'Abu Samir needs monthly chronic medication and agreed to share his case by name.',
+        'An elderly patient in Salamiyah needs monthly chronic medication for six months; paid to the approved hospital.',
       publish: true,
     },
     {
@@ -386,12 +386,11 @@ async function main() {
       priority: 'URGENT',
       hospitalId: national.id,
       doctor: 'د. ريم (مثال)',
-      anonymous: false,
-      titleAr: 'جرعات علاج كيميائي لأم خالد',
-      titleEn: 'Chemotherapy doses for Um Khaled',
-      summaryAr: 'أم خالد تحتاج جرعات علاج كيميائي وتحاليل لثلاثة أشهر. وافقت على نشر حالتها.',
-      summaryEn:
-        'Um Khaled needs three months of chemotherapy and tests, and agreed to share her case.',
+      anonymous: true,
+      titleAr: 'جرعات علاج كيميائي لأم من السلمية',
+      titleEn: 'Chemotherapy doses for a mother in Salamiyah',
+      summaryAr: 'أم من السلمية تحتاج جرعات علاج كيميائي وتحاليل لثلاثة أشهر.',
+      summaryEn: 'A mother in Salamiyah needs three months of chemotherapy and tests.',
       publish: true,
     },
     {
@@ -474,6 +473,7 @@ async function main() {
           slug: `${c.category.toLowerCase()}-demo${i}`,
           categoryId: medicalAid.id,
           caseId: created.id,
+          coverKey: i % 2 === 0 ? 'medical-2' : 'medical-1',
           // The patient is linked anonymised, as case publish does.
           beneficiaries: { create: [{ beneficiaryId: beneficiary.id }] },
           titleAr: c.titleAr,

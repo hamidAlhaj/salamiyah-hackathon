@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Sans_Arabic, Noto_Kufi_Arabic } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { ToastViewport } from '@/components/ui/ToastViewport';
 import { ThemeProvider, themeInitScript } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
@@ -11,6 +11,13 @@ import { getSessionToken } from '@/lib/session';
 import type { CurrentUser } from '@/shared';
 import { StoreProvider } from '@/store/StoreProvider';
 import './globals.css';
+
+/**
+ * The only message namespaces Client Components use. Server Components read every namespace on the
+ * server; shipping only these keeps pages small (low bandwidth). Add a namespace here when a Client
+ * Component starts using it.
+ */
+const CLIENT_NAMESPACES = ['auth', 'errors', 'language', 'nav', 'roles', 'theme', 'toast'] as const;
 
 // Downloaded once at build time and self-hosted by Next.js: no request to Google at runtime.
 const plexArabic = IBM_Plex_Sans_Arabic({
@@ -53,6 +60,8 @@ async function loadCurrentUser(): Promise<CurrentUser | null> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = toLocale(await getLocale());
   const currentUser = await loadCurrentUser();
+  const allMessages = await getMessages();
+  const clientMessages = Object.fromEntries(CLIENT_NAMESPACES.map((ns) => [ns, allMessages[ns]]));
 
   return (
     // suppressHydrationWarning: the init script may add the "dark" class before hydration.
@@ -66,7 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-screen">
-        <NextIntlClientProvider>
+        <NextIntlClientProvider messages={clientMessages}>
           <ThemeProvider>
             <ToastProvider>
               <StoreProvider initialUser={currentUser}>{children}</StoreProvider>

@@ -1,11 +1,11 @@
 {
   "meta": {
     "title": "Majlis Fund",
-    "description": "Medical crowdfunding — Ismaili Council, Salamiyah"
+    "description": "Local donation campaigns with an open ledger: orphan sponsorship, home renovation, medical aid — Local Council, Salamiyah"
   },
   "nav": {
     "brand": "Majlis Fund",
-    "campaigns": "Cases",
+    "campaigns": "Campaigns",
     "track": "Track a request",
     "login": "Log in",
     "dashboard": "Dashboard",
@@ -14,37 +14,45 @@
     "skip": "Skip to content"
   },
   "home": {
-    "title": "Medical cases that need your support",
-    "subtitle": "Every case is vetted by the welfare board and an approved doctor. The platform never holds money: pledge, transfer, upload the receipt, and we verify it.",
     "filterAll": "All",
-    "empty": "No published cases right now.",
-    "prev": "Previous",
-    "next": "Next",
-    "kicker": "Ismaili Council, Salamiyah",
-    "heroTitle": "Treatment for those who need it, with donations you can follow",
-    "heroBody": "We publish vetted medical cases, verify every donation and pay the hospital directly. The figures shown are money the council has actually verified.",
-    "ctaCases": "Browse cases",
-    "ctaTrack": "Track your request",
-    "casesSoon": "Published cases will appear here soon.",
+    "empty": "There are no published campaigns in this category right now.",
+    "kicker": "Local Council of Salamiyah",
+    "heroTitle": "Salamiyah’s donations, with an account anyone can read",
+    "heroBody": "The council runs campaigns for orphan sponsorship, home renovation and medical aid. Every lira is recorded: what was collected, what was spent and for whom — without revealing anyone’s identity.",
+    "ctaCases": "Browse campaigns",
+    "ctaTrack": "Track an aid request",
     "stepsTitle": "How your donation arrives",
     "steps": [
       {
-        "title": "You pledge",
-        "body": "Pick a case and record the amount you will give."
+        "title": "Pick a campaign",
+        "body": "Sponsorship, renovation or medical aid: each has its own target and account."
       },
       {
-        "title": "You transfer or hand in cash",
-        "body": "A bank transfer with the receipt uploaded, or cash at a nearby collection point."
+        "title": "Pay",
+        "body": "A transfer or local e-wallet with the receipt uploaded, or cash at a nearby collection point."
       },
       {
         "title": "We verify",
-        "body": "The finance verifier matches the amount and issues an official receipt."
+        "body": "The finance verifier matches the amount, issues an official receipt and you are notified at once."
       },
       {
-        "title": "We pay the hospital",
-        "body": "Payment goes only to the approved hospital, and the case shows as completed."
+        "title": "We spend with proof",
+        "body": "Every payment out is recorded with an invoice or photo and shown on the campaign."
       }
-    ]
+    ],
+    "ledgerTitle": "The campaigns’ open account",
+    "ledgerCollected": "Collected and verified by the council",
+    "ledgerSpent": "Spent on beneficiaries",
+    "ledgerRemaining": "Remaining in campaign accounts",
+    "ledgerDemo": "Simulated (Demo) payments are not in these figures: {amount}",
+    "ledgerNote": "Sum of published campaigns, in Syrian pounds.",
+    "ledgerBeneficiaries": "{count, plural, =0 {No beneficiaries yet} one {# beneficiary} other {# beneficiaries}}",
+    "campaignsTitle": "Open campaigns",
+    "priorityAll": "Any priority",
+    "priorityLabel": "Priority",
+    "categoriesLabel": "Campaign categories",
+    "emptyAction": "Show all campaigns",
+    "count": "{count, plural, =0 {No campaigns} one {# campaign} other {# campaigns}}"
   },
   "priority": {
     "VERY_URGENT": "Critical",
@@ -60,9 +68,9 @@
     "OTHER": "Other"
   },
   "campaign": {
-    "verified": "Verified",
-    "pending": "Awaiting verification",
-    "target": "Goal",
+    "verified": "Collected (verified)",
+    "pending": "Pending verification",
+    "target": "Target",
     "of": "of",
     "donors": "{count, plural, =0 {No donors yet} one {# donor} other {# donors}}",
     "hospital": "Approved hospital",
@@ -71,16 +79,46 @@
     "approved": "Approved by the Council",
     "ongoing": "Ongoing programme",
     "updates": "Latest updates",
-    "howToDonate": "How do I donate?",
-    "howToDonateSteps": "1) Pledge in the Majlis Fund app  2) Transfer via Bank Bemo  3) Photograph and upload the receipt  4) We verify it, the total rises, and you get an official receipt in your name",
-    "notAccepting": "This campaign is not accepting pledges right now.",
-    "funded": "Fully funded",
-    "completed": "Paid to the hospital",
-    "shareWhatsapp": "Share on WhatsApp",
-    "shareText": "Support “{title}” — {percent}% of the goal is verified. {url}",
-    "transparency": "Transparency",
-    "disbursed": "Paid to hospital",
-    "pendingNote": "Includes transfers with uploaded receipts and collection-point totals; not counted until finance verification."
+    "notAccepting": "This campaign is not accepting donations right now.",
+    "funded": "Target reached",
+    "completed": "Completed",
+    "shareText": "Support “{title}” on Majlis Fund — {percent}% of the target is verified. {url}",
+    "pendingNote": "Includes transfers with uploaded receipts and collection-point totals; not counted until finance verification.",
+    "demo": "Simulated",
+    "demoBadge": "Demo",
+    "demoNote": "Simulated payments for the hackathon demo. Never counted in real amounts or the balance.",
+    "spent": "Spent",
+    "remaining": "Remaining in the account",
+    "account": "Campaign account",
+    "accountNote": "Remaining = collected and verified − spent.",
+    "ofTarget": "of {target}",
+    "progressLabel": "Campaign progress toward its target",
+    "beneficiaries": "{count, plural, =0 {No beneficiaries yet} one {# beneficiary} other {# beneficiaries}}",
+    "beneficiariesTitle": "Beneficiaries",
+    "beneficiariesNote": "We show each beneficiary’s code, kind and area only — never an identity.",
+    "beneficiariesEmpty": "No beneficiaries are linked to this campaign yet.",
+    "kinds": {
+      "PATIENT": "Patient",
+      "ORPHAN": "Orphan",
+      "FAMILY": "Family",
+      "OTHER": "Beneficiary"
+    },
+    "monthly": "{amount} a month",
+    "since": "since {date}",
+    "donateNow": "Donate now",
+    "receivingTitle": "Receiving accounts",
+    "receivingNote": "Demo account numbers for the hackathon. Write your donation reference in the transfer note.",
+    "campaignAccount": "This campaign only",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyLabel": "Copy the {method} account number",
+    "demoCheckout": "Demo payment available",
+    "spendingTitle": "Spending record",
+    "spendingEmpty": "Nothing has been spent from this campaign yet. Every payment will appear here with its proof.",
+    "noUpdates": "No updates yet.",
+    "area": "Area",
+    "backToAll": "All campaigns",
+    "shareWhatsapp": "Share on WhatsApp"
   },
   "receipt": {
     "title": "Official donation receipt",
@@ -93,14 +131,16 @@
     "print": "Print",
     "sendWhatsapp": "Send to myself on WhatsApp",
     "thanks": "Thank you. This receipt is issued after the finance verifier confirmed the funds were received.",
-    "notFound": "Receipt not found."
+    "notFound": "Receipt not found.",
+    "verifyNote": "Anyone can check this receipt by opening its link.",
+    "backHome": "Home page"
   },
   "track": {
-    "title": "Track a request",
-    "intro": "Enter the request number and the last 4 digits of the registered phone.",
+    "title": "Track an aid request",
+    "intro": "Enter the request number and the last 4 digits of the registered phone to see its stage. No other details are shown.",
     "no": "Request number",
     "last4": "Last 4 phone digits",
-    "submit": "Show stage",
+    "submit": "Show the stage",
     "notFound": "No request matches these details.",
     "stage": "Current stage",
     "stages": {
@@ -112,7 +152,8 @@
       "DISBURSED": "Paid to the hospital",
       "REJECTED": "Not approved",
       "CLOSED": "Closed"
-    }
+    },
+    "invalid": "Check the request number (like MF-2026-7K3QX) and the last 4 phone digits."
   },
   "auth": {
     "title": "Log in",
@@ -126,12 +167,12 @@
     "submitting": "Logging in…",
     "required": "Enter your phone number and password.",
     "unavailable": "The server could not be reached. Try again shortly.",
-    "panelTitle": "Every lira goes straight to the hospital",
-    "panelBody": "Medical cases vetted by the welfare board, donations the council verifies before they count, and payment only to the approved hospital.",
+    "panelTitle": "An open account for every donation",
+    "panelBody": "Orphan sponsorship, home renovation and medical aid: the council verifies every donation before it counts and documents every payment with proof.",
     "panelPoints": [
-      "Medical vetting for every case",
-      "A finance check on every receipt",
-      "Direct payment to the hospital"
+      "A finance check on every donation",
+      "Proof for every payment",
+      "Beneficiaries without identities"
     ]
   },
   "dash": {
@@ -151,11 +192,11 @@
       "DONOR": [
         {
           "title": "My donations",
-          "body": "Your pledges, the verification status of each one and your official receipts."
+          "body": "Your donations, the verification status of each one and your official receipts."
         },
         {
-          "title": "Browse cases",
-          "body": "Published medical cases and how much of each is verified."
+          "title": "Browse campaigns",
+          "body": "Sponsorship, renovation and medical aid campaigns, each with its account."
         }
       ],
       "STAFF": [
@@ -188,22 +229,22 @@
           "body": "Match receipts and collected cash, then issue the official receipt."
         },
         {
-          "title": "Pay the hospital",
-          "body": "Record the payment to the approved hospital with its invoice."
+          "title": "Record spending",
+          "body": "Record every payment out of a campaign with its invoice or photo."
         }
       ],
       "ADMIN": [
         {
-          "title": "Users",
-          "body": "Team accounts, their roles and their collection points."
+          "title": "Campaigns and categories",
+          "body": "Create sponsorship, renovation and aid campaigns and add new categories."
         },
         {
-          "title": "Hospitals and collection points",
-          "body": "The reference data cases and donations depend on."
+          "title": "Beneficiaries",
+          "body": "Register beneficiaries under anonymous codes and link them to campaigns."
         },
         {
-          "title": "Campaigns",
-          "body": "Publish ongoing campaigns and pause pledges when needed."
+          "title": "Users and setup",
+          "body": "Team accounts, collection points and receiving accounts."
         }
       ],
       "COLLECTOR": [
@@ -342,7 +383,7 @@
   },
   "common": {
     "soon": "Soon",
-    "council": "Ismaili Council, Salamiyah"
+    "council": "Local Council of Salamiyah"
   },
   "theme": {
     "toLight": "Switch to light mode",
@@ -369,5 +410,11 @@
   },
   "toast": {
     "dismiss": "Dismiss notification"
+  },
+  "donate": {
+    "title": "Donate to: {title}",
+    "intro": "Online, transfer and cash donation steps arrive in the next release.",
+    "meanwhile": "You can already transfer to one of the receiving accounts below and keep a photo of the receipt.",
+    "back": "Back to the campaign"
   }
 }

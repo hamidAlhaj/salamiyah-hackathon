@@ -31,10 +31,16 @@ export function SiteHeader() {
 
         <nav aria-label={t('main')} className="ms-4 hidden items-center gap-1 md:flex">
           <Link
-            href="/#cases"
+            href="/#campaigns"
             className="rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-surface-muted hover:text-ink"
           >
             {t('campaigns')}
+          </Link>
+          <Link
+            href="/track"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-surface-muted hover:text-ink"
+          >
+            {t('track')}
           </Link>
           {user && (
             <Link

@@ -1,11 +1,14 @@
-# Majlis Fund (مجلس فند) — Salamiyah Medical Crowdfunding
+# Majlis Fund (مجلس فند) — Donation Automation for the Local Council in Salamiyah
 
-Hackathon proof of concept for the Ismaili Council in Salamiyah, Syria. It publishes vetted **medical** cases, collects
-pledges (bank transfer, cash at a collection point, or a demo payment), verifies the money, pays the approved hospital
-directly, and shows public transparency figures.
+Hackathon proof of concept (official idea, Team 4) for the Local Council of Salamiyah, Syria: a simple web platform
+(plus a donor mobile app) to manage and document local donation campaigns transparently. The council creates campaigns
+in data-driven categories — **orphan sponsorship, home renovation, medical aid** and any category an admin adds — with a
+target amount. Donors browse campaigns and give by transfer, local e-wallet (simulated payments carry a «Demo» badge) or
+cash at a collection point, and get an instant notification confirming receipt. A public transparency view shows the
+total collected, the amounts spent with proof, and the beneficiaries — by anonymous code only, never their identities.
 
-> **Status:** `api/` (P02–P03) and the `web/` skeleton (P04: login/logout, theme, AR/EN) are in place.
-> The real web pages arrive in P05 and `mobile/` in P06 (see `docs/_analysis/05-execution-plan.md` §7).
+> **Status:** `api/` (P02–P06) and the public `web/` pages (P04, P07: home, campaign account, track, receipts) are in
+> place. Staff screens, donations, notifications and `mobile/` follow (see `docs/_analysis/05-execution-plan.md` §7).
 
 ## Repository layout
 
