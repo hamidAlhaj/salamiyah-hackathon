@@ -129,7 +129,7 @@ async function main() {
       printBackground: true,
       displayHeaderFooter: true,
       headerTemplate: '<span></span>',
-      footerTemplate: `<div style="font-size:8px;width:100%;text-align:center;color:#666">Madad · System Construction Map · <span class="pageNumber"></span>/<span class="totalPages"></span></div>`,
+      footerTemplate: `<div style="font-size:8px;width:100%;text-align:center;color:#666">Athar · System Construction Map · <span class="pageNumber"></span>/<span class="totalPages"></span></div>`,
       margin: { top: '16mm', bottom: '16mm', left: '14mm', right: '14mm' },
     });
     const pages = (fs.readFileSync(pdfPath, 'latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;

@@ -313,7 +313,7 @@ async function loadSpec() {
 
   const collection = {
     info: {
-      name: 'Madad (مدد) API — salamiyah-hackathon',
+      name: 'Athar (أثر) API — salamiyah-hackathon',
       description:
         'Every endpoint of the NestJS API (generated from its Swagger document; see docs/postman/README.md).\n\n' +
         '1. Set {{baseUrl}} (default http://localhost:4000).\n2. Run Auth → Login or Auth → Demo logins → Login as <ROLE>; the test script saves {{token}}.\n' +

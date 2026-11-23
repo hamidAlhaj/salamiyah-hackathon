@@ -1,6 +1,6 @@
 # Compliance checklist — B4F final submission guide (9 pages)
 
-Project and team: **«مدد» / Madad**. The app UI still shows the earlier working name «مجلس فند»; rename in progress.
+Project and team: **«أثر» / Athar**. The app UI still shows the earlier working name «مجلس فند»; rename in progress.
 
 Source: «B4F Hackathon — متطلبات توثيق وتسليم المشروع النهائي» (official student guide, 9 pages). Deadline: **Tuesday
 24 November 2026, 16:00 (Damascus)**. State on branch `docs-submission`, 2026-11-23.
@@ -18,22 +18,22 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| `اسم-الفريق_ملخص-المشروع.docx`, max 1 page | `docs/submission/مدد_ملخص-المشروع.docx` — Word reports **1 page** (PDF check in `docs/submission/pdf/`) | done |
-| `TeamName_ProjectBrief_EN.docx`, 1 page, same information | `docs/submission/Madad_ProjectBrief_EN.docx` — **1 page** | done |
+| `اسم-الفريق_ملخص-المشروع.docx`, max 1 page | `docs/submission/أثر_ملخص-المشروع.docx` — Word reports **1 page** (PDF check in `docs/submission/pdf/`) | done |
+| `TeamName_ProjectBrief_EN.docx`, 1 page, same information | `docs/submission/Athar_ProjectBrief_EN.docx` — **1 page** | done |
 | Project name and summary · problem and solution · audience and main features · technologies (NestJS, Next.js, React Native) | both briefs, sections 1–4 | done |
 | Team members: name, role, main contribution | table with the five members, roles and contributions given by the team leader | done |
 | GitHub username of every member | @hamidAlhaj · @RamiAlshaar · @Badr-pixel-netizen · @Yousef2001yousef · @nawarhasan55 (repo collaborators via the GitHub API; Nawar's invitation is still pending) | done — Nawar must accept the invitation |
 | English spelling of the members' names | GitHub display names: Hamid Alhaj, Rami Alshaar, Badr Aljerf, Nawar Hasan; Yousef has no display name, so "Yousef Yousef" follows the username | done (Yousef: confirm) |
 | Repository link and demo link | repo URL filled; demo: "no public URL, live demo on the local network (DEMO.md)", plus the note that the app UI still shows «مجلس فند» | done (add a URL if one appears) |
-| Team name in the file names | «مدد» / Madad in the file names and the documents (`build-docx.cjs --team-en Madad --team-ar مدد`) | done |
+| Team name in the file names | «أثر» / Athar in the file names and the documents (`build-docx.cjs --team-en Athar --team-ar أثر`) | done |
 | Contributions written in the brief must match the Git history | `main` has one author (`hamidAlhaj`); `RamiAlshaar` created `codex/b4f-session-20261123` but most of its commits are authored "Codex", not his account | **TODO-team** (each member commits their own work from their account: security report, PowerPoint, frontend, mobile testing) |
 
 ## Page 3 — Analysis & Design study (Word, 4–5 pages preferred, max 10)
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| `اسم-الفريق_الدراسة-التحليلية-والتصميمية.docx` | `docs/submission/مدد_الدراسة-التحليلية-والتصميمية.docx` — **5 pages** (incl. diagrams; ERD on its own landscape page) | done |
-| `TeamName_AnalysisDesign_EN.docx` | `docs/submission/Madad_AnalysisDesign_EN.docx` — **5 pages** | done |
+| `اسم-الفريق_الدراسة-التحليلية-والتصميمية.docx` | `docs/submission/أثر_الدراسة-التحليلية-والتصميمية.docx` — **5 pages** (incl. diagrams; ERD on its own landscape page) | done |
+| `TeamName_AnalysisDesign_EN.docx` | `docs/submission/Athar_AnalysisDesign_EN.docx` — **5 pages** | done |
 | System Overview (problem, goal, audience, scope, out of scope) | section 1 | done |
 | Actors / User Roles | section 2 (6 roles + public visitor) | done |
 | Functional Requirements | section 3 (FR1–FR14) | done |
@@ -102,8 +102,8 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 
 | Item | Evidence | Status |
 |---|---|---|
-| 1–2 Project Brief AR + EN | `docs/submission/مدد_ملخص-المشروع.docx`, `Madad_ProjectBrief_EN.docx` | done |
-| 3–4 Analysis & Design AR + EN | `docs/submission/مدد_الدراسة-التحليلية-والتصميمية.docx`, `Madad_AnalysisDesign_EN.docx` | done |
+| 1–2 Project Brief AR + EN | `docs/submission/أثر_ملخص-المشروع.docx`, `Athar_ProjectBrief_EN.docx` | done |
+| 3–4 Analysis & Design AR + EN | `docs/submission/أثر_الدراسة-التحليلية-والتصميمية.docx`, `Athar_AnalysisDesign_EN.docx` | done |
 | 5 GitHub repository link | https://github.com/hamidAlhaj/salamiyah-hackathon (private now) | needs human (visibility) |
 | 6 Demo URL if available | none — live LAN demo stated in the briefs | done (optional) |
 | 7 Short demo video (optional) | none | TODO-team (optional) |

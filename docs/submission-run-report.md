@@ -121,15 +121,15 @@ Rebuilt: roles and contributions from the team leader, the corrected surname «�
 live LAN demo". Page counts re-checked by Word: **briefs 1 + 1, analysis 5 + 5**; both briefs re-rendered and checked
 (RTL table, `@handles` left-to-right). Compliance checklist and `docs/submission/README.md` updated.
 
-## Update — project and team renamed to «مدد» / Madad
+## Update — project and team renamed to «أثر» / Athar
 
 - Word files rebuilt with the final guide names; placeholder copies (`TeamName_*`, `اسم-الفريق_*`, docx + pdf)
-  removed. Word page counts: `مدد_ملخص-المشروع.docx` **1**, `Madad_ProjectBrief_EN.docx` **1**,
-  `مدد_الدراسة-التحليلية-والتصميمية.docx` **5**, `Madad_AnalysisDesign_EN.docx` **5**. Arabic brief and analysis
+  removed. Word page counts: `أثر_ملخص-المشروع.docx` **1**, `Athar_ProjectBrief_EN.docx` **1**,
+  `أثر_الدراسة-التحليلية-والتصميمية.docx` **5**, `Athar_AnalysisDesign_EN.docx` **5**. Arabic brief and analysis
   re-rendered and checked (RTL, team table, handles).
 - Renamed inside: the four Word files (title, team line), system map AR/EN (+ PDFs, still 9 pages each), diagram
   titles (architecture, use cases, backend map), Postman collection name/description, `docs/postman/README.md`,
-  swagger audit title, compliance checklist, submission README. `build-docx.cjs` now defaults to Madad / مدد.
+  swagger audit title, compliance checklist, submission README. `build-docx.cjs` now defaults to Athar / أثر.
 - Note added wherever the running app is referenced (briefs' demo line, analysis overview, system map §1, Postman
   description and README, swagger audit, checklist, submission README): the app UI (and the Swagger title
   `Majlis Fund API`) still shows the earlier working name «مجلس فند»; rename in progress.

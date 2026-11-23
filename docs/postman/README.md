@@ -1,6 +1,6 @@
-# Postman collection — Madad API
+# Postman collection — Athar API
 
-Project and team: «مدد» / Madad. The app UI and the Swagger title still show the earlier working name «مجلس فند»
+Project and team: «أثر» / Athar. The app UI and the Swagger title still show the earlier working name «مجلس فند»
 (`Majlis Fund API`); rename in progress.
 
 `salamiyah-hackathon.postman_collection.json` — **Postman Collection v2.1**, every endpoint of the NestJS API

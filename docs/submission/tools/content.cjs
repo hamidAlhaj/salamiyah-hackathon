@@ -22,11 +22,11 @@ const MEMBERS = [
 // ───────────────────────── Project brief (1 page) ─────────────────────────
 const brief = {
   ar: {
-    title: 'ملخص المشروع — مدد (Madad)',
+    title: 'ملخص المشروع — أثر (Athar)',
     sub: 'فريق: TEAM_AR · هاكاثون B4F · تشرين الثاني 2026',
     sections: [
       ['اسم المشروع ونبذة', [
-        '<b>مدد</b>: منصة ويب مبسطة مع تطبيق موبايل للمتبرعين، مخصصة للمجلس المحلي في مدينة سلمية لإدارة حملات التبرع المحلية وتوثيقها بشفافية.',
+        '<b>أثر</b>: منصة ويب مبسطة مع تطبيق موبايل للمتبرعين، مخصصة للمجلس المحلي في مدينة سلمية لإدارة حملات التبرع المحلية وتوثيقها بشفافية.',
       ]],
       ['المشكلة وفكرة الحل', [
         '<b>المشكلة:</b> تُجمع التبرعات المحلية يدوياً (نقداً وحوالات) دون سجل موحد، فلا يعرف المتبرع هل وصل تبرعه، ولا يرى المجتمع أين صُرف المال، مما يُضعف الثقة.',
@@ -48,11 +48,11 @@ const brief = {
     ],
   },
   en: {
-    title: 'Project Brief — Madad (مدد)',
+    title: 'Project Brief — Athar (أثر)',
     sub: 'Team: TEAM_EN · B4F Hackathon · November 2026',
     sections: [
       ['Project name and summary', [
-        '<b>Madad</b>: a simple web platform with a donor mobile app, dedicated to the Local Council of Salamiyah to manage and document local donation campaigns transparently.',
+        '<b>Athar</b>: a simple web platform with a donor mobile app, dedicated to the Local Council of Salamiyah to manage and document local donation campaigns transparently.',
       ]],
       ['Problem and solution', [
         '<b>Problem:</b> local donations are collected by hand (cash and transfers) with no single record, so donors do not know whether their donation arrived and the community cannot see where the money went, which weakens trust.',
@@ -78,7 +78,7 @@ const brief = {
 // ───────────────────────── Analysis & design (4–5 pages + diagrams) ─────────────────────────
 const analysis = {
   ar: {
-    title: 'الدراسة التحليلية والتصميمية — مدد',
+    title: 'الدراسة التحليلية والتصميمية — أثر',
     sub: 'فريق: TEAM_AR · هاكاثون B4F · تشرين الثاني 2026 · المستودع: ' + REPO,
     blocks: [
       ['h', '1. نظرة عامة على النظام (System Overview)'],
@@ -166,7 +166,7 @@ const analysis = {
     ],
   },
   en: {
-    title: 'Analysis & Design — Madad',
+    title: 'Analysis & Design — Athar',
     sub: 'Team: TEAM_EN · B4F Hackathon · November 2026 · Repository: ' + REPO,
     blocks: [
       ['h', '1. System Overview'],
