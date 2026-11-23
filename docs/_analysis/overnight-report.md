@@ -199,3 +199,126 @@ restored with `git checkout` before committing.
 - Pause → donate blocked was checked in Expo **web**, not in Expo Go on a physical phone.
 - The full e2e run took 13 min wall time although every test took seconds (long idle after the last test, not
   investigated; the suite itself is green).
+
+## P19
+
+**Status:** merged to `main` (fast-forward) and pushed; branch `p19-trust-polish` pushed.
+Commit `08f1180` — `feat(web): trust polish with ADMIN audit history, SLA overdue alerts, donor codes, OG card and share links, install prompt, beneficiary kind per category and 375 px fixes`,
+then `c405d7b` … `27b2bc7` — `docs(docs): P19 route and feature screenshots (part 1–7)` (the 9 MB of screenshots
+were split into seven ~1.4 MB commits because every single push of them timed out with HTTP 408 on a ~100 KB/s
+uplink; same branch, no force-push).
+
+### What was built
+Existing before P19 (kept): `GET /audit?entityType&entityId` (ADMIN, no UI), `Case.slaDueAt` + the "overdue" filter
+(no alert), one WhatsApp share link on the campaign page, manifest + offline service worker + PNG icons, the
+notification bell.
+- **api** (migration `20261123015439_trust_polish`: generated with `prisma migrate diff` because `migrate dev` refuses
+  non-interactive runs, then `migrate deploy` + `generate`; not edited):
+  - **Audit history:** `GET /audit/campaigns/:id` (the campaign's rows + its medical case + its pledges; pledge rows
+    named by `P-XXXXXX`) and `GET /audit/cases/:id` (the case + its campaign once published). ADMIN only (403 for
+    every other role, 404 unknown id), newest first, max 200. `maskPersonal` replaces any value whose key looks like a
+    phone, national ID, password, full name or donor name with `•••` at any depth — even for ADMIN.
+  - **SLA alert:** `CaseSlaService`, a plain unref'd timer (no scheduler library): first check 5 s after start, then
+    every `SLA_CHECK_MINUTES` (default 10, `0` = off; in `.env.example`). A reviewable case past `slaDueAt` with
+    `overdueNotifiedAt` null is claimed by a conditional `updateMany` (two API processes never alert twice); every
+    active CASE_OFFICER and ADMIN gets one in-app notification in their language (`case.overdue`, link
+    `/dashboard/cases/<id>`, new pattern in `links.ts` + spec); audit row `case.overdue_alert` (actor null).
+  - **Donor code:** `User.donorCode` `D-XXXXXX` (unique, the unambiguous code alphabet) for every new account
+    (register, ADMIN create); seed codes `D-000001…` in creation order (DONOR A = `D-000006`; generated codes never
+    contain 0/1). In `CurrentUser` (`/auth/me`, login) and on the public official receipt (`OfficialReceipt.donorCode`);
+    shared types changed in all three copies.
+  - **Beneficiary kind per category:** `CampaignCategory.beneficiaryKind` (nullable) + shared
+    `categoryBeneficiaryKind()`: flags first (`requiresMedicalCase` → PATIENT, `supportsMonthlySponsorship` → ORPHAN),
+    then the category's own `beneficiaryKind` (seed: HOME_RENOVATION = FAMILY; set explicitly on the other two system
+    categories too), else any kind. `POST /campaigns/:id/beneficiaries` refuses another kind (409
+    `beneficiary_kind_mismatch`); `POST /categories` takes an optional `beneficiaryKind`; the staff campaign list
+    returns the category flags so the registry can filter.
+- **web:**
+  - `AuditHistory` (server component, collapsible «سجل التغييرات») on `/dashboard/admin/campaigns/[id]` and
+    `/dashboard/cases/[id]`, fetched and rendered only for ADMIN. Translated action names (`audit.actions.*`),
+    «النظام (تلقائي)» for the SLA job, changed fields as LTR chips.
+  - **OG card** `campaigns/[slug]/opengraph-image.tsx` (1200×630 PNG): the campaign's cover illustration (the same
+    vector scenes — `CampaignCover` now takes a paint so the image gets fixed colours; fragments are flattened for
+    Satori), verified %, progress bar, "verified of target SYP", beneficiary count "shown by code only". Latin text and
+    Western digits only: the bundled OG font cannot shape Arabic; the Arabic title/summary go out as
+    `og:title`/`og:description`. `generateMetadata` adds `metadataBase` (SITE_URL), canonical, Open Graph and Twitter.
+  - **Share block** (`ShareButtons`, server component): WhatsApp, Telegram, Facebook as plain links + the URL with the
+    existing `CopyButton` (the only client JS). The old single WhatsApp button / `shareWhatsapp` key removed.
+  - **Install prompt** (`InstallPrompt`, root layout): only when the browser fires `beforeinstallprompt` (HTTPS or
+    localhost), only for guests and donors; «ليس الآن» hides it 30 days (localStorage, try/catch). 4 Vitest tests.
+  - **Donor code** card in «تبرعاتي» and «رمز المتبرع» under the donor on the official receipt.
+  - **Beneficiary picker** (new campaign) shows only the category's kind with a note; switching category unticks the
+    others; the registry's "link to campaign" lists only campaigns that take that beneficiary's kind; categories screen:
+    optional «نوع المستفيدين» on create, and each category shows its kind rule.
+  - **375 px:** the signed-in header fits (logout is an icon button below `sm`, its label stays the accessible name;
+    desktop unchanged). Two more sideways scrolls found and fixed: `/dashboard/admin/campaigns` (+325 px: the table's
+    absolutely positioned `sr-only` labels escaped the `overflow-x-auto` wrapper → wrapper `relative`) and the public
+    campaign page (+40 px with the new share row: the single-column grid used an auto track → `minmax(0,1fr)`).
+  - **a11y / states:** home ledger `<dl>` had invalid children → two `<dl>`; the language switch's `aria-label` hid
+    its visible «ع / EN» (WCAG 2.5.3) → visible text + `sr-only` label; `error.tsx` in `(public)` and `(app)` so an
+    error keeps the header and navigation (the root one replaced the whole layout). Glyph for `case.overdue`.
+  - AR/EN messages for everything new (Arabic copy reviewed: «منذ يومين / 3 أيام / 11 يوماً» in the SLA alert).
+- **mobile:** «رمز المتبرع: D-…» on «تبرعاتي»; shared copies.
+- **e2e:** `05-trust-polish.spec.ts` (6 tests, runs after 03/04): OG meta + image route + share links (guest); the SLA
+  alert exactly once and `case.overdue_alert` in the case history; the roof campaign's history (status/edit/update
+  rows, no phone number); STAFF gets no history panel; picker only orphans / only families; DONOR A's donor code;
+  seven signed-in pages + home + a campaign page without sideways scroll at 375 px.
+- DEMO.md: the SLA alert after API start and the donor codes (seed and expected numbers unchanged).
+
+### Checks
+- api: lint ✓ · **353** tests ✓ (+20) · build ✓
+- web: lint ✓ · prettier ✓ · **47** tests ✓ (+6) · build ✓
+- mobile: `tsc --noEmit` ✓ · `expo lint` ✓ · `expo-doctor` 20/20 ✓ · Expo web at 390 px: DONOR A sees
+  «رمز المتبرع: D-000006» (`mobile-390-donations-donor-code.png`).
+- e2e: **37 passed, 1 skipped** (LAN login without `E2E_LAN_URL`) on a fresh `demo:reset`, twice (the second after the
+  last CSS fix); wall time 14 min, of which ~12 min idle after the last test (see Needs human).
+- **Lighthouse accessibility** (`npx lighthouse@12.6.1 --only-categories=accessibility`, installed Chrome, one-off,
+  not in any package.json), mobile + desktop: home **100** (93 before the `<dl>` fix), campaign **100**, completed
+  campaign **100**, transparency **100**, track **100**, login **100**, official receipt **100**. The 404 page cannot be
+  audited (Lighthouse refuses non-200 documents) — reviewed by screenshot.
+- Screenshots: `docs/screenshots/p19/` — every route as guest and per role (admin, case officer, finance, staff,
+  collector, donor) at 1280 and 375 px, dark mode (public pages + admin campaigns), English (home + campaign), the e2e
+  shots (share block, case/campaign history, picker, 375 px admin), the OG cards and the mobile shot. Reviewed: after
+  the fixes above every route has 0 px horizontal overflow at 375 px.
+- No unused JS on public pages: the share block and receipt are server components; the only new client code on public
+  pages is the install prompt (renders nothing until the browser offers an install). `/campaigns/[slug]` 4.1 kB.
+- WhatsApp preview: the OG tags and the image are correct on `http://localhost:3000`; a real WhatsApp preview needs a
+  public HTTPS URL (WhatsApp's crawler cannot reach localhost or a LAN IP).
+
+### Decisions made alone
+- Beneficiary kind: flags first (never the code), then a new nullable category column for categories without a
+  natural flag (HOME_RENOVATION = FAMILY in the seed); no kind = any beneficiary. Enforced on the API (409) because
+  linking already validates the category (monthly amounts); the case pipeline creates PATIENT beneficiaries itself.
+  New categories set the kind at creation only (no edit path, so existing links never become invalid).
+- Every new account gets a donor code (staff can donate too); rows created before the migration stay null and the UI
+  hides it — `demo:reset` recreates every demo account with one.
+- The OG card has no Arabic text and no beneficiary data beyond the count; amounts are verified money only.
+- SLA alert = in-app notification only (no WhatsApp outbox for staff); it fires ~5 s after the API starts. Seeded cases
+  have no `case.submit` audit rows (written by the seed directly), so a seeded case's history starts with the alert.
+- No `loading.tsx`: a Suspense boundary at group level makes `notFound()` answer 200 instead of 404 for streamed
+  pages; the pages are server-rendered and fast.
+- Manifest `start_url` stays `/dashboard` (P10 choice for collectors); the «الحملات» shortcut opens the public home.
+- Tracing in `e2e/playwright.config.ts` left as it was (`retain-on-failure`): it is not the cause of the idle time.
+
+### Servers / cleanup
+Dev DB reseeded (`demo:reset`). Stopped the last instances: api :4000 PID 20032, web :3000 PID 9964, Expo :8081 PID
+1556 (earlier restarts: api 7760/16868/7060/21768/10436, web 15240/20044/20212/8648/9184/14600, hung Playwright runner
+and worker 4308/10376); ports 3000/4000/8081 verified free. No `.playwright-mcp` folder was created. The e2e runs
+rewrote the P16–P18 screenshots (`E2E_SCREENSHOTS=1`); restored with `git checkout` before committing. A test of SSH
+push (`ssh -T git@github.com`, no key) added github.com to `~/.ssh/known_hosts`.
+
+### Needs human
+- **e2e idle time (P18 item) — cause found, not fixable in the test config:** after the last test (and after any failed
+  test, when Playwright replaces the worker) the worker spends ~12 min at 100 % CPU in Node's recursive `fs.rm`
+  retries (CPU profile via the inspector: `rimraf`/`chmod`/`unlink`/`lstat` in a timer loop) deleting Chrome's
+  temporary profile `%TEMP%\playwright_chromiumdev_profile-*`. After Chrome has exited (no chrome.exe left) every file
+  in that folder is still locked (exclusive open fails for 124/124 files), most likely by the antivirus or the search
+  indexer; with `maxRetries: 10` per directory level the retries multiply. It also happens with tracing off.
+  Suggested: exclude `%TEMP%\playwright_chromiumdev_profile-*` from real-time scanning (or test once with it paused)
+  and delete the ~12 leftover profile folders in `%TEMP%` (I did not touch files outside the repo). Test results are
+  printed as each test finishes, so the outcome is known before the idle period.
+- A real WhatsApp link preview needs a public HTTPS URL (tunnel or hosting).
+- The install prompt appears only on HTTPS or localhost (browser rule), so not on the plain-HTTP LAN demo; not checked
+  on a physical phone. The donor code in the native app was checked in Expo web only.
+- GitHub uploads from this machine run at ~100 KB/s and pushes over ~2 MB time out (HTTP 408); large commits need
+  splitting or a better connection.
