@@ -1,0 +1,4900 @@
+{
+  "info": {
+    "name": "Athar (أثر) API — salamiyah-hackathon",
+    "description": "Every endpoint of the NestJS API (generated from its Swagger document; see docs/postman/README.md).\n\n1. Set {{baseUrl}} (default http://localhost:4000).\n2. Run Auth → Login or Auth → Demo logins → Login as <ROLE>; the test script saves {{token}}.\n3. Protected requests inherit Bearer {{token}} from the collection. Public requests use No Auth.\n\nAll data is fictional (demo seed). No secrets or real phone numbers are stored here.\n\nThe app UI and the Swagger title still show the earlier working name «مجلس فند» (Majlis Fund API); rename in progress.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string",
+      "description": "API origin (README §4). On a phone/LAN demo: http://<LAN-IP>:4000"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Set automatically by any Login request (Bearer JWT, 8h). Never commit a real token."
+    },
+    {
+      "key": "demoPassword",
+      "value": "Majlis@2026",
+      "type": "string",
+      "description": "Shared password of the FICTIONAL demo seed accounts (README §8). Development only."
+    },
+    {
+      "key": "campaignId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"List public campaigns\"."
+    },
+    {
+      "key": "campaignSlug",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"List public campaigns\"."
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"List active categories\"."
+    },
+    {
+      "key": "collectionPointId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"List active collection points\"."
+    },
+    {
+      "key": "pledgeId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"Create pledge\" / \"Cash pledge\"."
+    },
+    {
+      "key": "pledgeReference",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"Create pledge\" / \"Cash pledge\"."
+    },
+    {
+      "key": "verificationId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"Finance queue\"."
+    },
+    {
+      "key": "officialReceiptNo",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"Approve verification\" (R-YYYY-NNNNNN)."
+    },
+    {
+      "key": "caseId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"List cases\"."
+    },
+    {
+      "key": "beneficiaryId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"List beneficiaries\"."
+    },
+    {
+      "key": "hospitalId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"List hospitals\"."
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"List users\"."
+    },
+    {
+      "key": "notificationId",
+      "value": "",
+      "type": "string",
+      "description": "Set by \"List notifications\"."
+    },
+    {
+      "key": "paymentMethod",
+      "value": "SYRIATEL_CASH",
+      "type": "string",
+      "description": "A PaymentMethod enum value."
+    },
+    {
+      "key": "expenditureId",
+      "value": "",
+      "type": "string",
+      "description": "Copy from \"Campaign spending\"."
+    },
+    {
+      "key": "importId",
+      "value": "",
+      "type": "string",
+      "description": "Copy from \"Import preview\"."
+    },
+    {
+      "key": "outboxId",
+      "value": "",
+      "type": "string",
+      "description": "Copy from \"Outbox\"."
+    },
+    {
+      "key": "documentId",
+      "value": "",
+      "type": "string",
+      "description": "Copy from \"Get case\"."
+    },
+    {
+      "key": "receiptId",
+      "value": "",
+      "type": "string",
+      "description": "Copy from \"Get pledge\"."
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "description": "Liveness probe.",
+      "item": [
+        {
+          "name": "فحص أن الـAPI يعمل",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "فحص أن الـAPI يعمل\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/health/HealthController_check"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "description": "Register, login (saves {{token}}), current user, optional Google sign-in.",
+      "item": [
+        {
+          "name": "Register a new donor (DONOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"أحمد الخطيب\",\n  \"phone\": \"0944123456\",\n  \"password\": \"{{demoPassword}}\",\n  \"locale\": \"ar\",\n  \"whatsappOptIn\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register a new donor (DONOR)\n\nPublic endpoint (no token).\n\nDocumented errors: 409. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_register"
+          },
+          "response": []
+        },
+        {
+          "name": "Login (saves {{token}})",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const body = pm.response.json();",
+                  "if (body.accessToken) { pm.collectionVariables.set('token', body.accessToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"0944123456\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Log in with phone and password\n\nPublic endpoint (no token).\n\nDocumented errors: 401. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_login"
+          },
+          "response": []
+        },
+        {
+          "name": "Whether Sign in with Google is configured (the web hides the button)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/google/enabled",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google",
+                "enabled"
+              ]
+            },
+            "description": "Whether Sign in with Google is configured (the web hides the button)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_googleEnabled"
+          },
+          "response": []
+        },
+        {
+          "name": "Redirect (302) to the Google consent screen",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/google?state=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ],
+              "query": [
+                {
+                  "key": "state",
+                  "value": "",
+                  "description": "required — CSRF state from the web (32–128 URL-safe chars)",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Redirect (302) to the Google consent screen\n\nPublic endpoint (no token).\n\nDocumented errors: 400, 404. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_googleStart"
+          },
+          "response": []
+        },
+        {
+          "name": "Exchange Google's one-time code for the app session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/google/callback?code=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google",
+                "callback"
+              ],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "",
+                  "description": "required — Google's authorization code",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Exchange Google's one-time code for the app session\n\nPublic endpoint (no token).\n\nDocumented errors: 401, 403, 404, 409. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_googleCallback"
+          },
+          "response": []
+        },
+        {
+          "name": "Current user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Current user\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthMeController_me"
+          },
+          "response": []
+        },
+        {
+          "name": "DONOR: add or change my phone (required before donating)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"0944123456\",\n  \"whatsappOptIn\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/me/phone",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me",
+                "phone"
+              ]
+            },
+            "description": "DONOR: add or change my phone (required before donating)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nDocumented errors: 403, 409. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthMeController_updatePhone"
+          },
+          "response": []
+        },
+        {
+          "name": "Demo logins (fictional seed accounts)",
+          "description": "One login per role. Each one saves {{token}}, so the last login decides who you are.",
+          "item": [
+            {
+              "name": "Login as ADMIN",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                      "const body = pm.response.json();",
+                      "if (body.accessToken) { pm.collectionVariables.set('token', body.accessToken); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"0900000001\",\n  \"password\": \"{{demoPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Fictional seed account (ADMIN). Saves the token into {{token}}."
+              },
+              "response": []
+            },
+            {
+              "name": "Login as CASE_OFFICER",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                      "const body = pm.response.json();",
+                      "if (body.accessToken) { pm.collectionVariables.set('token', body.accessToken); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"0900000002\",\n  \"password\": \"{{demoPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Fictional seed account (CASE_OFFICER). Saves the token into {{token}}."
+              },
+              "response": []
+            },
+            {
+              "name": "Login as FINANCE_VERIFIER",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                      "const body = pm.response.json();",
+                      "if (body.accessToken) { pm.collectionVariables.set('token', body.accessToken); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"0900000003\",\n  \"password\": \"{{demoPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Fictional seed account (FINANCE_VERIFIER). Saves the token into {{token}}."
+              },
+              "response": []
+            },
+            {
+              "name": "Login as STAFF",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                      "const body = pm.response.json();",
+                      "if (body.accessToken) { pm.collectionVariables.set('token', body.accessToken); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"0900000004\",\n  \"password\": \"{{demoPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Fictional seed account (STAFF). Saves the token into {{token}}."
+              },
+              "response": []
+            },
+            {
+              "name": "Login as COLLECTOR (Mukhi)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                      "const body = pm.response.json();",
+                      "if (body.accessToken) { pm.collectionVariables.set('token', body.accessToken); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"0900000005\",\n  \"password\": \"{{demoPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Fictional seed account (COLLECTOR (Mukhi)). Saves the token into {{token}}."
+              },
+              "response": []
+            },
+            {
+              "name": "Login as DONOR",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                      "const body = pm.response.json();",
+                      "if (body.accessToken) { pm.collectionVariables.set('token', body.accessToken); }"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"0900000006\",\n  \"password\": \"{{demoPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Fictional seed account (DONOR). Saves the token into {{token}}."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "description": "Campaign categories are data (MEDICAL_AID, ORPHAN_SPONSORSHIP, HOME_RENOVATION + admin-defined).",
+      "item": [
+        {
+          "name": "Active campaign categories, ordered",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const list = pm.response.json();",
+                  "const arr = Array.isArray(list) ? list : list.items || [];",
+                  "if (arr[0]) { pm.collectionVariables.set('categoryId', arr[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Active campaign categories, ordered\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/categories/PublicCategoriesController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "Create a generic category (ADMIN; no behaviour flags)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"FOOD_BASKETS\",\n  \"nameAr\": \"سلال غذائية\",\n  \"nameEn\": \"Food baskets\",\n  \"descriptionAr\": \"<descriptionAr>\",\n  \"descriptionEn\": \"<descriptionEn>\",\n  \"icon\": \"heart-pulse\",\n  \"sortOrder\": 100,\n  \"beneficiaryKind\": \"PATIENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "description": "Create a generic category (ADMIN; no behaviour flags)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/categories/CategoriesController_create"
+          },
+          "response": []
+        },
+        {
+          "name": "All categories incl. inactive, with flags and campaign counts (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "all"
+              ]
+            },
+            "description": "All categories incl. inactive, with flags and campaign counts (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/categories/CategoriesController_listAll"
+          },
+          "response": []
+        },
+        {
+          "name": "Edit names/icon/order or activate/deactivate (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"<nameAr>\",\n  \"nameEn\": \"<nameEn>\",\n  \"descriptionAr\": \"<descriptionAr>\",\n  \"descriptionEn\": \"<descriptionEn>\",\n  \"icon\": \"heart-pulse\",\n  \"sortOrder\": 1,\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{categoryId}}"
+                }
+              ]
+            },
+            "description": "Edit names/icon/order or activate/deactivate (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/categories/CategoriesController_update"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete an unused non-system category (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{categoryId}}"
+                }
+              ]
+            },
+            "description": "Delete an unused non-system category (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/categories/CategoriesController_remove"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Campaigns",
+      "description": "Public campaign pages, campaign account (ledger), staff management and lifecycle.",
+      "item": [
+        {
+          "name": "Public campaigns of every category (filter by category code/status)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const list = pm.response.json().items || [];",
+                  "const c = list.find(function (x) { return x.status === 'ACTIVE'; }) || list[0];",
+                  "if (c) { pm.collectionVariables.set('campaignId', c.id); pm.collectionVariables.set('campaignSlug', c.slug); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "ORPHAN_SPONSORSHIP",
+                  "description": "optional — Category code (display filter)",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "description": "optional",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "VERY_URGENT",
+                  "description": "optional",
+                  "disabled": true
+                },
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Public campaigns of every category (filter by category code/status)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/PublicCampaignsController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "Create a campaign in a category (ADMIN; medical-case categories come from the case pipeline)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"titleAr\": \"دعم جرعات ونقل مرضى السرطان\",\n  \"titleEn\": \"<titleEn>\",\n  \"summaryAr\": \"<summaryAr>\",\n  \"summaryEn\": \"<summaryEn>\",\n  \"targetAmount\": \"50000000\",\n  \"currency\": \"SYP\",\n  \"priority\": \"NORMAL\",\n  \"coverKey\": \"medical-1\",\n  \"area\": \"حي الشيخ بدر\",\n  \"isOngoing\": false,\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns"
+              ]
+            },
+            "description": "Create a campaign in a category (ADMIN; medical-case categories come from the case pipeline)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/CampaignsController_create"
+          },
+          "response": []
+        },
+        {
+          "name": "تفاصيل حملة عامة (بلا بيانات شخصية)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:slug",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":slug"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": "{{campaignSlug}}"
+                }
+              ]
+            },
+            "description": "تفاصيل حملة عامة (بلا بيانات شخصية)\n\nPublic endpoint (no token).\n\nDocumented errors: 404. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/PublicCampaignsController_get"
+          },
+          "response": []
+        },
+        {
+          "name": "Campaign account: verified, pending, demo, spent, remaining = verified − spent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/ledger",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "ledger"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Campaign account: verified, pending, demo, spent, remaining = verified − spent\n\nPublic endpoint (no token).\n\nDocumented errors: 404. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/PublicCampaignsController_ledger"
+          },
+          "response": []
+        },
+        {
+          "name": "Ledger + public-safe spending list (FR-23)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/transparency",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "transparency"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Ledger + public-safe spending list (FR-23)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/PublicCampaignsController_transparency"
+          },
+          "response": []
+        },
+        {
+          "name": "كل الحملات للوحات الموظفين (كل الأدوار عدا DONOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/staff/all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                "staff",
+                "all"
+              ]
+            },
+            "description": "كل الحملات للوحات الموظفين (كل الأدوار عدا DONOR)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/CampaignsController_listForStaff"
+          },
+          "response": []
+        },
+        {
+          "name": "One campaign for its management page with all updates (ADMIN, CASE_OFFICER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/staff/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                "staff",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{id}}"
+                }
+              ]
+            },
+            "description": "One campaign for its management page with all updates (ADMIN, CASE_OFFICER)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nDocumented errors: 404. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/CampaignsController_getForStaff"
+          },
+          "response": []
+        },
+        {
+          "name": "Edit titles, anonymised summaries, cover illustration, area and priority (ADMIN, CASE_OFFICER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titleAr\": \"<titleAr>\",\n  \"titleEn\": \"<titleEn>\",\n  \"summaryAr\": \"<summaryAr>\",\n  \"summaryEn\": \"<summaryEn>\",\n  \"coverKey\": \"medical-1\",\n  \"area\": \"<area>\",\n  \"priority\": \"VERY_URGENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Edit titles, anonymised summaries, cover illustration, area and priority (ADMIN, CASE_OFFICER)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/CampaignsController_update"
+          },
+          "response": []
+        },
+        {
+          "name": "تغيير حالة الحملة / إيقاف التعهدات (ADMIN, CASE_OFFICER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DRAFT\",\n  \"acceptsPledges\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "تغيير حالة الحملة / إيقاف التعهدات (ADMIN, CASE_OFFICER)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/CampaignsController_updateStatus"
+          },
+          "response": []
+        },
+        {
+          "name": "نشر تحديث للحملة (STAFF, CASE_OFFICER, ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bodyAr\": \"تمت العملية بنجاح، شكراً لكل المتبرعين.\",\n  \"bodyEn\": \"<bodyEn>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/updates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "updates"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "نشر تحديث للحملة (STAFF, CASE_OFFICER, ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/campaigns/CampaignsController_addUpdate"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Payment methods & receiving accounts",
+      "description": "Receiving details shown to donors (all fake placeholders) and per-campaign overrides.",
+      "item": [
+        {
+          "name": "Active payment methods with default receiving accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment-methods"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Active payment methods with default receiving accounts\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/payment-methods/PublicPaymentMethodsController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "Receiving accounts for this campaign (defaults + overrides)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/payment-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "payment-accounts"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Receiving accounts for this campaign (defaults + overrides)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/payment-methods/PublicPaymentMethodsController_forCampaign"
+          },
+          "response": []
+        },
+        {
+          "name": "Every payment method config, inactive too (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/config",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment-methods",
+                "config"
+              ]
+            },
+            "description": "Every payment method config, inactive too (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/payment-methods/PaymentMethodConfigController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "Edit a method’s default receiving details (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"labelAr\": \"سيريتل كاش\",\n  \"labelEn\": \"Syriatel Cash\",\n  \"accountName\": \"<accountName>\",\n  \"accountNameEn\": \"<accountNameEn>\",\n  \"accountNumber\": \"0930 000 001 (FAKE)\",\n  \"instructionsAr\": \"<instructionsAr>\",\n  \"instructionsEn\": \"<instructionsEn>\",\n  \"isActive\": false,\n  \"sortOrder\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/config/:method",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment-methods",
+                "config",
+                ":method"
+              ],
+              "variable": [
+                {
+                  "key": "method",
+                  "value": "{{paymentMethod}}"
+                }
+              ]
+            },
+            "description": "Edit a method’s default receiving details (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/payment-methods/PaymentMethodConfigController_update"
+          },
+          "response": []
+        },
+        {
+          "name": "This campaign’s own accounts, any status (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/payment-accounts/overrides",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "payment-accounts",
+                "overrides"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "This campaign’s own accounts, any status (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/payment-methods/CampaignPaymentAccountsController_overrides"
+          },
+          "response": []
+        },
+        {
+          "name": "Set this campaign’s account for a method (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountName\": \"صندوق ترميم حي البعث (مثال)\",\n  \"accountNumber\": \"0930 000 099 (FAKE)\",\n  \"note\": \"للتبرعات الخاصة بهذه الحملة فقط\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/payment-accounts/:method",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "payment-accounts",
+                ":method"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                },
+                {
+                  "key": "method",
+                  "value": "{{paymentMethod}}"
+                }
+              ]
+            },
+            "description": "Set this campaign’s account for a method (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/payment-methods/CampaignPaymentAccountsController_set"
+          },
+          "response": []
+        },
+        {
+          "name": "Back to the default account for a method (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/payment-accounts/:method",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "payment-accounts",
+                ":method"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                },
+                {
+                  "key": "method",
+                  "value": "{{paymentMethod}}"
+                }
+              ]
+            },
+            "description": "Back to the default account for a method (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/payment-methods/CampaignPaymentAccountsController_remove"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Beneficiaries",
+      "description": "Anonymised beneficiaries (public code B-XXXX) and their campaign links.",
+      "item": [
+        {
+          "name": "Anonymised beneficiaries of a public campaign (no identities)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/beneficiaries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "beneficiaries"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Anonymised beneficiaries of a public campaign (no identities)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/beneficiaries/PublicCampaignBeneficiariesController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "Link a beneficiary to a campaign, optional monthly amount (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"beneficiaryId\": \"{{beneficiaryId}}\",\n  \"monthlyAmount\": \"200000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/beneficiaries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "beneficiaries"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Link a beneficiary to a campaign, optional monthly amount (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/beneficiaries/BeneficiariesController_link"
+          },
+          "response": []
+        },
+        {
+          "name": "Search beneficiaries (ADMIN, STAFF; includes private names)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const list = pm.response.json();",
+                  "const arr = Array.isArray(list) ? list : list.items || [];",
+                  "if (arr[0]) { pm.collectionVariables.set('beneficiaryId', arr[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/beneficiaries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "beneficiaries"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "optional — Code (B-XXXX), name or area",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Search beneficiaries (ADMIN, STAFF; includes private names)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/beneficiaries/BeneficiariesController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "Register an anonymised beneficiary → B-XXXX (ADMIN, STAFF)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"PATIENT\",\n  \"fullName\": \"أحمد م.\",\n  \"phone\": \"0944123456\",\n  \"area\": \"حي الشيخ بدر\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/beneficiaries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "beneficiaries"
+              ]
+            },
+            "description": "Register an anonymised beneficiary → B-XXXX (ADMIN, STAFF)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/beneficiaries/BeneficiariesController_create"
+          },
+          "response": []
+        },
+        {
+          "name": "Correct a beneficiary record; the code never changes (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"PATIENT\",\n  \"fullName\": \"<fullName>\",\n  \"phone\": \"0944000000\",\n  \"area\": \"<area>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/beneficiaries/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "beneficiaries",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{beneficiaryId}}"
+                }
+              ]
+            },
+            "description": "Correct a beneficiary record; the code never changes (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/beneficiaries/BeneficiariesController_update"
+          },
+          "response": []
+        },
+        {
+          "name": "Administrative suspension with a reason (ADMIN, audited): intake refuses silently, nothing public changes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Registered twice under two campaigns; review with the welfare board.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/beneficiaries/:id/suspend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "beneficiaries",
+                ":id",
+                "suspend"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{beneficiaryId}}"
+                }
+              ]
+            },
+            "description": "Administrative suspension with a reason (ADMIN, audited): intake refuses silently, nothing public changes\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/beneficiaries/BeneficiariesController_suspend"
+          },
+          "response": []
+        },
+        {
+          "name": "Lift the suspension with a reason (ADMIN, audited)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Registered twice under two campaigns; review with the welfare board.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/beneficiaries/:id/reactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "beneficiaries",
+                ":id",
+                "reactivate"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{beneficiaryId}}"
+                }
+              ]
+            },
+            "description": "Lift the suspension with a reason (ADMIN, audited)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/beneficiaries/BeneficiariesController_reactivate"
+          },
+          "response": []
+        },
+        {
+          "name": "Add a note or a violation to the internal log (ADMIN, never public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"NOTE\",\n  \"body\": \"Asked for the same help at two offices in one month.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/beneficiaries/:id/notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "beneficiaries",
+                ":id",
+                "notes"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{beneficiaryId}}"
+                }
+              ]
+            },
+            "description": "Add a note or a violation to the internal log (ADMIN, never public)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/beneficiaries/BeneficiariesController_addNote"
+          },
+          "response": []
+        },
+        {
+          "name": "Change the monthly amount of a link or end the link (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"monthlyAmount\": \"200000\",\n  \"end\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/beneficiaries/:beneficiaryId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "beneficiaries",
+                ":beneficiaryId"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                },
+                {
+                  "key": "beneficiaryId",
+                  "value": "{{beneficiaryId}}"
+                }
+              ]
+            },
+            "description": "Change the monthly amount of a link or end the link (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/beneficiaries/BeneficiariesController_updateLink"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Medical cases",
+      "description": "Intake → review → publish pipeline for categories with requiresMedicalCase.",
+      "item": [
+        {
+          "name": "تتبع الطلب برقم التتبع + آخر 4 أرقام من الهاتف (FR-12)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cases/track?no=MF-2026-7K3QX&phoneLast4=3456",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cases",
+                "track"
+              ],
+              "query": [
+                {
+                  "key": "no",
+                  "value": "MF-2026-7K3QX",
+                  "description": "required",
+                  "disabled": false
+                },
+                {
+                  "key": "phoneLast4",
+                  "value": "3456",
+                  "description": "required — آخر 4 أرقام من هاتف المستفيد",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "تتبع الطلب برقم التتبع + آخر 4 أرقام من الهاتف (FR-12)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/cases/PublicCasesController_track"
+          },
+          "response": []
+        },
+        {
+          "name": "تسجيل طلب حالة طبية + التقرير الطبي (FR-06)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "beneficiaryName",
+                  "type": "text",
+                  "value": "محمد ع."
+                },
+                {
+                  "key": "beneficiaryPhone",
+                  "type": "text",
+                  "value": "0933123456"
+                },
+                {
+                  "key": "nationalId",
+                  "type": "text",
+                  "value": "04010123456"
+                },
+                {
+                  "key": "localCouncil",
+                  "type": "text",
+                  "value": "المجلس المحلي - الحي الشمالي"
+                },
+                {
+                  "key": "category",
+                  "type": "text",
+                  "value": "SURGERY"
+                },
+                {
+                  "key": "description",
+                  "type": "text",
+                  "value": "<description>"
+                },
+                {
+                  "key": "requestedAmount",
+                  "type": "text",
+                  "value": "15000000"
+                },
+                {
+                  "key": "currency",
+                  "type": "text",
+                  "value": "SYP",
+                  "disabled": true,
+                  "description": "optional"
+                },
+                {
+                  "key": "medicalReport",
+                  "type": "file",
+                  "src": [],
+                  "description": "التقرير الطبي (JPEG/PNG/PDF ≤ 5MB) — choose a file (JPEG/PNG/PDF)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cases"
+              ]
+            },
+            "description": "تسجيل طلب حالة طبية + التقرير الطبي (FR-06)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/cases/CasesController_create"
+          },
+          "response": []
+        },
+        {
+          "name": "قائمة الحالات (فلترة بالحالة/الأولوية/المتأخرة)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const list = pm.response.json();",
+                  "const arr = Array.isArray(list) ? list : list.items || [];",
+                  "if (arr[0]) { pm.collectionVariables.set('caseId', arr[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cases"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "SUBMITTED",
+                  "description": "optional",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "VERY_URGENT",
+                  "description": "optional",
+                  "disabled": true
+                },
+                {
+                  "key": "overdue",
+                  "value": "",
+                  "description": "optional — المتأخرة فقط (تجاوزت SLA)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "قائمة الحالات (فلترة بالحالة/الأولوية/المتأخرة)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/cases/CasesController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "تفاصيل الحالة + تاريخ المستفيد",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cases/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cases",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{caseId}}"
+                }
+              ]
+            },
+            "description": "تفاصيل الحالة + تاريخ المستفيد\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/cases/CasesController_get"
+          },
+          "response": []
+        },
+        {
+          "name": "اعتماد / رفض / طلب معلومات (FR-07)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approve\",\n  \"priority\": \"VERY_URGENT\",\n  \"route\": \"CROWDFUNDING\",\n  \"hospitalId\": \"{{hospitalId}}\",\n  \"doctorName\": \"د. سامر\",\n  \"approvedAmount\": \"15000000\",\n  \"reason\": \"<reason>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cases/:id/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cases",
+                ":id",
+                "review"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{caseId}}"
+                }
+              ]
+            },
+            "description": "اعتماد / رفض / طلب معلومات (FR-07)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/cases/CasesController_review"
+          },
+          "response": []
+        },
+        {
+          "name": "تغيير المشفى/المبلغ — يعيد الحالة للمراجعة ويوقف التعهدات (FR-09)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hospitalId\": \"{{hospitalId}}\",\n  \"approvedAmount\": \"25000000\",\n  \"reason\": \"المريض طلب التحويل لمشفى خاص\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cases/:id/hospital-amount",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cases",
+                ":id",
+                "hospital-amount"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{caseId}}"
+                }
+              ]
+            },
+            "description": "تغيير المشفى/المبلغ — يعيد الحالة للمراجعة ويوقف التعهدات (FR-09)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/cases/CasesController_changeHospitalOrAmount"
+          },
+          "response": []
+        },
+        {
+          "name": "نشر الحالة كحملة عامة (FR-08)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titleAr\": \"عملية قلب عاجلة لرب أسرة\",\n  \"titleEn\": \"<titleEn>\",\n  \"redactedSummary\": \"<redactedSummary>\",\n  \"summaryEn\": \"<summaryEn>\",\n  \"isAnonymous\": true,\n  \"coverKey\": \"medical-1\",\n  \"area\": \"السلمية\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cases/:id/publish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cases",
+                ":id",
+                "publish"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{caseId}}"
+                }
+              ]
+            },
+            "description": "نشر الحالة كحملة عامة (FR-08)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/cases/CasesController_publish"
+          },
+          "response": []
+        },
+        {
+          "name": "تنزيل وثيقة خاصة (للموظفين فقط)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/documents/:id/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documents",
+                ":id",
+                "file"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{documentId}}"
+                }
+              ]
+            },
+            "description": "تنزيل وثيقة خاصة (للموظفين فقط)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/cases/CasesController_documentFile"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Donations (pledges)",
+      "description": "Every donation path: transfer + receipt, simulated payment (Demo), cash at a collection point, council and collector entries, official receipts.",
+      "item": [
+        {
+          "name": "الإيصال الرسمي برقمه (FR-16)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/official-receipts/:no",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "official-receipts",
+                ":no"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "no",
+                  "value": "{{officialReceiptNo}}"
+                }
+              ]
+            },
+            "description": "الإيصال الرسمي برقمه (FR-16)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/OfficialReceiptsController_officialReceipt"
+          },
+          "response": []
+        },
+        {
+          "name": "تعهد من المنصة ← تعليمات التحويل (DONOR, FR-13)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const body = pm.response.json();",
+                  "const p = body.pledge || body;",
+                  "if (p.id) { pm.collectionVariables.set('pledgeId', p.id); }",
+                  "if (p.referenceNo) { pm.collectionVariables.set('pledgeReference', p.referenceNo); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"500000\",\n  \"method\": \"BEMO_TRANSFER\",\n  \"isAnonymousDisplay\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pledges",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges"
+              ]
+            },
+            "description": "تعهد من المنصة ← تعليمات التحويل (DONOR, FR-13)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_create"
+          },
+          "response": []
+        },
+        {
+          "name": "محاكاة دفع فوري — وضع العرض فقط (DONOR, FR-20)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"100000\",\n  \"method\": \"BEMO_TRANSFER\",\n  \"isAnonymousDisplay\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pledges/demo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                "demo"
+              ]
+            },
+            "description": "محاكاة دفع فوري — وضع العرض فقط (DONOR, FR-20)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_createDemo"
+          },
+          "response": []
+        },
+        {
+          "name": "Cash at an active collection point: a reference to show the Mukhi (DONOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const body = pm.response.json();",
+                  "const p = body.pledge || body;",
+                  "if (p.id) { pm.collectionVariables.set('pledgeId', p.id); }",
+                  "if (p.referenceNo) { pm.collectionVariables.set('pledgeReference', p.referenceNo); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"250000\",\n  \"collectionPointId\": \"{{collectionPointId}}\",\n  \"isAnonymousDisplay\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pledges/cash",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                "cash"
+              ]
+            },
+            "description": "Cash at an active collection point: a reference to show the Mukhi (DONOR)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_createCash"
+          },
+          "response": []
+        },
+        {
+          "name": "تبرع حضوري في المجلس (STAFF, FINANCE_VERIFIER, FR-18)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"1000000\",\n  \"donorName\": \"سليم ح.\",\n  \"donorPhone\": \"0955123456\",\n  \"isAnonymousDisplay\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pledges/council",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                "council"
+              ]
+            },
+            "description": "تبرع حضوري في المجلس (STAFF, FINANCE_VERIFIER, FR-18)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_createCouncil"
+          },
+          "response": []
+        },
+        {
+          "name": "تسجيل حصيلة نقطة جمع (COLLECTOR, FR-19)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"collectionPointId\": \"{{collectionPointId}}\",\n  \"amount\": \"2350000\",\n  \"donorName\": \"<donorName>\",\n  \"donorPhone\": \"0944000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pledges/collector",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                "collector"
+              ]
+            },
+            "description": "تسجيل حصيلة نقطة جمع (COLLECTOR, FR-19)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_createCollector"
+          },
+          "response": []
+        },
+        {
+          "name": "«تبرعاتي» (DONOR, FR-17)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pledges/mine",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                "mine"
+              ]
+            },
+            "description": "«تبرعاتي» (DONOR, FR-17)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_mine"
+          },
+          "response": []
+        },
+        {
+          "name": "ما سجّلته بنفسي (STAFF, COLLECTOR, FINANCE_VERIFIER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pledges/recorded",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                "recorded"
+              ]
+            },
+            "description": "ما سجّلته بنفسي (STAFF, COLLECTOR, FINANCE_VERIFIER)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_recorded"
+          },
+          "response": []
+        },
+        {
+          "name": "تفاصيل تعهد (المالك أو المالية)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pledges/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{pledgeId}}"
+                }
+              ]
+            },
+            "description": "تفاصيل تعهد (المالك أو المالية)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_get"
+          },
+          "response": []
+        },
+        {
+          "name": "رفع إيصال التحويل ← قيد التحقق (DONOR, STAFF, FR-14)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "transferRef",
+                  "type": "text",
+                  "value": "TRX-559201",
+                  "disabled": true,
+                  "description": "optional"
+                },
+                {
+                  "key": "receipt",
+                  "type": "file",
+                  "src": [],
+                  "description": "صورة/PDF الإيصال (≤ 5MB) — choose a file (JPEG/PNG/PDF)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pledges/:id/receipts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                ":id",
+                "receipts"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{pledgeId}}"
+                }
+              ]
+            },
+            "description": "رفع إيصال التحويل ← قيد التحقق (DONOR, STAFF, FR-14)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_uploadReceipt"
+          },
+          "response": []
+        },
+        {
+          "name": "إلغاء تعهد قبل التحقق (DONOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pledges/:id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                ":id",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{pledgeId}}"
+                }
+              ]
+            },
+            "description": "إلغاء تعهد قبل التحقق (DONOR)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_cancel"
+          },
+          "response": []
+        },
+        {
+          "name": "صورة الإيصال المرفوع (المالك أو المالية)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/receipts/:id/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "receipts",
+                ":id",
+                "file"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{receiptId}}"
+                }
+              ]
+            },
+            "description": "صورة الإيصال المرفوع (المالك أو المالية)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_receiptFile"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Collector (Mukhi)",
+      "description": "Cash confirmation at the collector's own collection points. Collectors never verify.",
+      "item": [
+        {
+          "name": "My collection points with their waiting cash pledges count",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collector/points",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collector",
+                "points"
+              ]
+            },
+            "description": "My collection points with their waiting cash pledges count\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/collector/CollectorController_points"
+          },
+          "response": []
+        },
+        {
+          "name": "Cash pledges waiting to be handed over at my points",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collector/pledges",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collector",
+                "pledges"
+              ]
+            },
+            "description": "Cash pledges waiting to be handed over at my points\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/collector/CollectorController_pending"
+          },
+          "response": []
+        },
+        {
+          "name": "Find a cash pledge at my points by the reference the donor shows",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collector/pledges/by-reference/:referenceNo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collector",
+                "pledges",
+                "by-reference",
+                ":referenceNo"
+              ],
+              "variable": [
+                {
+                  "key": "referenceNo",
+                  "value": "{{pledgeReference}}"
+                }
+              ]
+            },
+            "description": "Find a cash pledge at my points by the reference the donor shows\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/collector/CollectorController_byReference"
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm cash received (PLEDGED → COLLECTED + finance verification PENDING)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collector/pledges/:id/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collector",
+                "pledges",
+                ":id",
+                "confirm"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{pledgeId}}"
+                }
+              ]
+            },
+            "description": "Confirm cash received (PLEDGED → COLLECTED + finance verification PENDING)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/collector/CollectorController_confirm"
+          },
+          "response": []
+        },
+        {
+          "name": "What I handed over: confirmed pledges and recorded box totals",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collector/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collector",
+                "history"
+              ]
+            },
+            "description": "What I handed over: confirmed pledges and recorded box totals\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/collector/CollectorController_history"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Verifications (finance)",
+      "description": "FINANCE_VERIFIER approves or rejects; approval issues the official receipt R-YYYY-NNNNNN + QR.",
+      "item": [
+        {
+          "name": "قائمة التحقق المالي (الأقدم أولاً)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const list = pm.response.json();",
+                  "const arr = Array.isArray(list) ? list : list.items || [];",
+                  "if (arr[0]) { pm.collectionVariables.set('verificationId', arr[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/verifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "verifications"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "قائمة التحقق المالي (الأقدم أولاً)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/verifications/VerificationsController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "اعتماد: التعهد VERIFIED + رصيد الحملة + إيصال رسمي (transaction)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const v = pm.response.json();",
+                  "const no = (v.officialReceipt && v.officialReceipt.receiptNo) || v.officialReceiptNo || v.receiptNo;",
+                  "if (no) { pm.collectionVariables.set('officialReceiptNo', no); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/verifications/:id/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "verifications",
+                ":id",
+                "approve"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{verificationId}}"
+                }
+              ]
+            },
+            "description": "اعتماد: التعهد VERIFIED + رصيد الحملة + إيصال رسمي (transaction)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/verifications/VerificationsController_approve"
+          },
+          "response": []
+        },
+        {
+          "name": "رفض مع سبب إلزامي (يُبلَّغ المتبرع)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"المبلغ في الإيصال لا يطابق التعهد\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/verifications/:id/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "verifications",
+                ":id",
+                "reject"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{verificationId}}"
+                }
+              ]
+            },
+            "description": "رفض مع سبب إلزامي (يُبلَّغ المتبرع)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/verifications/VerificationsController_reject"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Expenditures (spending)",
+      "description": "Spending with public-safe proof, monthly sponsorship runs.",
+      "item": [
+        {
+          "name": "Public spending timeline (beneficiary codes only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/spending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "spending"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Public spending timeline (beneficiary codes only)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/expenditures/PublicExpendituresController_timeline"
+          },
+          "response": []
+        },
+        {
+          "name": "A published proof file (404 when not published)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/expenditures/:id/proof",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenditures",
+                ":id",
+                "proof"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{expenditureId}}"
+                }
+              ]
+            },
+            "description": "A published proof file (404 when not published)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/expenditures/PublicExpendituresController_proof"
+          },
+          "response": []
+        },
+        {
+          "name": "Record spending with proof (FINANCE_VERIFIER, amount ≤ remaining)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "campaignId",
+                  "type": "text",
+                  "value": "{{campaignId}}"
+                },
+                {
+                  "key": "payeeType",
+                  "type": "text",
+                  "value": "HOSPITAL"
+                },
+                {
+                  "key": "payeeLabel",
+                  "type": "text",
+                  "value": "مقاول ترميم (مثال)",
+                  "disabled": true,
+                  "description": "optional"
+                },
+                {
+                  "key": "beneficiaryId",
+                  "type": "text",
+                  "value": "{{beneficiaryId}}",
+                  "disabled": true,
+                  "description": "optional"
+                },
+                {
+                  "key": "amount",
+                  "type": "text",
+                  "value": "15000000"
+                },
+                {
+                  "key": "paidAt",
+                  "type": "text",
+                  "value": "2026-11-20"
+                },
+                {
+                  "key": "description",
+                  "type": "text",
+                  "value": "دفعة أولى لأعمال الترميم"
+                },
+                {
+                  "key": "descriptionEn",
+                  "type": "text",
+                  "value": "First payment for the renovation works",
+                  "disabled": true,
+                  "description": "optional"
+                },
+                {
+                  "key": "proofPublic",
+                  "type": "text",
+                  "value": "false",
+                  "disabled": true,
+                  "description": "optional"
+                },
+                {
+                  "key": "proof",
+                  "type": "file",
+                  "src": [],
+                  "description": "Invoice or photo (proof) — choose a file (JPEG/PNG/PDF)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/expenditures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenditures"
+              ]
+            },
+            "description": "Record spending with proof (FINANCE_VERIFIER, amount ≤ remaining)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/expenditures/ExpendituresController_create"
+          },
+          "response": []
+        },
+        {
+          "name": "Pay one month of sponsorship to every sponsored beneficiary (FINANCE_VERIFIER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "periodMonth",
+                  "type": "text",
+                  "value": "2026-11"
+                },
+                {
+                  "key": "paidAt",
+                  "type": "text",
+                  "value": "2026-11-25",
+                  "disabled": true,
+                  "description": "optional"
+                },
+                {
+                  "key": "proofPublic",
+                  "type": "text",
+                  "value": "false",
+                  "disabled": true,
+                  "description": "optional"
+                },
+                {
+                  "key": "proof",
+                  "type": "file",
+                  "src": [],
+                  "description": "file — choose a file (JPEG/PNG/PDF)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/expenditures/monthly",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "expenditures",
+                "monthly"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Pay one month of sponsorship to every sponsored beneficiary (FINANCE_VERIFIER)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/expenditures/ExpendituresController_monthly"
+          },
+          "response": []
+        },
+        {
+          "name": "Flags, hospital, balance and beneficiaries for the spending page",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/spending-context",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "spending-context"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Flags, hospital, balance and beneficiaries for the spending page\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/expenditures/ExpendituresController_context"
+          },
+          "response": []
+        },
+        {
+          "name": "Spending of a campaign (FINANCE_VERIFIER, ADMIN, CASE_OFFICER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/expenditures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "expenditures"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Spending of a campaign (FINANCE_VERIFIER, ADMIN, CASE_OFFICER)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/expenditures/ExpendituresController_list"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications & WhatsApp outbox",
+      "description": "In-app notifications and the wa.me outbox (no WhatsApp API).",
+      "item": [
+        {
+          "name": "My notifications (newest 50)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const list = pm.response.json();",
+                  "const arr = Array.isArray(list) ? list : list.items || [];",
+                  "if (arr[0]) { pm.collectionVariables.set('notificationId', arr[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            },
+            "description": "My notifications (newest 50)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/notifications/NotificationsController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "How many of my notifications are unread (bell / badge)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "unread-count"
+              ]
+            },
+            "description": "How many of my notifications are unread (bell / badge)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/notifications/NotificationsController_unreadCount"
+          },
+          "response": []
+        },
+        {
+          "name": "Mark all my notifications as read",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
+              ]
+            },
+            "description": "Mark all my notifications as read\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/notifications/NotificationsController_readAll"
+          },
+          "response": []
+        },
+        {
+          "name": "Mark one of my notifications as read",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/:id/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                ":id",
+                "read"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{notificationId}}"
+                }
+              ]
+            },
+            "description": "Mark one of my notifications as read\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/notifications/NotificationsController_read"
+          },
+          "response": []
+        },
+        {
+          "name": "Outbox messages with their wa.me link, filterable by kind and status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/outbox",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "outbox"
+              ],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "donation.demo",
+                  "description": "optional",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "QUEUED",
+                  "description": "optional",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "optional",
+                  "disabled": true
+                },
+                {
+                  "key": "pageSize",
+                  "value": "30",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Outbox messages with their wa.me link, filterable by kind and status\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/outbox/OutboxController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "\"Next\" mode: the oldest queued message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/outbox/next",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "outbox",
+                "next"
+              ],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "donation.demo",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "\"Next\" mode: the oldest queued message\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/outbox/OutboxController_next"
+          },
+          "response": []
+        },
+        {
+          "name": "The wa.me link was opened: QUEUED → OPENED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/outbox/:id/opened",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "outbox",
+                ":id",
+                "opened"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{outboxId}}"
+                }
+              ]
+            },
+            "description": "The wa.me link was opened: QUEUED → OPENED\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/outbox/OutboxController_opened"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transparency (stats)",
+      "description": "Public transparency dashboard data.",
+      "item": [
+        {
+          "name": "GET /stats/transparency",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/stats/transparency",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stats",
+                "transparency"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Public endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/stats/StatsController_transparency"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /stats/transparency.csv",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/stats/transparency.csv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stats",
+                "transparency.csv"
+              ],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Public endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/stats/StatsController_transparencyCsv"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Hospitals & collection points",
+      "description": "Lookups managed by ADMIN.",
+      "item": [
+        {
+          "name": "Active collection points for cash donations (public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const list = pm.response.json();",
+                  "const arr = Array.isArray(list) ? list : list.items || [];",
+                  "if (arr[0]) { pm.collectionVariables.set('collectionPointId', arr[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collection-points/active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collection-points",
+                "active"
+              ]
+            },
+            "description": "Active collection points for cash donations (public)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/collection-points/PublicCollectionPointsController_active"
+          },
+          "response": []
+        },
+        {
+          "name": "Active approved hospitals (any signed-in user)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const list = pm.response.json();",
+                  "const arr = Array.isArray(list) ? list : list.items || [];",
+                  "if (arr[0]) { pm.collectionVariables.set('hospitalId', arr[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hospitals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hospitals"
+              ]
+            },
+            "description": "Active approved hospitals (any signed-in user)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/lookups/LookupsController_hospitals"
+          },
+          "response": []
+        },
+        {
+          "name": "Add a hospital (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"المشفى الوطني بالسلمية\",\n  \"nameEn\": \"Salamiyah National Hospital\",\n  \"city\": \"السلمية\",\n  \"isPrivate\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hospitals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hospitals"
+              ]
+            },
+            "description": "Add a hospital (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/lookups/LookupsController_createHospital"
+          },
+          "response": []
+        },
+        {
+          "name": "All hospitals, inactive too, with usage counts (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hospitals/all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hospitals",
+                "all"
+              ]
+            },
+            "description": "All hospitals, inactive too, with usage counts (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/lookups/LookupsController_allHospitals"
+          },
+          "response": []
+        },
+        {
+          "name": "Edit or (de)activate a hospital (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"<nameAr>\",\n  \"nameEn\": \"<nameEn>\",\n  \"city\": \"<city>\",\n  \"isPrivate\": false,\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hospitals/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hospitals",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{hospitalId}}"
+                }
+              ]
+            },
+            "description": "Edit or (de)activate a hospital (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/lookups/LookupsController_updateHospital"
+          },
+          "response": []
+        },
+        {
+          "name": "All collection points (ADMIN, FINANCE_VERIFIER, STAFF)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collection-points",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collection-points"
+              ]
+            },
+            "description": "All collection points (ADMIN, FINANCE_VERIFIER, STAFF)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/lookups/LookupsController_collectionPoints"
+          },
+          "response": []
+        },
+        {
+          "name": "Add a collection point (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"نقطة جمع الحي الشمالي\",\n  \"type\": \"OTHER\",\n  \"contactName\": \"<contactName>\",\n  \"area\": \"الحي الشمالي\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/collection-points",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collection-points"
+              ]
+            },
+            "description": "Add a collection point (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/lookups/LookupsController_createCollectionPoint"
+          },
+          "response": []
+        },
+        {
+          "name": "Only my assigned collection points (COLLECTOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collection-points/mine",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collection-points",
+                "mine"
+              ]
+            },
+            "description": "Only my assigned collection points (COLLECTOR)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/lookups/LookupsController_myCollectionPoints"
+          },
+          "response": []
+        },
+        {
+          "name": "Edit or (de)activate a collection point (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"<name>\",\n  \"type\": \"MOSQUE\",\n  \"contactName\": \"<contactName>\",\n  \"area\": \"<area>\",\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/collection-points/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collection-points",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{collectionPointId}}"
+                }
+              ]
+            },
+            "description": "Edit or (de)activate a collection point (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/lookups/LookupsController_updateCollectionPoint"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "Staff and role management (ADMIN).",
+      "item": [
+        {
+          "name": "List accounts, optionally by role (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });",
+                  "const list = pm.response.json();",
+                  "const arr = Array.isArray(list) ? list : list.items || [];",
+                  "if (arr[0]) { pm.collectionVariables.set('userId', arr[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "DONOR",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List accounts, optionally by role (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/users/UsersController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "Create an account with any role (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"<fullName>\",\n  \"phone\": \"0944000111\",\n  \"password\": \"{{demoPassword}}\",\n  \"role\": \"DONOR\",\n  \"collectionPointIds\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Create an account with any role (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/users/UsersController_create"
+          },
+          "response": []
+        },
+        {
+          "name": "Change name, role, active flag or collector points (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"<fullName>\",\n  \"role\": \"DONOR\",\n  \"isActive\": false,\n  \"collectionPointIds\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{userId}}"
+                }
+              ]
+            },
+            "description": "Change name, role, active flag or collector points (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/users/UsersController_update"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Imports",
+      "description": "Beneficiary Excel/CSV import: preview → validate → commit.",
+      "item": [
+        {
+          "name": "1) رفع الملف ← العناوين + أول 20 صف + mapping مقترح",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "ملف .xlsx أو .csv (≤ 10MB، ≤ 5000 صف) — choose a file (JPEG/PNG/PDF)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/imports/preview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "imports",
+                "preview"
+              ]
+            },
+            "description": "1) رفع الملف ← العناوين + أول 20 صف + mapping مقترح\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/imports/ImportsController_preview"
+          },
+          "response": []
+        },
+        {
+          "name": "2) تطبيق المطابقة ← dry run (صالح/أخطاء/تكرار)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"الاسم الكامل\",\n  \"phone\": \"الموبايل\",\n  \"nationalId\": \"الرقم الوطني\",\n  \"localCouncil\": \"المجلس\",\n  \"otherPrograms\": \"البرامج\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/imports/:id/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "imports",
+                ":id",
+                "validate"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{importId}}"
+                }
+              ]
+            },
+            "description": "2) تطبيق المطابقة ← dry run (صالح/أخطاء/تكرار)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/imports/ImportsController_validate"
+          },
+          "response": []
+        },
+        {
+          "name": "3) الحفظ في transaction (التكرارات تُتخطى)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/imports/:id/commit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "imports",
+                ":id",
+                "commit"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{importId}}"
+                }
+              ]
+            },
+            "description": "3) الحفظ في transaction (التكرارات تُتخطى)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/imports/ImportsController_commit"
+          },
+          "response": []
+        },
+        {
+          "name": "الصفوف المرفوضة مع السبب",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/imports/:id/errors.csv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "imports",
+                ":id",
+                "errors.csv"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{importId}}"
+                }
+              ]
+            },
+            "description": "الصفوف المرفوضة مع السبب\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/imports/ImportsController_errors"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Audit",
+      "description": "Audit log (ADMIN).",
+      "item": [
+        {
+          "name": "سجل التدقيق لكيان محدد (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/audit?entityType=Campaign&entityId={{campaignId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit"
+              ],
+              "query": [
+                {
+                  "key": "entityType",
+                  "value": "Campaign",
+                  "description": "required",
+                  "disabled": false
+                },
+                {
+                  "key": "entityId",
+                  "value": "{{campaignId}}",
+                  "description": "required",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "سجل التدقيق لكيان محدد (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/audit/AuditController_list"
+          },
+          "response": []
+        },
+        {
+          "name": "سجل الحملة: تعديلات، حالة، صرف، تعهدات وحالتها الطبية (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/audit/campaigns/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit",
+                "campaigns",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "سجل الحملة: تعديلات، حالة، صرف، تعهدات وحالتها الطبية (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/audit/AuditController_campaignHistory"
+          },
+          "response": []
+        },
+        {
+          "name": "سجل الحالة الطبية وحملتها بعد النشر (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/audit/cases/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit",
+                "cases",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{caseId}}"
+                }
+              ]
+            },
+            "description": "سجل الحالة الطبية وحملتها بعد النشر (ADMIN)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/audit/AuditController_caseHistory"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
