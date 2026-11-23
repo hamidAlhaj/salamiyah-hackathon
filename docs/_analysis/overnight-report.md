@@ -458,3 +458,107 @@ verified free. No `.playwright-mcp` folder was created. Untouched: four `@playwr
 - Mobile (Expo) still uses the old light palette (`mobile/src/ui/theme.ts`); aligning it is a separate decision.
 - The killed screenshot script may have left a `playwright_chromiumdev_profile-*` folder in `%TEMP%` (same cause as
   the e2e idle time in P19).
+
+## P22 — Google sign-in
+
+**Status:** merged to `main` (fast-forward) and pushed; branch `p22-google-signin` pushed.
+Commit `960d8f6` — `feat(api): optional Google sign-in (off unless GOOGLE_* set), phone_required on every donate path, donor profile phone form`,
+then `64dff83` / `b9faffc` — `docs(docs): P22 Google sign-in screenshots (part 1–2 of 2)`.
+
+### What was built
+Built fully but **disabled by default**: everything switches on only when `api/.env` has `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET` and `GOOGLE_CALLBACK_URL` (empty keys added to `api/.env.example`). No real keys exist or were
+committed. Phone + password (`POST /auth/login` → `{ accessToken, user }`, Bearer, 8h) is unchanged; `user` only gained
+two additive fields.
+- **Packages** (README "Additions beyond b4f" first, exact): `passport-google-oauth20` 2.0.0 + `@types/passport-google-oauth20`
+  2.0.17 (dev). Checked against the installed `passport` 0.7.0 / `@nestjs/passport` 10.0.3 (already present) and the
+  `.d.ts` files (`Strategy`, `Profile`, `StrategyOptions`, passport-oauth2 state handling); `@types/express` stays deduped
+  at 4.17.25; transitive `passport-oauth2` 1.8.0.
+- **Schema / migration `20261123081944_google_sign_in`:** `User.phone` nullable (still unique), new `googleSub`
+  (`google_sub`, unique); `email` already existed. Generated with `prisma migrate diff` (DB → schema) because
+  `migrate dev` refuses non-interactive runs, then `migrate deploy` + `generate`; not edited.
+- **api:** `GoogleStrategy` (registered by a factory provider only when configured), `GoogleAuthGuard` (404
+  `google_sign_in_disabled` when off; 400 `google_state_required` without a valid CSRF state; any OAuth failure →
+  401 `google_sign_in_failed`), `GoogleAuthService.signIn` (matching rules below), `GET /auth/google/enabled`
+  (`{ enabled, callbackOrigin }`, never the id or secret), `GET /auth/google?state=` (302 to Google),
+  `GET /auth/google/callback?code=` (exchanges Google's one-time code, returns the same session as login),
+  `PATCH /auth/me/phone` (DONOR only, same `NormalizePhone` + regex as registration, unique → `phone_taken`, audited
+  without the number). Shared `issueSession` / `toCurrentUser`. `CurrentUser.phone` is `string | null`, plus
+  `whatsappOptIn` and `googleLinked` (all three shared copies byte-identical). Urgent WhatsApp alerts now query
+  `phone not null`; receipts and the outbox already skipped phone-less donors; `Pledge.donorPhone` was already nullable.
+- **Stable code `phone_required` (403)** on every donor donate endpoint: `POST /pledges` (transfer + receipt),
+  `POST /pledges/demo` (simulated e-payment), `POST /pledges/cash` (collection point). Council and collector pledges are
+  staff paths with their own donor fields; receipt upload only follows an existing pledge.
+- **web:** route handlers `/auth/google/start` (random 32-byte state in an HttpOnly cookie, 10 min, path
+  `/auth/google`, then 303 to the consent URL the API builds, accepted only if it is `https://accounts.google.com`)
+  and `/auth/google/callback` (constant-time state check, cookie deleted, code exchanged server-side, session set in
+  the HttpOnly `session` cookie; a phone-less donor lands on «ملفي»). Login page: "or" divider + "Continue with
+  Google" button with the Google mark, shown only when configured **and** on the callback host; `?google=` notices
+  (unavailable, cancelled, failed, expired, staff, mismatch). New «ملفي» / *My profile* (`/dashboard/profile`, DONOR
+  workspace link): account card (name, donor code, sign-in method, current number) + phone/WhatsApp form. The donate
+  page shows an "Add your phone number first" callout instead of the flow, linking to the profile with `next`; the
+  profile offers "Continue to donate" after saving. The admin user list shows `—` for a missing phone. AR/EN messages,
+  new `apiErrors` codes. Button and profile UI designed with the frontend-design skill inside the existing tokens.
+- **mobile:** `phone_required` message in AR/EN (shown in the existing donate error notice); no native Google sign-in.
+- **Seed:** one fictional Google donor without phone or password (fixed id `22222222-…-000000000022`, `D-000099`,
+  `google.donor@example.com`), created after all other users so existing donor codes and demo numbers are unchanged.
+- **Docs:** README §5a (Google Cloud console steps, origins and redirects for localhost, why LAN IPs cannot be
+  registered, how the handshake works, linking rules); one line in DEMO.md about the seeded Google donor.
+
+### Checks
+- api: lint ✓ · **392** tests ✓ (+39: mocked Google profiles → identity; strategy validate → new DONOR, linked
+  account, DONOR email link, staff refused ×5, mismatch, inactive, unverified email; passport start redirect and
+  callback code exchange with Google's token and profile endpoints stubbed; config on/off; guard 404/400/options/error
+  mapping; profile phone add/change/unique/role ×5; `phone_required` on the transfer, demo and cash paths) · build ✓
+- web: lint ✓ · prettier ✓ · **53** tests ✓ (+6 Google handshake helpers; DONOR workspace list updated) · build ✓
+- mobile: `tsc --noEmit` ✓ · `expo lint` ✓ · `expo-doctor` 20/20 ✓
+- e2e: **40 passed, 1 skipped** in 15.7 min (baseline 37 + 1 skipped, plus 3 new in `06-google-signin.spec.ts`: no button and the
+  Google routes off when unconfigured; the seeded phone-less donor gets 403 `phone_required` on all three donate
+  endpoints; donate page callout → «ملفي» → save phone → the donate flow appears). Against `next start` of the build.
+- Manual with dummy env values (process env only, never written to a file): `/auth/google/enabled` → enabled,
+  `/auth/google/start` → 303 to `accounts.google.com` with the client id, the web callback, `openid email profile` and
+  the state; the callback with a bogus code → `/login?google=failed` (API 401 `google_sign_in_failed`).
+- **Screenshots:** `docs/screenshots/p22/`: 32 JPEGs (`<theme>-<lang>-<width>-<page>.jpg`): login with the button
+  hidden, login with the button shown (dummy env), the profile phone form, and the donate page phone-required callout,
+  each in AR/EN × light/dark × 1280/375 (1.2 MB, two commits). The p16–p21 folders were not touched.
+
+### Deviations
+- The first full e2e run failed one P19 test (SLA alert missing) because `demo:reset` ran while the API was already up,
+  so the API's one-time startup SLA check had run against the old data. The rerun, with the API started after the
+  reset, is green. Not a P22 regression.
+- The e2e test signs the seeded Google donor's session itself (HS256 with `JWT_SECRET` read from `api/.env` or
+  `E2E_JWT_SECRET`, never printed): real Google cannot run in Playwright, and the seeded account has no password.
+
+### Decisions made alone
+- The Google redirect goes to the **web** (`GOOGLE_CALLBACK_URL` = `http://localhost:3000/auth/google/callback`), and the
+  web hands Google's one-time code to the API server-side. The browser never talks to the API, the app JWT never
+  appears in a URL, and no extra one-time code store was needed (Google's code is already one-time and short-lived).
+  The CSRF state lives in the web's HttpOnly cookie; the API passes it through (passport-oauth2 without sessions).
+- Linking: match on the Google `sub` only. If nothing is linked yet, a Google-**verified** email that belongs to an
+  existing **DONOR** is linked once (audited `user.google_link`). Staff, collector and admin accounts are never linked
+  or entered through Google (`google_staff_account`). An email already linked to another Google id →
+  `google_account_mismatch`. Unverified emails are neither stored nor used.
+- `phone_required` is 403 and checked before any other donation rule. `PATCH /auth/me/phone` is DONOR-only (staff
+  phones are logins managed by ADMIN). A password donor may change their phone, which also changes their login (the
+  form says so).
+- The button is hidden on any host other than the callback's, so LAN phones never see a button that cannot work.
+- Native Google sign-in on mobile was skipped: it needs new libraries (`expo-auth-session` / `expo-web-browser`) and
+  Android/iOS OAuth clients. Mobile users keep phone + password, which always comes with a phone.
+- A Google donor's name: the Google display name, else the email's local part, else «متبرع Google». Locale `en` only
+  if Google says so. WhatsApp consent stays off until the donor ticks it on the profile.
+
+### Servers / cleanup
+Dev DB reseeded (`demo:reset`). Stopped: web :3000 PID 6080 (the last `next start`; earlier web PIDs 11700, 6184); api instances 14764, 3876, 13968, 18504 (restarts
+around resets and the dummy-env screenshots); the first, interrupted e2e run (PIDs 21404, 19716, 14352). Expo was not
+started. Ports 3000/4000/8081 verified free. No `.playwright-mcp` folder was created. Untouched: the `@playwright/mcp`
+node processes started at ~03:00 by another session.
+
+### Needs human
+- Create the Google Cloud OAuth client (README §5a): External consent screen in Testing with test users, a Web
+  client with origin `http://localhost:3000` and redirect `http://localhost:3000/auth/google/callback`. Put the three
+  values in `api/.env`, restart the API and check `/auth/google/enabled`.
+- Test the real flow once with a real Gmail account: new donor → «ملفي» → add phone → donate; sign in again (linked);
+  try a staff email (refused). This could not be tested here.
+- LAN and phones: Google cannot redirect to `http://<LAN-IP>`; using Google from phones needs an HTTPS host name.
+- A Google donor has no password, so they cannot use the mobile app (phone + password only) unless a "set password"
+  feature is added later.
