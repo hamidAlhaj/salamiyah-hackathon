@@ -125,3 +125,52 @@ export async function endLinkAction(_prev: FormState, formData: FormData): Promi
   revalidateRegistry(formData);
   return { ok: true, message: t('beneficiaries.ended') };
 }
+
+/** ADMIN suspends (or reactivates) a beneficiary with a reason; intake then refuses silently. */
+export async function beneficiarySuspensionAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const t = await getTranslations('adminSetup');
+  const id = formData.get('id');
+  assertUuid(id, 'id');
+  const suspend = readString(formData, 'suspend') === 'true';
+  const token = await requireSessionToken();
+  try {
+    await beneficiariesApi.setBeneficiarySuspension(
+      token,
+      id,
+      suspend,
+      readString(formData, 'reason', 1000),
+    );
+  } catch (err) {
+    return toErrorState(err);
+  }
+  revalidateRegistry();
+  return {
+    ok: true,
+    message: suspend ? t('beneficiaries.hold.suspended') : t('beneficiaries.hold.reactivated'),
+  };
+}
+
+/** ADMIN writes a note or a violation into the beneficiary's internal log. */
+export async function addBeneficiaryNoteAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const t = await getTranslations('adminSetup');
+  const id = formData.get('id');
+  assertUuid(id, 'id');
+  const kind = readString(formData, 'kind', 20) === 'VIOLATION' ? 'VIOLATION' : 'NOTE';
+  const token = await requireSessionToken();
+  try {
+    await beneficiariesApi.addBeneficiaryNote(token, id, {
+      kind,
+      body: readString(formData, 'body', 1000),
+    });
+  } catch (err) {
+    return toErrorState(err);
+  }
+  revalidateRegistry();
+  return { ok: true, message: t('beneficiaries.log.added') };
+}

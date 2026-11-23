@@ -3,6 +3,7 @@ import { BeneficiaryKind } from '@prisma/client';
 import {
   IsBoolean,
   IsEnum,
+  IsIn,
   IsOptional,
   IsString,
   IsUUID,
@@ -108,4 +109,30 @@ export class UpdateBeneficiaryLinkDto {
   @IsOptional()
   @IsBoolean()
   end?: boolean;
+}
+
+/** ADMIN suspends or reactivates a beneficiary: the reason is required and kept in the notes log. */
+export class BeneficiaryReasonDto {
+  @ApiProperty({
+    example: 'Registered twice under two campaigns; review with the welfare board.',
+    description: 'Internal reason (ADMIN only, never public, never shown at intake)',
+  })
+  @IsString()
+  @Length(5, 1000)
+  reason: string;
+}
+
+/** Kinds an ADMIN may write by hand; SUSPENDED / REACTIVATED come only from the suspend endpoints. */
+export const MANUAL_NOTE_KINDS = ['NOTE', 'VIOLATION'] as const;
+
+/** ADMIN adds an entry to a beneficiary's internal log (a note or a recorded violation). */
+export class CreateBeneficiaryNoteDto {
+  @ApiProperty({ enum: MANUAL_NOTE_KINDS })
+  @IsIn(MANUAL_NOTE_KINDS)
+  kind: (typeof MANUAL_NOTE_KINDS)[number];
+
+  @ApiProperty({ example: 'Asked for the same help at two offices in one month.' })
+  @IsString()
+  @Length(5, 1000)
+  body: string;
 }

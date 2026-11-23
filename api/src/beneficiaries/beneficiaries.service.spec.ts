@@ -274,3 +274,110 @@ describe('public beneficiaries never contain identity fields', () => {
     });
   });
 });
+
+describe('BeneficiariesService suspension and the internal log (FR-25)', () => {
+  const admin = user(Role.ADMIN);
+  const reason = { reason: 'Registered twice; review with the welfare board.' };
+
+  function suspendDb(isSuspended: boolean) {
+    const update = jest.fn().mockResolvedValue({ id: BENEFICIARY_ID });
+    const noteCreate = jest.fn().mockResolvedValue({ id: 'n1', kind: 'NOTE' });
+    const tx = { beneficiary: { update }, beneficiaryNote: { create: noteCreate } };
+    const prisma = {
+      beneficiary: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ id: BENEFICIARY_ID, publicCode: 'B-7K3Q', isSuspended }),
+        count: jest.fn().mockResolvedValue(1),
+      },
+      $transaction: (fn: (t: typeof tx) => unknown) => fn(tx),
+    };
+    return { prisma, tx, update, noteCreate };
+  }
+
+  it.each(Object.values(Role).filter((r) => r !== Role.ADMIN))(
+    '%s cannot suspend, reactivate or write the log',
+    async (role) => {
+      const service = serviceWith(untouchable('prisma'), untouchable('audit'));
+      await expect(service.suspend(BENEFICIARY_ID, reason, user(role))).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+      await expect(
+        service.reactivate(BENEFICIARY_ID, reason, user(role)),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(
+        service.addNote(BENEFICIARY_ID, { kind: 'VIOLATION', body: 'x y z w' }, user(role)),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    },
+  );
+
+  it('suspends with the reason in the record, the log and the audit row', async () => {
+    const { prisma, tx, update, noteCreate } = suspendDb(false);
+    const log = jest.fn();
+    await serviceWith(prisma, { log }).suspend(BENEFICIARY_ID, reason, admin);
+    expect(update.mock.calls[0][0].data).toEqual({
+      isSuspended: true,
+      suspensionNote: reason.reason,
+    });
+    expect(noteCreate.mock.calls[0][0].data).toMatchObject({
+      kind: 'SUSPENDED',
+      body: reason.reason,
+      authorId: admin.id,
+    });
+    expect(log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'beneficiary.suspend',
+        after: { publicCode: 'B-7K3Q', isSuspended: true, reason: reason.reason },
+      }),
+      tx,
+    );
+  });
+
+  it('reactivates: clears the suspension and logs REACTIVATED', async () => {
+    const { prisma, update, noteCreate } = suspendDb(true);
+    await serviceWith(prisma).reactivate(BENEFICIARY_ID, reason, admin);
+    expect(update.mock.calls[0][0].data).toEqual({ isSuspended: false, suspensionNote: null });
+    expect(noteCreate.mock.calls[0][0].data.kind).toBe('REACTIVATED');
+  });
+
+  it('refuses to suspend twice or to reactivate an active record', async () => {
+    await expect(
+      serviceWith(suspendDb(true).prisma).suspend(BENEFICIARY_ID, reason, admin),
+    ).rejects.toThrow('beneficiary_already_suspended');
+    await expect(
+      serviceWith(suspendDb(false).prisma).reactivate(BENEFICIARY_ID, reason, admin),
+    ).rejects.toThrow('beneficiary_not_suspended');
+  });
+
+  it('records a violation in the log and audits only its kind', async () => {
+    const { prisma, tx, noteCreate } = suspendDb(false);
+    const log = jest.fn();
+    await serviceWith(prisma, { log }).addNote(
+      BENEFICIARY_ID,
+      { kind: 'VIOLATION', body: ' Asked for the same help twice. ' },
+      admin,
+    );
+    expect(noteCreate.mock.calls[0][0].data).toMatchObject({
+      kind: 'VIOLATION',
+      body: 'Asked for the same help twice.',
+    });
+    expect(log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'beneficiary.note',
+        after: { noteId: 'n1', kind: 'NOTE' },
+      }),
+      tx,
+    );
+  });
+
+  it('intake staff (STAFF) never receive the suspension state or the log', async () => {
+    const findMany = jest.fn().mockResolvedValue([]);
+    await serviceWith({ beneficiary: { findMany } }).list(undefined, user(Role.STAFF));
+    const select = findMany.mock.calls[0][0].select;
+    expect(select.isSuspended).toBeUndefined();
+    expect(select.suspensionNote).toBeUndefined();
+    expect(select.notes).toBeUndefined();
+    await serviceWith({ beneficiary: { findMany } }).list(undefined, admin);
+    expect(findMany.mock.calls[1][0].select).toMatchObject({ isSuspended: true });
+  });
+});

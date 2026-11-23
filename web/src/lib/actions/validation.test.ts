@@ -23,6 +23,11 @@ describe('Server Action helpers', () => {
     expect(isKnownRoutePath('/campaigns/../donate')).toBe(false);
   });
 
+  it('allows a campaign management page by id only', () => {
+    expect(isKnownRoutePath(`/dashboard/admin/campaigns/${UUID}`)).toBe(true);
+    expect(isKnownRoutePath('/dashboard/admin/campaigns/roof-repair-albaath')).toBe(false);
+  });
+
   it('reads only valid, de-duplicated UUIDs from repeated fields', () => {
     const form = new FormData();
     form.append('ids', UUID);

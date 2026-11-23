@@ -152,6 +152,14 @@ enum PayeeType {
   OTHER
 }
 
+/// Admin-only history of a beneficiary record. Never public, never shown at intake.
+enum BeneficiaryNoteKind {
+  NOTE
+  VIOLATION
+  SUSPENDED
+  REACTIVATED
+}
+
 enum MessageChannel {
   WHATSAPP
 }
@@ -187,6 +195,7 @@ model User {
   documents        Document[]
   expenditures     Expenditure[]
   campaignUpdates  CampaignUpdate[]
+  beneficiaryNotes BeneficiaryNote[]
   collectionPoints CollectionPoint[] @relation("CollectorPoints")
   auditLogs        AuditLog[]
   importJobs       ImportJob[]
@@ -217,11 +226,28 @@ model Beneficiary {
   cases         Case[]
   campaignLinks CampaignBeneficiary[]
   expenditures  Expenditure[]
+  notes         BeneficiaryNote[]
   importJob     ImportJob?            @relation(fields: [importJobId], references: [id], onDelete: SetNull)
 
   @@index([nationalIdHash])
   @@index([phone])
   @@map("beneficiaries")
+}
+
+/// Violations log and administrative notes on a beneficiary (ADMIN only, never public).
+model BeneficiaryNote {
+  id            String              @id @default(uuid()) @db.Uuid
+  beneficiaryId String              @map("beneficiary_id") @db.Uuid
+  kind          BeneficiaryNoteKind
+  body          String
+  authorId      String              @map("author_id") @db.Uuid
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  author      User        @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([beneficiaryId, createdAt])
+  @@map("beneficiary_notes")
 }
 
 model Hospital {

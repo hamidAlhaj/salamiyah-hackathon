@@ -4,6 +4,8 @@ import { useTranslations } from 'next-intl';
 import { ActionForm } from '@/components/forms/ActionForm';
 import { Field } from '@/components/ui/Field';
 import {
+  addBeneficiaryNoteAction,
+  beneficiarySuspensionAction,
   endLinkAction,
   linkBeneficiaryAction,
   updateBeneficiaryAction,
@@ -177,5 +179,85 @@ export function LinkControls({
         {hidden}
       </ActionForm>
     </div>
+  );
+}
+
+/**
+ * ADMIN places the record on administrative hold or lifts it, always with a reason. Intake staff then
+ * only get a generic refusal for this national ID; public pages do not change.
+ */
+export function SuspensionForm({
+  beneficiaryId,
+  isSuspended,
+}: {
+  beneficiaryId: string;
+  isSuspended: boolean;
+}) {
+  const t = useTranslations('adminSetup');
+  const tCommon = useTranslations('common');
+  return (
+    <ActionForm
+      action={beneficiarySuspensionAction}
+      submitLabel={
+        isSuspended ? t('beneficiaries.hold.reactivate') : t('beneficiaries.hold.suspend')
+      }
+      pendingLabel={tCommon('saving')}
+      variant={isSuspended ? 'primary' : 'danger'}
+      submitClassName="!px-3 !py-1.5 !text-sm"
+      testId="beneficiary-suspension-form"
+    >
+      <input type="hidden" name="id" value={beneficiaryId} />
+      <input type="hidden" name="suspend" value={isSuspended ? 'false' : 'true'} />
+      <Field
+        as="textarea"
+        id={`hold-${beneficiaryId}-reason`}
+        label={t('beneficiaries.hold.reason')}
+        name="reason"
+        required
+        minLength={5}
+        maxLength={1000}
+        rows={2}
+      />
+    </ActionForm>
+  );
+}
+
+/** ADMIN adds a note or a violation to the internal log. */
+export function NoteForm({ beneficiaryId }: { beneficiaryId: string }) {
+  const t = useTranslations('adminSetup');
+  const tCommon = useTranslations('common');
+  const prefix = `note-${beneficiaryId}`;
+  return (
+    <ActionForm
+      action={addBeneficiaryNoteAction}
+      submitLabel={t('beneficiaries.log.add')}
+      pendingLabel={tCommon('saving')}
+      variant="secondary"
+      submitClassName="!px-3 !py-1.5 !text-sm"
+      resetOnSuccess
+      testId="beneficiary-note-form"
+    >
+      <input type="hidden" name="id" value={beneficiaryId} />
+      <div className="grid gap-4 sm:grid-cols-[10rem_minmax(0,1fr)]">
+        <Field
+          as="select"
+          id={`${prefix}-kind`}
+          label={t('beneficiaries.log.kind')}
+          name="kind"
+          defaultValue="NOTE"
+        >
+          <option value="NOTE">{t('beneficiaries.log.kinds.NOTE')}</option>
+          <option value="VIOLATION">{t('beneficiaries.log.kinds.VIOLATION')}</option>
+        </Field>
+        <Field
+          id={`${prefix}-body`}
+          label={t('beneficiaries.log.body')}
+          name="body"
+          required
+          minLength={5}
+          maxLength={1000}
+        />
+      </div>
+    </ActionForm>
   );
 }

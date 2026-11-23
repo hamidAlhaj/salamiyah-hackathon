@@ -8,7 +8,9 @@ import { allocateBeneficiaryCodes } from '../common/utils/beneficiary-codes';
 import { money, toDecimal } from '../common/utils/money';
 import { PrismaService } from '../prisma/prisma.service';
 import type {
+  BeneficiaryReasonDto,
   CreateBeneficiaryDto,
+  CreateBeneficiaryNoteDto,
   LinkBeneficiaryDto,
   UpdateBeneficiaryDto,
   UpdateBeneficiaryLinkDto,
@@ -26,7 +28,10 @@ export const PUBLIC_BENEFICIARY_SELECT = {
   area: true,
 } satisfies Prisma.BeneficiarySelect;
 
-/** Staff view (ADMIN, STAFF): includes the private name, never the national ID hash. */
+/**
+ * Staff view (ADMIN, STAFF): includes the private name, never the national ID hash. The suspension
+ * state is not in it: intake staff must not learn about a suspension (FR-25).
+ */
 const staffSelect = {
   id: true,
   publicCode: true,
@@ -34,7 +39,6 @@ const staffSelect = {
   area: true,
   fullName: true,
   phone: true,
-  isSuspended: true,
   createdAt: true,
   _count: { select: { campaignLinks: true } },
   campaignLinks: {
@@ -44,6 +48,24 @@ const staffSelect = {
       monthlyAmount: true,
       startedAt: true,
       campaign: { select: { id: true, slug: true, titleAr: true, titleEn: true } },
+    },
+  },
+} satisfies Prisma.BeneficiarySelect;
+
+/** ADMIN view: the staff view plus the suspension state and the latest entries of the internal log. */
+const adminSelect = {
+  ...staffSelect,
+  isSuspended: true,
+  suspensionNote: true,
+  notes: {
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+    select: {
+      id: true,
+      kind: true,
+      body: true,
+      createdAt: true,
+      author: { select: { fullName: true } },
     },
   },
 } satisfies Prisma.BeneficiarySelect;
@@ -59,7 +81,7 @@ export class BeneficiariesService {
   list(q: string | undefined, actor: AuthenticatedUser) {
     this.access.requireRole(actor, ['ADMIN', 'STAFF']);
     const term = q?.trim();
-    return this.prisma.beneficiary.findMany({
+    const args = {
       where: term
         ? {
             OR: [
@@ -71,8 +93,10 @@ export class BeneficiariesService {
         : undefined,
       orderBy: { createdAt: 'desc' },
       take: 50,
-      select: staffSelect,
-    });
+    } satisfies Prisma.BeneficiaryFindManyArgs;
+    return actor.role === 'ADMIN'
+      ? this.prisma.beneficiary.findMany({ ...args, select: adminSelect })
+      : this.prisma.beneficiary.findMany({ ...args, select: staffSelect });
   }
 
   async create(dto: CreateBeneficiaryDto, actor: AuthenticatedUser) {
@@ -180,7 +204,7 @@ export class BeneficiariesService {
           phone: dto.phone,
           area: dto.area === undefined ? undefined : dto.area.trim() || null,
         },
-        select: staffSelect,
+        select: adminSelect,
       });
       // Only public fields in the audit row: the private name and phone stay out of the log.
       await this.audit.log(
@@ -260,6 +284,97 @@ export class BeneficiariesService {
         monthlyAmount: updated.monthlyAmount ? money(updated.monthlyAmount) : null,
         endedAt: updated.endedAt?.toISOString() ?? null,
       };
+    });
+  }
+
+  /**
+   * ADMIN suspends a beneficiary (FR-25): new intake requests for their national ID are refused with
+   * the generic `cannot_submit_request`, they cannot be linked to more campaigns and monthly runs skip
+   * them. Nothing changes on public pages. The reason goes into the internal log and the audit row.
+   */
+  suspend(id: string, dto: BeneficiaryReasonDto, actor: AuthenticatedUser) {
+    return this.setSuspended(id, true, dto.reason, actor);
+  }
+
+  /** ADMIN lifts the suspension: intake and linking work again. The reason is logged too. */
+  reactivate(id: string, dto: BeneficiaryReasonDto, actor: AuthenticatedUser) {
+    return this.setSuspended(id, false, dto.reason, actor);
+  }
+
+  private async setSuspended(
+    id: string,
+    suspend: boolean,
+    reason: string,
+    actor: AuthenticatedUser,
+  ) {
+    this.access.requireRole(actor, ['ADMIN']);
+    const before = await this.prisma.beneficiary.findUnique({
+      where: { id },
+      select: { id: true, publicCode: true, isSuspended: true },
+    });
+    if (!before) throw new NotFoundException('beneficiary_not_found');
+    if (before.isSuspended === suspend) {
+      throw new ConflictException(
+        suspend ? 'beneficiary_already_suspended' : 'beneficiary_not_suspended',
+      );
+    }
+    const text = reason.trim();
+    return this.prisma.$transaction(async (tx) => {
+      const beneficiary = await tx.beneficiary.update({
+        where: { id },
+        data: { isSuspended: suspend, suspensionNote: suspend ? text : null },
+        select: adminSelect,
+      });
+      await tx.beneficiaryNote.create({
+        data: {
+          beneficiaryId: id,
+          kind: suspend ? 'SUSPENDED' : 'REACTIVATED',
+          body: text,
+          authorId: actor.id,
+        },
+      });
+      await this.audit.log(
+        {
+          actorId: actor.id,
+          action: suspend ? 'beneficiary.suspend' : 'beneficiary.reactivate',
+          entityType: 'Beneficiary',
+          entityId: id,
+          before: { publicCode: before.publicCode, isSuspended: before.isSuspended },
+          after: { publicCode: before.publicCode, isSuspended: suspend, reason: text },
+        },
+        tx,
+      );
+      return beneficiary;
+    });
+  }
+
+  /** ADMIN records a note or a violation in the beneficiary's internal log (never public). */
+  async addNote(id: string, dto: CreateBeneficiaryNoteDto, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['ADMIN']);
+    const exists = await this.prisma.beneficiary.count({ where: { id } });
+    if (!exists) throw new NotFoundException('beneficiary_not_found');
+    return this.prisma.$transaction(async (tx) => {
+      const note = await tx.beneficiaryNote.create({
+        data: { beneficiaryId: id, kind: dto.kind, body: dto.body.trim(), authorId: actor.id },
+        select: {
+          id: true,
+          kind: true,
+          body: true,
+          createdAt: true,
+          author: { select: { fullName: true } },
+        },
+      });
+      await this.audit.log(
+        {
+          actorId: actor.id,
+          action: 'beneficiary.note',
+          entityType: 'Beneficiary',
+          entityId: id,
+          after: { noteId: note.id, kind: note.kind },
+        },
+        tx,
+      );
+      return note;
     });
   }
 

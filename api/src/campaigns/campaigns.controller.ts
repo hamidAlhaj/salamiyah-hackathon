@@ -17,6 +17,7 @@ import {
   CreateCampaignUpdateDto,
   LangQueryDto,
   ListCampaignsQueryDto,
+  UpdateCampaignDto,
   UpdateCampaignStatusDto,
 } from './campaigns.dto';
 import { CampaignsService } from './campaigns.service';
@@ -79,6 +80,28 @@ export class CampaignsController {
   })
   create(@Body() dto: CreateCampaignDto, @CurrentUser() user: AuthenticatedUser) {
     return this.campaigns.create(dto, user);
+  }
+
+  @Get('staff/:id')
+  @ApiOperation({
+    summary: 'One campaign for its management page with all updates (ADMIN, CASE_OFFICER)',
+  })
+  @ApiNotFoundResponse({ description: 'campaign_not_found' })
+  getForStaff(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.campaigns.getForStaff(id, user);
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary:
+      'Edit titles, anonymised summaries, cover illustration, area and priority (ADMIN, CASE_OFFICER)',
+  })
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCampaignDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.campaigns.update(id, dto, user);
   }
 
   @Patch(':id/status')

@@ -8,7 +8,12 @@ import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { StorageService } from '../storage/storage.service';
-import type { ListCasesQueryDto, PublishCaseDto, ReviewCaseDto } from './cases.dto';
+import type {
+  CreateCaseDto,
+  ListCasesQueryDto,
+  PublishCaseDto,
+  ReviewCaseDto,
+} from './cases.dto';
 import { CasesService } from './cases.service';
 
 const user = (role: Role): AuthenticatedUser => ({
@@ -76,4 +81,37 @@ describe('CasesService authorization', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     },
   );
+});
+
+describe('CasesService.create: silent refusal for a suspended beneficiary (FR-25)', () => {
+  it('answers with the generic code, stores no file and leaves only an audit row for ADMIN', async () => {
+    const findFirst = jest.fn().mockResolvedValue({ id: 'b-1' });
+    const log = jest.fn();
+    const service = new CasesService(
+      { beneficiary: { findFirst } } as unknown as PrismaService,
+      untouchable<StorageService>('storage'),
+      { log } as unknown as AuditService,
+      { getOrThrow: () => 'test-hmac-key' } as unknown as ConfigService,
+      new RoleAccessService(),
+      untouchable<NotificationsService>('notifications'),
+    );
+    const dto = {
+      beneficiaryName: 'س. ن.',
+      beneficiaryPhone: '+963933000000',
+      nationalId: '04010100205',
+      category: 'SURGERY',
+      description: 'كسر يحتاج عملية.',
+      requestedAmount: '6000000',
+    } as unknown as CreateCaseDto;
+    const attempt = service.create(dto, undefined, user(Role.STAFF));
+    await expect(attempt).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(attempt).rejects.toThrow('cannot_submit_request');
+    expect(findFirst.mock.calls[0][0].where).toMatchObject({ isSuspended: true });
+    expect(log).toHaveBeenCalledWith({
+      actorId: user(Role.STAFF).id,
+      action: 'case.submit_refused',
+      entityType: 'Beneficiary',
+      entityId: 'b-1',
+    });
+  });
 });

@@ -13,7 +13,9 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import {
+  BeneficiaryReasonDto,
   CreateBeneficiaryDto,
+  CreateBeneficiaryNoteDto,
   LinkBeneficiaryDto,
   ListBeneficiariesQueryDto,
   UpdateBeneficiaryDto,
@@ -62,6 +64,41 @@ export class BeneficiariesController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.beneficiaries.update(id, dto, user);
+  }
+
+  @Post('beneficiaries/:id/suspend')
+  @ApiOperation({
+    summary:
+      'Administrative suspension with a reason (ADMIN, audited): intake refuses silently, nothing public changes',
+  })
+  suspend(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: BeneficiaryReasonDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.beneficiaries.suspend(id, dto, user);
+  }
+
+  @Post('beneficiaries/:id/reactivate')
+  @ApiOperation({ summary: 'Lift the suspension with a reason (ADMIN, audited)' })
+  reactivate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: BeneficiaryReasonDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.beneficiaries.reactivate(id, dto, user);
+  }
+
+  @Post('beneficiaries/:id/notes')
+  @ApiOperation({
+    summary: 'Add a note or a violation to the internal log (ADMIN, never public)',
+  })
+  addNote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateBeneficiaryNoteDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.beneficiaries.addNote(id, dto, user);
   }
 
   @Patch('campaigns/:id/beneficiaries/:beneficiaryId')

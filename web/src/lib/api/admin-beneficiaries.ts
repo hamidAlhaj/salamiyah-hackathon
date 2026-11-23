@@ -52,3 +52,30 @@ export function updateBeneficiaryLink(
     body: input,
   });
 }
+
+/** ADMIN: administrative suspension (intake refuses silently) or reactivation, with a reason. */
+export function setBeneficiarySuspension(
+  token: string,
+  id: string,
+  suspend: boolean,
+  reason: string,
+) {
+  return apiFetch<StaffBeneficiary>(`/beneficiaries/${id}/${suspend ? 'suspend' : 'reactivate'}`, {
+    method: 'POST',
+    token,
+    body: { reason },
+  });
+}
+
+/** ADMIN: a note or a recorded violation in the internal log. */
+export function addBeneficiaryNote(
+  token: string,
+  id: string,
+  input: { kind: 'NOTE' | 'VIOLATION'; body: string },
+) {
+  return apiFetch<{ id: string }>(`/beneficiaries/${id}/notes`, {
+    method: 'POST',
+    token,
+    body: input,
+  });
+}

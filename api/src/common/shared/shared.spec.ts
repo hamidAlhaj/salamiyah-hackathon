@@ -24,6 +24,7 @@ describe('enum sync: src/common/shared matches the Prisma enums exactly', () => 
     ['PaymentMethodKind', Prisma.PaymentMethodKind, Shared.PaymentMethodKind],
     ['BeneficiaryKind', Prisma.BeneficiaryKind, Shared.BeneficiaryKind],
     ['PayeeType', Prisma.PayeeType, Shared.PayeeType],
+    ['BeneficiaryNoteKind', Prisma.BeneficiaryNoteKind, Shared.BeneficiaryNoteKind],
     ['MessageChannel', Prisma.MessageChannel, Shared.MessageChannel],
     ['OutboundStatus', Prisma.OutboundStatus, Shared.OutboundStatus],
   ];

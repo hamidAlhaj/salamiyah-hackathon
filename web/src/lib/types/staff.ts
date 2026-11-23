@@ -1,5 +1,6 @@
 import type {
   BeneficiaryKind,
+  BeneficiaryNoteKind,
   CampaignStatus,
   CaseCategory,
   CaseRoute,
@@ -56,7 +57,10 @@ export interface StaffBeneficiary {
   area: string | null;
   fullName: string;
   phone: string | null;
-  isSuspended: boolean;
+  /** ADMIN only: intake staff never receive the suspension state or the internal log. */
+  isSuspended?: boolean;
+  suspensionNote?: string | null;
+  notes?: BeneficiaryNoteRow[];
   createdAt: string;
   _count: { campaignLinks: number };
   /** Active campaign links only. */
@@ -65,6 +69,50 @@ export interface StaffBeneficiary {
     startedAt: string;
     campaign: { id: string; slug: string; titleAr: string; titleEn: string | null };
   }[];
+}
+
+/** One entry of a beneficiary's internal log (ADMIN only, never public). */
+export interface BeneficiaryNoteRow {
+  id: string;
+  kind: BeneficiaryNoteKind;
+  body: string;
+  createdAt: string;
+  author: { fullName: string };
+}
+
+/** One campaign on its management page (ADMIN). */
+export interface StaffCampaignDetail {
+  id: string;
+  slug: string;
+  caseId: string | null;
+  titleAr: string;
+  titleEn: string | null;
+  summaryAr: string;
+  summaryEn: string | null;
+  coverKey: string | null;
+  area: string | null;
+  priority: Priority;
+  status: CampaignStatus;
+  acceptsPledges: boolean;
+  isOngoing: boolean;
+  currency: Currency;
+  targetAmount: string;
+  verifiedAmount: string;
+  spentAmount: string;
+  publishedAt: string | null;
+  category: { id: string; code: string; nameAr: string; nameEn: string; icon: string };
+  hospital: { id: string; nameAr: string } | null;
+  case: { id: string; trackingNo: string; status: CaseStatus } | null;
+  updates: {
+    id: string;
+    bodyAr: string;
+    bodyEn: string | null;
+    createdAt: string;
+    author: { fullName: string };
+  }[];
+  _count: { beneficiaries: number };
+  /** Pledges still on their way to verification. */
+  openPledges: number;
 }
 
 /** ADMIN account list (never a password hash). */

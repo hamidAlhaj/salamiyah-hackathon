@@ -197,6 +197,17 @@ export const PayeeType = {
 export type PayeeType = (typeof PayeeType)[keyof typeof PayeeType];
 export const PAYEE_TYPES = values(PayeeType);
 
+/** Admin-only history entries of a beneficiary record (violations log); never public. */
+export const BeneficiaryNoteKind = {
+  NOTE: 'NOTE',
+  VIOLATION: 'VIOLATION',
+  SUSPENDED: 'SUSPENDED',
+  REACTIVATED: 'REACTIVATED',
+} as const;
+export type BeneficiaryNoteKind =
+  (typeof BeneficiaryNoteKind)[keyof typeof BeneficiaryNoteKind];
+export const BENEFICIARY_NOTE_KINDS = values(BeneficiaryNoteKind);
+
 export const MessageChannel = { WHATSAPP: 'WHATSAPP' } as const;
 export type MessageChannel = (typeof MessageChannel)[keyof typeof MessageChannel];
 export const MESSAGE_CHANNELS = values(MessageChannel);

@@ -711,7 +711,15 @@
     "hospital_not_found": "Hospital not found.",
     "payment_method_not_found": "Payment method not found.",
     "campaign_not_found": "Campaign not found.",
-    "campaign_account_not_found": "This campaign has no own account for this method."
+    "campaign_account_not_found": "This campaign has no own account for this method.",
+    "campaign_closed": "The campaign is closed and cannot be changed.",
+    "campaign_completed": "The campaign is completed and does not reopen.",
+    "campaign_already_published": "The campaign was published before, so it cannot become a draft again.",
+    "campaign_has_money": "The campaign holds verified money or donations awaiting verification, so it cannot be closed. Mark it completed instead.",
+    "case_review_pending": "The medical case is under review: donations resume when the case officer publishes it again.",
+    "campaign_unchanged": "Nothing changed: edit a field first.",
+    "beneficiary_already_suspended": "The record is already on administrative hold.",
+    "beneficiary_not_suspended": "The record is not on hold."
   },
   "adminCategories": {
     "title": "Campaign categories",
@@ -803,7 +811,68 @@
       "CLOSED": "Closed"
     },
     "paused": "Donations paused",
-    "openPublic": "Public page"
+    "openPublic": "Public page",
+    "manageLink": "Manage",
+    "tabsLabel": "Filter campaigns by status",
+    "tabs": {
+      "all": "All",
+      "ACTIVE": "Published",
+      "paused": "Donations paused",
+      "DRAFT": "Drafts",
+      "FUNDED": "Target reached",
+      "COMPLETED": "Completed",
+      "CLOSED": "Closed"
+    },
+    "emptyTab": "No campaigns with this status.",
+    "manage": {
+      "back": "All campaigns",
+      "lifecycle": "Campaign stage",
+      "lifecycleLabel": "Campaign stages",
+      "closedStep": "Closed (off the public pages)",
+      "donationsOpen": "Donations open",
+      "donationsPaused": "Donations paused",
+      "actions": "Actions",
+      "publish": "Publish campaign",
+      "publishHint": "It goes public now and alerts opted-in donors if it is urgent.",
+      "pause": "Pause donations",
+      "pauseHint": "The campaign stays visible; new donations are refused on the web and in the app. Earlier donations still go on to verification.",
+      "resume": "Resume donations",
+      "resumeHint": "The Donate button returns to the campaign page and the app.",
+      "complete": "Mark completed",
+      "completeHint": "Donations stop for good; the campaign and its accounts stay public.",
+      "close": "Close campaign",
+      "closeHint": "Closing hides the campaign from every public page and total, so it is only allowed for a campaign with no verified money and no donations awaiting verification.",
+      "closeConfirm": "Yes, close the campaign for good",
+      "closeBlocked": "This campaign cannot be closed: it holds verified money or donations awaiting verification. Mark it completed when it ends.",
+      "reviewPending": "The medical case went back to review, so donations stay paused until the case officer publishes it again.",
+      "finalNote": "No further actions: this stage is final.",
+      "openPledges": "{count, plural, =0 {No donations awaiting verification} one {1 donation awaiting verification} other {# donations awaiting verification}}",
+      "verified": "Verified",
+      "spent": "Spent",
+      "target": "Target",
+      "caseFile": "Case file {trackingNo}",
+      "edit": "Public presentation",
+      "editHint": "Title, summary and cover as donors see them. No names, no photos of people.",
+      "clearHint": "Leave empty to remove it.",
+      "save": "Save changes",
+      "saved": "Campaign changes saved.",
+      "updates": "Campaign updates",
+      "updatesHint": "Shown on the public campaign page, newest first.",
+      "updateAr": "Update in Arabic",
+      "updateEn": "Update in English",
+      "postUpdate": "Post update",
+      "updatePosted": "Update posted on the campaign page.",
+      "noUpdates": "No updates yet. Tell donors what has been achieved.",
+      "by": "by {name}",
+      "readOnly": "The campaign is closed: read-only.",
+      "done": {
+        "publish": "Campaign published.",
+        "pause": "Donations paused for this campaign.",
+        "resume": "Donations resumed for this campaign.",
+        "complete": "Campaign marked completed.",
+        "close": "Campaign closed."
+      }
+    }
   },
   "myDonations": {
     "title": "My donations",
@@ -1189,7 +1258,31 @@
       "fullName": "Name (private)",
       "area": "Neighbourhood (public)",
       "phone": "Phone (private)",
-      "choosePlaceholder": "Choose a campaign"
+      "choosePlaceholder": "Choose a campaign",
+      "hold": {
+        "title": "Administrative hold",
+        "activeIntro": "A hold blocks new intake requests for this national ID and new campaign links. Intake staff only see a generic message, and nothing changes on public pages.",
+        "suspendedSince": "On administrative hold. Reason: {reason}",
+        "reason": "Reason (internal, admin only)",
+        "suspend": "Place on hold",
+        "reactivate": "Reactivate",
+        "suspended": "Record placed on administrative hold.",
+        "reactivated": "Record reactivated."
+      },
+      "log": {
+        "title": "Internal log",
+        "empty": "No entries yet.",
+        "kind": "Type",
+        "body": "Entry",
+        "add": "Add to log",
+        "added": "Entry added to the log.",
+        "kinds": {
+          "NOTE": "Note",
+          "VIOLATION": "Violation",
+          "SUSPENDED": "Administrative hold",
+          "REACTIVATED": "Reactivated"
+        }
+      }
     }
   }
 }

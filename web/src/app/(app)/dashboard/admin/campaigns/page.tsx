@@ -4,8 +4,10 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { CategoryIcon } from '@/components/campaigns/CategoryIcon';
 import { NotForYourRole, WorkspacePage } from '@/components/layout/WorkspacePage';
 import { buttonClasses } from '@/components/ui/Button';
+import { Tabs } from '@/components/ui/Tabs';
 import { listStaffCampaigns } from '@/lib/api/admin-campaigns';
 import { requireWorkspace } from '@/lib/auth';
+import type { StaffCampaignRow } from '@/lib/types/staff';
 import { formatMoney, formatNumber } from '@/shared';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,12 +15,29 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title') };
 }
 
-export default async function CampaignsAdminPage() {
+/** Status tabs. "paused" = published but not taking donations right now. */
+const TABS = ['all', 'ACTIVE', 'paused', 'DRAFT', 'FUNDED', 'COMPLETED', 'CLOSED'] as const;
+type Tab = (typeof TABS)[number];
+
+function inTab(c: StaffCampaignRow, tab: Tab): boolean {
+  if (tab === 'all') return true;
+  if (tab === 'paused') return c.status === 'ACTIVE' && !c.acceptsPledges;
+  return c.status === tab;
+}
+
+export default async function CampaignsAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
   const { token, allowed } = await requireWorkspace('campaigns');
   if (!allowed) return <NotForYourRole />;
   const t = await getTranslations('adminCampaigns');
   const locale = (await getLocale()) === 'en' ? 'en' : 'ar';
-  const rows = await listStaffCampaigns(token);
+  const requested = (await searchParams).status;
+  const tab: Tab = TABS.find((x) => x === requested) ?? 'all';
+  const all = await listStaffCampaigns(token);
+  const rows = all.filter((c) => inTab(c, tab));
 
   return (
     <WorkspacePage
@@ -31,8 +50,18 @@ export default async function CampaignsAdminPage() {
         </Link>
       }
     >
+      <Tabs
+        label={t('tabsLabel')}
+        className="mb-4"
+        items={TABS.map((x) => ({
+          href:
+            x === 'all' ? '/dashboard/admin/campaigns' : `/dashboard/admin/campaigns?status=${x}`,
+          label: `${t(`tabs.${x}`)} (${formatNumber(all.filter((c) => inTab(c, x)).length, locale)})`,
+          current: x === tab,
+        }))}
+      />
       <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-card">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-surface-muted text-start text-xs text-muted">
             <tr>
               <th className="p-3 text-start font-medium">{t('table.campaign')}</th>
@@ -40,13 +69,26 @@ export default async function CampaignsAdminPage() {
               <th className="p-3 text-start font-medium">{t('table.status')}</th>
               <th className="p-3 text-start font-medium">{t('table.progress')}</th>
               <th className="p-3 text-start font-medium">{t('table.beneficiaries')}</th>
+              <th className="p-3">
+                <span className="sr-only">{t('manageLink')}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-muted">
+                  {t('emptyTab')}
+                </td>
+              </tr>
+            )}
             {rows.map((c) => (
               <tr key={c.id} className="border-t border-border" data-slug={c.slug}>
                 <td className="p-3">
-                  <Link href={`/campaigns/${c.slug}`} className="font-semibold hover:text-accent">
+                  <Link
+                    href={`/dashboard/admin/campaigns/${c.id}`}
+                    className="font-semibold hover:text-accent"
+                  >
                     {c.titleAr}
                   </Link>
                 </td>
@@ -72,6 +114,15 @@ export default async function CampaignsAdminPage() {
                   </span>
                 </td>
                 <td className="p-3 tabular-nums">{formatNumber(c._count.beneficiaries, locale)}</td>
+                <td className="p-3 text-end">
+                  <Link
+                    href={`/dashboard/admin/campaigns/${c.id}`}
+                    className={buttonClasses('secondary', 'sm')}
+                    data-testid="manage-campaign"
+                  >
+                    {t('manageLink')}
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>

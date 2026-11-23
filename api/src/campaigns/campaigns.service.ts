@@ -1,5 +1,11 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma, type CampaignStatus, type CaseStatus } from '@prisma/client';
 import type {
   CampaignLedger,
   Paginated,
@@ -19,6 +25,7 @@ import type {
   CreateCampaignDto,
   CreateCampaignUpdateDto,
   ListCampaignsQueryDto,
+  UpdateCampaignDto,
   UpdateCampaignStatusDto,
 } from './campaigns.dto';
 
@@ -39,6 +46,55 @@ type CampaignWithRefs = Prisma.CampaignGetPayload<{ include: typeof publicInclud
 
 /** Campaign statuses visible to the public. */
 export const PUBLIC_STATUSES = ['ACTIVE', 'FUNDED', 'COMPLETED'] as const;
+
+/** Pledges still on their way to verification (money may yet arrive). */
+const OPEN_PLEDGE_STATUSES = ['PLEDGED', 'RECEIPT_UPLOADED', 'COLLECTED'] as const;
+
+/** The fields the management page may edit. */
+const EDITABLE_SELECT = {
+  titleAr: true,
+  titleEn: true,
+  summaryAr: true,
+  summaryEn: true,
+  coverKey: true,
+  area: true,
+  priority: true,
+} satisfies Prisma.CampaignSelect;
+
+/**
+ * Lifecycle rules, as stable error codes (null = allowed):
+ * - a CLOSED campaign is final, and a COMPLETED one can only be closed (it does not reopen);
+ * - a published campaign never goes back to DRAFT;
+ * - CLOSED hides the campaign from every public page and total, so only a campaign without verified
+ *   money and without pledges still on their way can be closed (otherwise: mark it completed);
+ * - pledges of a medical campaign whose case went back to review resume only when the case officer
+ *   publishes the case again.
+ */
+export function lifecycleProblem(input: {
+  from: CampaignStatus;
+  to: CampaignStatus;
+  publishedAt: Date | null;
+  resume: boolean;
+  caseStatus: CaseStatus | null;
+  verifiedAmount: Prisma.Decimal;
+  openPledges: number;
+}): string | null {
+  if (input.from === 'CLOSED') return 'campaign_closed';
+  if (input.from === 'COMPLETED' && input.to !== 'COMPLETED' && input.to !== 'CLOSED') {
+    return 'campaign_completed';
+  }
+  if (input.to === 'DRAFT' && input.publishedAt) return 'campaign_already_published';
+  if (
+    input.to === 'CLOSED' &&
+    (input.verifiedAmount.greaterThan(0) || input.openPledges > 0)
+  ) {
+    return 'campaign_has_money';
+  }
+  if (input.resume && input.caseStatus !== null && input.caseStatus !== 'PUBLISHED') {
+    return 'case_review_pending';
+  }
+  return null;
+}
 
 @Injectable()
 export class CampaignsService {
@@ -211,27 +267,55 @@ export class CampaignsService {
     return created;
   }
 
+  /**
+   * Campaign lifecycle (ADMIN; CASE_OFFICER for campaigns from the medical case pipeline): publish a
+   * draft, pause / resume new pledges, mark it completed («تم الإنجاز») or close it. Rules in
+   * `lifecycleProblem`; pledges already made keep their path to verification.
+   */
   async updateStatus(id: string, dto: UpdateCampaignStatusDto, actor: AuthenticatedUser) {
     this.access.requireRole(actor, ['ADMIN', 'CASE_OFFICER']);
+    if (dto.status === undefined && dto.acceptsPledges === undefined) {
+      throw new BadRequestException('nothing_to_change');
+    }
     const actorId = actor.id;
     let firstPublish = false;
     const updated = await this.prisma.$transaction(async (tx) => {
-      const before = await tx.campaign.findUnique({ where: { id } });
+      const before = await tx.campaign.findUnique({
+        where: { id },
+        include: { case: { select: { status: true } } },
+      });
       if (!before) throw new NotFoundException('campaign_not_found');
+      assertCanManage(before, actor);
+      const status = dto.status ?? before.status;
+      const openPledges =
+        status === 'CLOSED'
+          ? await tx.pledge.count({
+              where: { campaignId: id, status: { in: [...OPEN_PLEDGE_STATUSES] } },
+            })
+          : 0;
+      const problem = lifecycleProblem({
+        from: before.status,
+        to: status,
+        publishedAt: before.publishedAt,
+        resume: dto.acceptsPledges === true,
+        caseStatus: before.case?.status ?? null,
+        verifiedAmount: before.verifiedAmount,
+        openPledges,
+      });
+      if (problem) throw new ConflictException(problem);
+      const ends = status === 'COMPLETED' || status === 'CLOSED';
       const after = await tx.campaign.update({
         where: { id },
         data: {
-          status: dto.status,
+          status,
           ...(dto.acceptsPledges === undefined ? {} : { acceptsPledges: dto.acceptsPledges }),
-          // «تم الإنجاز» set by the council (e.g. an ongoing programme): no more pledges.
-          ...(dto.status === 'COMPLETED' ? { acceptsPledges: false } : {}),
-          ...(dto.status === 'ACTIVE' && !before.publishedAt
-            ? { publishedAt: new Date() }
-            : {}),
+          // «تم الإنجاز» or closed by the council: no more pledges.
+          ...(ends ? { acceptsPledges: false } : {}),
+          ...(status === 'ACTIVE' && !before.publishedAt ? { publishedAt: new Date() } : {}),
         },
       });
-      firstPublish = dto.status === 'ACTIVE' && !before.publishedAt;
-      if (dto.status === 'COMPLETED' && before.caseId) {
+      firstPublish = status === 'ACTIVE' && !before.publishedAt;
+      if (ends && before.caseId) {
         await tx.case.update({ where: { id: before.caseId }, data: { status: 'CLOSED' } });
       }
       await this.audit.log(
@@ -252,14 +336,126 @@ export class CampaignsService {
     return updated;
   }
 
+  /**
+   * Edits the public presentation: titles, anonymised summaries, cover illustration, area, priority.
+   * Money, category, hospital and status never change here. A closed campaign is read-only.
+   */
+  async update(id: string, dto: UpdateCampaignDto, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['ADMIN', 'CASE_OFFICER']);
+    const before = await this.prisma.campaign.findUnique({
+      where: { id },
+      select: { ...EDITABLE_SELECT, caseId: true, status: true },
+    });
+    if (!before) throw new NotFoundException('campaign_not_found');
+    assertCanManage(before, actor);
+    if (before.status === 'CLOSED') throw new ConflictException('campaign_closed');
+    const data = {
+      titleAr: dto.titleAr?.trim(),
+      titleEn: clearable(dto.titleEn),
+      summaryAr: dto.summaryAr?.trim(),
+      summaryEn: clearable(dto.summaryEn),
+      coverKey: dto.coverKey,
+      area: clearable(dto.area),
+      priority: dto.priority,
+    };
+    const changed = (Object.keys(data) as (keyof typeof data)[]).filter(
+      (k) => data[k] !== undefined && data[k] !== before[k],
+    );
+    if (changed.length === 0) throw new BadRequestException('campaign_unchanged');
+    return this.prisma.$transaction(async (tx) => {
+      const after = await tx.campaign.update({
+        where: { id },
+        data,
+        select: { id: true, slug: true, ...EDITABLE_SELECT },
+      });
+      // Public texts only (the summaries are anonymised): safe to keep in the audit row.
+      await this.audit.log(
+        {
+          actorId: actor.id,
+          action: 'campaign.update',
+          entityType: 'Campaign',
+          entityId: id,
+          before: Object.fromEntries(changed.map((k) => [k, before[k]])),
+          after: Object.fromEntries(changed.map((k) => [k, after[k]])),
+        },
+        tx,
+      );
+      return after;
+    });
+  }
+
+  /** Posts a public update on the campaign page (e.g. "the roof is done"). Audited. */
   async addUpdate(campaignId: string, dto: CreateCampaignUpdateDto, actor: AuthenticatedUser) {
     this.access.requireRole(actor, ['STAFF', 'CASE_OFFICER', 'ADMIN']);
-    const authorId = actor.id;
-    const exists = await this.prisma.campaign.count({ where: { id: campaignId } });
-    if (!exists) throw new NotFoundException('campaign_not_found');
-    return this.prisma.campaignUpdate.create({
-      data: { campaignId, authorId, bodyAr: dto.bodyAr, bodyEn: dto.bodyEn },
+    const campaign = await this.prisma.campaign.findUnique({
+      where: { id: campaignId },
+      select: { status: true },
     });
+    if (!campaign) throw new NotFoundException('campaign_not_found');
+    if (campaign.status === 'CLOSED') throw new ConflictException('campaign_closed');
+    return this.prisma.$transaction(async (tx) => {
+      const update = await tx.campaignUpdate.create({
+        data: {
+          campaignId,
+          authorId: actor.id,
+          bodyAr: dto.bodyAr.trim(),
+          bodyEn: dto.bodyEn?.trim() || null,
+        },
+      });
+      await this.audit.log(
+        {
+          actorId: actor.id,
+          action: 'campaign.post_update',
+          entityType: 'Campaign',
+          entityId: campaignId,
+          after: { updateId: update.id },
+        },
+        tx,
+      );
+      return update;
+    });
+  }
+
+  /** One campaign for its management page (ADMIN; CASE_OFFICER for medical-case campaigns). */
+  async getForStaff(id: string, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['ADMIN', 'CASE_OFFICER']);
+    const row = await this.prisma.campaign.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        slug: true,
+        caseId: true,
+        ...EDITABLE_SELECT,
+        status: true,
+        acceptsPledges: true,
+        isOngoing: true,
+        currency: true,
+        targetAmount: true,
+        verifiedAmount: true,
+        spentAmount: true,
+        publishedAt: true,
+        category: { select: { id: true, code: true, nameAr: true, nameEn: true, icon: true } },
+        hospital: { select: { id: true, nameAr: true } },
+        case: { select: { id: true, trackingNo: true, status: true } },
+        updates: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            bodyAr: true,
+            bodyEn: true,
+            createdAt: true,
+            author: { select: { fullName: true } },
+          },
+        },
+        ...activeBeneficiariesCount,
+      },
+    });
+    if (!row) throw new NotFoundException('campaign_not_found');
+    assertCanManage(row, actor);
+    const openPledges = await this.prisma.pledge.count({
+      where: { campaignId: id, status: { in: [...OPEN_PLEDGE_STATUSES] } },
+    });
+    return { ...row, openPledges };
   }
 
   /** Staff dashboards: every campaign with its status and category. */
@@ -290,6 +486,18 @@ export class CampaignsService {
       },
     });
   }
+}
+
+/** CASE_OFFICER manages only campaigns that come from the medical case pipeline. */
+function assertCanManage(campaign: { caseId: string | null }, actor: AuthenticatedUser): void {
+  if (actor.role === 'CASE_OFFICER' && !campaign.caseId) {
+    throw new ForbiddenException('role_not_allowed');
+  }
+}
+
+/** An optional text field: undefined = unchanged, '' = cleared (null). */
+function clearable(value: string | undefined): string | null | undefined {
+  return value === undefined ? undefined : value.trim() || null;
 }
 
 /**

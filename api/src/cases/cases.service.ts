@@ -56,12 +56,27 @@ export class CasesService {
       dto.nationalId,
       this.config.getOrThrow<string>('NATIONAL_ID_HMAC_KEY'),
     );
+    // FR-25: silent administrative suspension. The intake gets the same generic refusal as any other
+    // problem (no detail, no hint of the suspension); only ADMIN sees the refused attempt in the audit log.
+    const suspended = await this.prisma.beneficiary.findFirst({
+      where: { nationalIdHash: hash, isSuspended: true },
+      select: { id: true },
+    });
+    if (suspended) {
+      await this.audit.log({
+        actorId: actor.id,
+        action: 'case.submit_refused',
+        entityType: 'Beneficiary',
+        entityId: suspended.id,
+      });
+      throw new ForbiddenException('cannot_submit_request');
+    }
     const stored = await this.storage.save(file, 'cases');
 
     return this.prisma.$transaction(async (tx) => {
       let beneficiary = await tx.beneficiary.findFirst({ where: { nationalIdHash: hash } });
       if (beneficiary?.isSuspended) {
-        // FR-25: تعليق إداري صامت — رسالة عامة بلا تفاصيل
+        // Suspended between the check above and this transaction: same generic refusal.
         throw new ForbiddenException('cannot_submit_request');
       }
       const duplicates = beneficiary

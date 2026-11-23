@@ -129,15 +129,66 @@ export class CreateCampaignDto {
   status?: 'ACTIVE' | 'DRAFT';
 }
 
+/** A status change, a pause/resume of new pledges, or both (at least one is required). */
 export class UpdateCampaignStatusDto {
-  @ApiProperty({ enum: CAMPAIGN_STATUSES })
+  @ApiPropertyOptional({ enum: CAMPAIGN_STATUSES })
+  @IsOptional()
   @IsIn(CAMPAIGN_STATUSES)
-  status: CampaignStatus;
+  status?: CampaignStatus;
 
   @ApiPropertyOptional({ description: 'إيقاف/استئناف قبول التعهدات' })
   @IsOptional()
   @IsBoolean()
   acceptsPledges?: boolean;
+}
+
+/**
+ * Edits the public presentation of a campaign. Money, category, hospital and status never change
+ * here. An empty string clears an optional English text or the area.
+ */
+export class UpdateCampaignDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(5, 160)
+  titleAr?: string;
+
+  @ApiPropertyOptional({ description: 'An empty string clears it' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 160)
+  titleEn?: string;
+
+  @ApiPropertyOptional({ description: 'Anonymised summary (no names)' })
+  @IsOptional()
+  @IsString()
+  @Length(10, 4000)
+  summaryAr?: string;
+
+  @ApiPropertyOptional({ description: 'An empty string clears it' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 4000)
+  summaryEn?: string;
+
+  @ApiPropertyOptional({
+    enum: COVER_KEYS,
+    description: 'Bundled illustration (never a photo)',
+  })
+  @IsOptional()
+  @IsIn(COVER_KEYS)
+  coverKey?: CoverKey;
+
+  @ApiPropertyOptional({ description: 'A neighbourhood at most; an empty string clears it' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 60)
+  area?: string;
+
+  @ApiPropertyOptional({ enum: PRIORITIES })
+  @IsOptional()
+  @IsIn(PRIORITIES)
+  priority?: Priority;
 }
 
 export class CreateCampaignUpdateDto {

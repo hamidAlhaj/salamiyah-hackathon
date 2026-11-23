@@ -51,6 +51,7 @@ const REVALIDATE_PATH_PATTERNS: RegExp[] = [
   /^\/dashboard\/admin\/categories$/,
   /^\/dashboard\/admin\/campaigns$/,
   /^\/dashboard\/admin\/campaigns\/new$/,
+  new RegExp(`^/dashboard/admin/campaigns/${UUID}$`),
   /^\/dashboard\/admin\/users$/,
   /^\/dashboard\/admin\/collection-points$/,
   /^\/dashboard\/admin\/hospitals$/,

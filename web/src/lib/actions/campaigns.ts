@@ -76,3 +76,94 @@ export async function createCampaignAction(
     ? { ok: true, slug: created.slug, error: t('createdPartial', { detail: problems.join(' ') }) }
     : { ok: true, slug: created.slug, message: t('created', { title: titleAr }) };
 }
+
+function revalidateCampaign(id: string, slug: string) {
+  safeRevalidate(`/dashboard/admin/campaigns/${id}`);
+  safeRevalidate('/dashboard/admin/campaigns');
+  safeRevalidate(`/campaigns/${slug}`);
+  safeRevalidate(`/campaigns/${slug}/donate`);
+  safeRevalidate('/');
+}
+
+/** ADMIN edits titles, anonymised summaries, cover, area and priority. Empty English texts clear. */
+export async function updateCampaignAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const t = await getTranslations('adminCampaigns');
+  const id = formData.get('id');
+  assertUuid(id, 'id');
+  const slug = readString(formData, 'slug', 60);
+  const token = await requireSessionToken();
+  try {
+    await campaignsApi.updateCampaign(token, id, {
+      titleAr: readString(formData, 'titleAr', 160),
+      titleEn: readString(formData, 'titleEn', 160),
+      summaryAr: readString(formData, 'summaryAr', 4000),
+      summaryEn: readString(formData, 'summaryEn', 4000),
+      coverKey: readOptional(formData, 'coverKey', 30),
+      area: readString(formData, 'area', 60),
+      priority: readOptional(formData, 'priority', 20),
+    });
+  } catch (err) {
+    return toErrorState(err);
+  }
+  revalidateCampaign(id, slug);
+  return { ok: true, message: t('manage.saved') };
+}
+
+/** Lifecycle buttons: each maps to one status / pledge change; the API enforces the rules. */
+const LIFECYCLE = {
+  publish: { status: 'ACTIVE' },
+  pause: { acceptsPledges: false },
+  resume: { acceptsPledges: true },
+  complete: { status: 'COMPLETED' },
+  close: { status: 'CLOSED' },
+} as const;
+type LifecycleOp = keyof typeof LIFECYCLE;
+
+function isLifecycleOp(value: string): value is LifecycleOp {
+  return Object.prototype.hasOwnProperty.call(LIFECYCLE, value);
+}
+
+export async function campaignLifecycleAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const t = await getTranslations('adminCampaigns');
+  const id = formData.get('id');
+  assertUuid(id, 'id');
+  const op = readString(formData, 'op', 20);
+  if (!isLifecycleOp(op)) throw new Error('Invalid op');
+  const slug = readString(formData, 'slug', 60);
+  const token = await requireSessionToken();
+  try {
+    await campaignsApi.setCampaignLifecycle(token, id, LIFECYCLE[op]);
+  } catch (err) {
+    return toErrorState(err);
+  }
+  revalidateCampaign(id, slug);
+  return { ok: true, message: t(`manage.done.${op}`) };
+}
+
+/** Posts a public update on the campaign page. */
+export async function postCampaignUpdateAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const t = await getTranslations('adminCampaigns');
+  const id = formData.get('id');
+  assertUuid(id, 'id');
+  const slug = readString(formData, 'slug', 60);
+  const token = await requireSessionToken();
+  try {
+    await campaignsApi.postCampaignUpdate(token, id, {
+      bodyAr: readString(formData, 'bodyAr', 2000),
+      bodyEn: readOptional(formData, 'bodyEn', 2000),
+    });
+  } catch (err) {
+    return toErrorState(err);
+  }
+  revalidateCampaign(id, slug);
+  return { ok: true, message: t('manage.updatePosted') };
+}

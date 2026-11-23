@@ -1,15 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
 import { NotForYourRole, WorkspacePage } from '@/components/layout/WorkspacePage';
 import { buttonClasses } from '@/components/ui/Button';
 import { controlClass } from '@/components/ui/Field';
 import { searchBeneficiaries } from '@/lib/api/admin-beneficiaries';
 import { listStaffCampaigns } from '@/lib/api/admin-campaigns';
 import { requireWorkspace } from '@/lib/auth';
-import { formatMoney } from '@/shared';
+import { DATE_TIME_SHORT } from '@/lib/format';
+import { formatMoney, formatNumber } from '@/shared';
 import { NewBeneficiaryForm } from '../campaigns/new/NewBeneficiaryForm';
-import { EditBeneficiaryForm, LinkControls, LinkForm } from './BeneficiaryForms';
+import {
+  EditBeneficiaryForm,
+  LinkControls,
+  LinkForm,
+  NoteForm,
+  SuspensionForm,
+} from './BeneficiaryForms';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('adminSetup');
@@ -34,6 +41,7 @@ export default async function BeneficiariesPage({
   const tAdmin = await getTranslations('adminCampaigns');
   const tKinds = await getTranslations('campaign.kinds');
   const tCommon = await getTranslations('common');
+  const format = await getFormatter();
   const locale = (await getLocale()) === 'en' ? 'en' : 'ar';
   const q = ((await searchParams).q ?? '').trim().slice(0, 60);
   const isAdmin = user.role === 'ADMIN';
@@ -176,6 +184,62 @@ export default async function BeneficiariesPage({
                       </summary>
                       <div className="mt-3">
                         <EditBeneficiaryForm key={JSON.stringify(b)} beneficiary={b} />
+                      </div>
+                    </details>
+                    <details data-testid="beneficiary-hold" open={b.isSuspended || undefined}>
+                      <summary className="cursor-pointer text-sm font-medium text-accent">
+                        {t('beneficiaries.hold.title')}
+                      </summary>
+                      <div className="mt-3 space-y-3 rounded-xl bg-surface-muted p-4">
+                        <p className="text-sm text-muted">
+                          {b.isSuspended
+                            ? t('beneficiaries.hold.suspendedSince', {
+                                reason: b.suspensionNote ?? '',
+                              })
+                            : t('beneficiaries.hold.activeIntro')}
+                        </p>
+                        <SuspensionForm
+                          key={String(b.isSuspended)}
+                          beneficiaryId={b.id}
+                          isSuspended={Boolean(b.isSuspended)}
+                        />
+                      </div>
+                    </details>
+                    <details data-testid="beneficiary-log">
+                      <summary className="cursor-pointer text-sm font-medium text-accent">
+                        {t('beneficiaries.log.title')} ({formatNumber(b.notes?.length ?? 0, locale)}
+                        )
+                      </summary>
+                      <div className="mt-3 space-y-4">
+                        {(b.notes ?? []).length === 0 ? (
+                          <p className="text-sm text-muted">{t('beneficiaries.log.empty')}</p>
+                        ) : (
+                          <ol className="space-y-2">
+                            {(b.notes ?? []).map((n) => (
+                              <li
+                                key={n.id}
+                                data-kind={n.kind}
+                                className={`border-s-2 ps-3 text-sm ${
+                                  n.kind === 'VIOLATION' || n.kind === 'SUSPENDED'
+                                    ? 'border-danger'
+                                    : 'border-border'
+                                }`}
+                              >
+                                <p className="text-xs text-muted">
+                                  <span className="font-semibold text-ink">
+                                    {t(`beneficiaries.log.kinds.${n.kind}`)}
+                                  </span>{' '}
+                                  <time dateTime={n.createdAt}>
+                                    {format.dateTime(new Date(n.createdAt), DATE_TIME_SHORT)}
+                                  </time>{' '}
+                                  {n.author.fullName}
+                                </p>
+                                <p className="mt-0.5 whitespace-pre-line">{n.body}</p>
+                              </li>
+                            ))}
+                          </ol>
+                        )}
+                        <NoteForm beneficiaryId={b.id} />
                       </div>
                     </details>
                   </div>
