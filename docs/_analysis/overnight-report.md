@@ -322,3 +322,139 @@ push (`ssh -T git@github.com`, no key) added github.com to `~/.ssh/known_hosts`.
   on a physical phone. The donor code in the native app was checked in Expo web only.
 - GitHub uploads from this machine run at ~100 KB/s and pushes over ~2 MB time out (HTTP 408); large commits need
   splitting or a better connection.
+
+## P21 — Light mode redesign
+
+**Status:** merged to `main` (fast-forward) and pushed; branch `p21-light-mode` pushed.
+Commit `a88eabd` — `feat(web): light mode redesign with near-white page, pure-white cards, soft green-tinted shadow and fresh Salamiyah green accents`,
+then `2a6447d` … `3de0a1f` — `docs(docs): P21 light mode before/after screenshots (part 1–11 of 11)` (~14 MB of new
+blobs in ~1.4 MB commits because of the slow uplink; the 62 dark JPEGs that are byte-identical before and after are
+stored once by git).
+
+### What was built
+Direction (frontend-design skill, inside the brief): "clean morning white". A near-white page with a breath of mint
+instead of the grey limestone, pure-white cards lifted by a hairline border and a soft green-tinted shadow, and the
+fresher brand-600 green for accents and primary actions. The one bold element stays the deep green panel (home
+ledger, transparency hero, login, receipt header), now a slightly fresher `#0e4a33`.
+- **`web/src/app/globals.css`, `:root` only** (old → new): page `#eef2ef` → `#f6f9f7`; surface `#f9fbf9` → `#ffffff`;
+  surface-muted `#e4eae5` → `#eff5f1` (mint, not grey); border `#d3dcd5` → `#dee7e2`; track `#cbd5cd` → `#dce7e0`;
+  control `#7b8a80` → `#6e8278`; ink `#16231d` → `#0d1c15`; muted `#4f5f56` → `#45574e`; ring brand-600 → brand-500;
+  accent brand-700 → brand-600; accent-strong brand-800 → brand-700; accent-soft `#dceee5` → `#e1f4e9`; cleaner
+  danger/warning/info soft and line tints (danger text `#a3271c` → `#a8241a`; warning and info text unchanged); panel
+  `#0f3d2a` → `#0e4a33`, panel-ink and lattice nudged to match; card and lift shadows softer, tinted with the panel
+  green. Chart series values unchanged (they now pass 3:1 everywhere). The header comment records the measured ratios.
+- The `@media print` copy of the light tokens (receipt printing: "paper is always light") follows the new values.
+- **Light-only classes** (12 files): the primary button and the solid green chips/pills (`Button` primary, `Tabs`,
+  `CampaignFilters`, the card «تم الإنجاز» badge, the method tabs on the campaign page / finance / admin campaign, the
+  cases "all" chip, the category radio on «حملة جديدة», donate step numbers, the install-prompt tile, the notification
+  count) go from `bg-brand-700` to `bg-brand-600` (white text 5.85:1); primary hover brand-800 → brand-700. Each one
+  already had a `dark:` override, left as it was. Where the old non-dark class also drew the **dark** border
+  (`border-brand-700` on the cases chip and the category radio), `dark:border-brand-700` was added so dark keeps it.
+- **`.dark` block, every `dark:` class, `tailwind.config.ts`: untouched.** Mobile has its own palette copy in
+  `mobile/src/ui/theme.ts` (not shared with web) and was left as it is (out of scope).
+
+### Checks
+- api: lint ✓ · **353** tests ✓ · build ✓ (untouched)
+- web: lint ✓ · prettier ✓ · **47** tests ✓ · build ✓
+- mobile: `tsc --noEmit` ✓ · `expo lint` ✓ · `expo-doctor` 20/20 ✓ (untouched)
+- e2e: **37 passed, 1 skipped** (LAN login without `E2E_LAN_URL`) on a fresh `demo:reset`, against `next start` of
+  the redesigned build; 13.4 min wall time (the known ~12 min idle at the end). The p16–p19 screenshot folders were not
+  modified by the run.
+- **Screenshots:** `docs/screenshots/p21/before/` and `docs/screenshots/p21/after/`: 32 routes (guest 8, admin 17,
+  case officer, finance, staff, collector, donor 3) × 1280 and 375 px × light and dark = 128 JPEGs per folder
+  (`<theme>-<role>-<width>-<route>.jpg`, full page, quality 55). Taken with a scratch Playwright script (the e2e
+  `node_modules`, installed Chrome, `reducedMotion: reduce`, deterministic `demo:reset` seed, one login per role)
+  against `next start` of the HEAD build (before) and of the new build (after), same DB, 14 min apart.
+- **Dark mode unchanged — evidence:**
+  1. Lossless PNGs of all 64 dark shots, before vs after: **55/64 byte-identical** (sha256). The other 9 were diffed
+     pixel by pixel (canvas in Chrome): 7 differ in 1–63 anti-aliased text pixels by **±1 in a single channel**
+     (Chrome text rasterisation noise: a second dark run of the *same* build against the first shows the same ±1
+     noise on the same pages), and the 2 transparency pages differ only in the "last updated" clock text
+     (10:28 → 10:42). Of the committed dark JPEGs **62/64 are byte-identical** (only the two transparency shots differ).
+  2. Compiled CSS (Tailwind CLI on HEAD vs the branch): the `.dark { … }` token block is identical; the only rule
+     differences that mention `.dark` are the print block (`@media print { :root, .dark }`, paper only) and the two new
+     `dark:border-brand-700` rules that keep the previous dark border.
+- **Contrast (light, computed by a small Python script over the `:root` tokens, WCAG 2.x relative luminance):**
+  **0 failures.** Lowest text pair: white on give-700 **4.94:1** (donate button, unchanged); lowest token text pair:
+  accent on accent-soft 5.10:1; lowest non-text pair: series-collected on surface-muted (bar base) **3.05:1**. Before
+  the redesign two chart pairs failed 3:1 (series-collected on page 2.98, on surface-muted 2.76). Dark (unchanged, for
+  reference): 0 failures, lowest text pair 5.82:1.
+
+| Foreground | Background | Ratio | Needs | Use |
+|---|---|---:|---:|---|
+| `text` #0d1c15 | `page` #f6f9f7 | 16.59 | 4.5 | text |
+| `text` #0d1c15 | `surface` #ffffff | 17.59 | 4.5 | text |
+| `text` #0d1c15 | `surface-muted` #eff5f1 | 15.91 | 4.5 | text |
+| `text-muted` #45574e | `page` #f6f9f7 | 7.27 | 4.5 | text |
+| `text-muted` #45574e | `surface` #ffffff | 7.70 | 4.5 | text |
+| `text-muted` #45574e | `surface-muted` #eff5f1 | 6.97 | 4.5 | text |
+| `accent` #18734b | `page` #f6f9f7 | 5.51 | 4.5 | text |
+| `accent` #18734b | `surface` #ffffff | 5.85 | 4.5 | text |
+| `accent` #18734b | `surface-muted` #eff5f1 | 5.29 | 4.5 | text |
+| `accent-strong` #135b3c | `page` #f6f9f7 | 7.65 | 4.5 | text |
+| `accent-strong` #135b3c | `surface` #ffffff | 8.11 | 4.5 | text |
+| `accent-strong` #135b3c | `surface-muted` #eff5f1 | 7.34 | 4.5 | text |
+| `danger` #a8241a | `page` #f6f9f7 | 6.76 | 4.5 | text |
+| `danger` #a8241a | `surface` #ffffff | 7.16 | 4.5 | text |
+| `danger` #a8241a | `surface-muted` #eff5f1 | 6.48 | 4.5 | text |
+| `warning` #85460b | `page` #f6f9f7 | 6.88 | 4.5 | text |
+| `warning` #85460b | `surface` #ffffff | 7.30 | 4.5 | text |
+| `warning` #85460b | `surface-muted` #eff5f1 | 6.60 | 4.5 | text |
+| `info` #0f4c6e | `page` #f6f9f7 | 8.69 | 4.5 | text |
+| `info` #0f4c6e | `surface` #ffffff | 9.21 | 4.5 | text |
+| `info` #0f4c6e | `surface-muted` #eff5f1 | 8.34 | 4.5 | text |
+| `accent-strong` #135b3c | `accent-soft` #e1f4e9 | 7.07 | 4.5 | success badge |
+| `accent` #18734b | `accent-soft` #e1f4e9 | 5.10 | 4.5 | link on selected chip |
+| `text` #0d1c15 | `accent-soft` #e1f4e9 | 15.34 | 4.5 | text on callout |
+| `text-muted` #45574e | `accent-soft` #e1f4e9 | 6.72 | 4.5 | muted on callout |
+| `danger` #a8241a | `danger-soft` #fdece9 | 6.26 | 4.5 | danger badge |
+| `text` #0d1c15 | `danger-soft` #fdece9 | 15.37 | 4.5 | text on danger callout |
+| `warning` #85460b | `warning-soft` #fef3db | 6.62 | 4.5 | warning badge |
+| `text` #0d1c15 | `warning-soft` #fef3db | 15.96 | 4.5 | text on warning callout |
+| `info` #0f4c6e | `info-soft` #e4f1f8 | 8.00 | 4.5 | info badge |
+| `text` #0d1c15 | `info-soft` #e4f1f8 | 15.27 | 4.5 | text on info callout |
+| `text-muted` #45574e | `surface-muted` #eff5f1 | 6.97 | 4.5 | neutral badge |
+| `panel-ink` #e6f5ed | `panel` #0e4a33 | 9.11 | 4.5 | panel text |
+| `white` #ffffff | `panel` #0e4a33 | 10.26 | 4.5 | white on panel |
+| `surface` #ffffff | `danger` #a8241a | 7.16 | 4.5 | danger button |
+| `white` #ffffff | `brand-600` #18734b | 5.85 | 4.5 | primary button / active chip |
+| `white` #ffffff | `give-700` #b45512 | 4.94 | 4.5 | donate button |
+| `control` #6e8278 | `surface` #ffffff | 4.10 | 3 | non-text |
+| `control` #6e8278 | `page` #f6f9f7 | 3.86 | 3 | non-text |
+| `ring` #1f8a5b | `surface` #ffffff | 4.33 | 3 | non-text |
+| `ring` #1f8a5b | `page` #f6f9f7 | 4.09 | 3 | non-text |
+| `series-collected` #d96f1a | `surface` #ffffff | 3.37 | 3 | non-text |
+| `series-collected` #d96f1a | `page` #f6f9f7 | 3.18 | 3 | non-text |
+| `series-spent` #18734b | `surface` #ffffff | 5.85 | 3 | non-text |
+| `series-spent` #18734b | `page` #f6f9f7 | 5.51 | 3 | non-text |
+| `series-spent` #18734b | `surface-muted` #eff5f1 | 5.29 | 3 | bar on HBar base |
+| `series-collected` #d96f1a | `surface-muted` #eff5f1 | 3.05 | 3 | bar on HBar base |
+
+### Decisions made alone
+- Page `#f6f9f7` rather than pure white, so the white cards still separate from the page; the separation comes from
+  the hairline border and the soft shadow, as the brief asks.
+- Accent moves from brand-700 to brand-600 ("fresh green"): brand-600 is the brightest brand step that still gives
+  white text ≥ 4.5:1 (5.85); brand-500 would not (≈ 4.3). Primary buttons follow, so light and dark now share the
+  same button green.
+- The print token copy follows the new light values (it is the light theme on paper; screens are unaffected).
+- Literal light colours that already pass and are not part of the brief were kept (`bg-brand-200 text-brand-800`
+  status pill, `border-brand-200` callouts, `accent-brand-700` checkboxes, cover illustrations); some of them have no
+  dark override, so changing them would have touched dark.
+- Screenshots as full-page JPEG q55 to keep the size down; the dark comparison used lossless PNGs kept outside the
+  repo. The screenshot, comparison and contrast scripts stayed in the session scratchpad (not committed: no unused
+  code, and Python is not a project tool).
+- Before/after were shot against production builds (`next build` + `next start`) instead of `next dev`, so the dev
+  indicator and on-demand compilation could not disturb the pixel comparison.
+
+### Servers / cleanup
+Dev DB reseeded (`demo:reset`). Stopped the last instances: api :4000 PID 4740, web :3000 PID 10780 (+ its `npx next
+start` parent 4880); earlier restarts: api 20776, web 1848/21084; the first screenshot script (PID 11160) hung in
+Playwright's temp-profile deletion after finishing all shots and was killed. Expo was not started. Ports 3000/4000/8081
+verified free. No `.playwright-mcp` folder was created. Untouched: four `@playwright/mcp` node processes started at
+~03:00 by another session.
+
+### Needs human
+- A team look at the new light theme on a real phone and on the demo projector (the tints are subtle by design).
+- Mobile (Expo) still uses the old light palette (`mobile/src/ui/theme.ts`); aligning it is a separate decision.
+- The killed screenshot script may have left a `playwright_chromiumdev_profile-*` folder in `%TEMP%` (same cause as
+  the e2e idle time in P19).
