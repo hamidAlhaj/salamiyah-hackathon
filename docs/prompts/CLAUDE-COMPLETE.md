@@ -21,11 +21,22 @@ Create or update these numbered Arabic Markdown files in docs/team/. Write a sel
 
 Plan for 23–24 November 2026 in Asia/Damascus. On day one let Hamid deliver the shared foundation and contract first, while the others prepare design, acceptance cases and screens against examples. On day two reserve time for integration, verification and handover by 15:30 before the 16:00 submission deadline. The schedule is prospective. Each member reviews, tests and commits their actual contributions with their own primary GitHub identity and linked email. Preserve earlier history and authorship. Never backdate commits, impersonate contributors, or attribute generated work to people who did not perform it. Record real SHAs and timestamps only after commits exist.
 
-## Redesign the website using The Ismaili as the reference
+## Redesign the website using the five design references
 
-Inspect https://the.ismaili/ in a JavaScript-enabled browser at desktop and phone widths. Inspect its homepage, one listing and one detail page. Measure the actual palette and computed styles. Record a short mapping from observed colors, typography, spacing, navigation, buttons, lists, cards, focus/hover states, transforms and animation timing to project components. If the reference is inaccessible, ask for screenshots or approved brand assets and continue independent implementation. Do not invent official colors.
+Use [The Ismaili](https://the.ismaili/) as the palette and brand reference. Inspect its homepage, one listing and one detail page at desktop and phone widths. Measure the visible palette and computed styles. Use the following four case studies as additional design inspiration. The questions beside each link guide the review.
+
+- How could the homepage introduce local campaigns and lead into a scannable listing? [Non-Profit Community Website](https://www.behance.net/gallery/256833273/Non-Profit-Community-Website)
+- Which button hierarchy, hover states or transitions could make the next action clear? [Hyperactive Charity Fund](https://www.behance.net/gallery/245884799/HYPERACTIVE-CHARITY-FUND-COMMERCIAL-WEBSITE)
+- How could campaign details, progress and donation choices read together on a phone? [Madad Charity Donation Template](https://www.behance.net/gallery/258479807/Madad-Free-Charity-Donation-Figma-Template)
+- Which navigation, typography or spacing patterns would also work in Arabic RTL? [Muslim Support Foundation](https://www.behance.net/gallery/256120521/Muslim-Support-Foundation-NGO-Website-UIUX)
+
+Record a short mapping from each accessible reference to an observed pattern, the project component it informs and the reason to adopt or skip it. Use a single set of project tokens. For motion, distinguish observed behavior from your proposed interaction. If a reference is inaccessible, record the limitation, request screenshots or approved assets and continue with the available references. Do not invent official colors.
 
 Implement the redesign in the web app, including public pages and staff workspaces. Start with existing global CSS, Tailwind tokens, reusable controls and layout. Apply the palette to backgrounds, surfaces, text, links, borders and controls. Keep audit and finance screens easy to scan. Give verified, pending, demo and spent amounts distinct text labels. Preserve light/dark modes, Arabic RTL, English LTR, Western digits, mobile layouts, keyboard navigation, contrast, visible focus, reduced motion and every loading, error, empty and disabled state. Use CSS for simple transitions and transforms. Recreate patterns with project content and approved assets. Mobile participates in the fund and registration work; the visual redesign targets the website.
+
+## Rename the Arabic collector role to مكي
+
+Use the exact Arabic display name **مكي** wherever the collector role is shown to a person, including Next.js and React Native role selectors, account views, staff screens, and any Arabic API-generated role labels, handoffs or demo materials. Find role labels by tracing uses of `COLLECTOR` and the existing translations. Keep descriptions of cash collection actions and transaction types accurate. Preserve the English label `Collector`, the stored and serialized `COLLECTOR` identifier, existing accounts, routes, guards and permissions. Verify with an existing collector account that Arabic shows مكي, switching to English shows Collector, and the same authorized collection workflow still succeeds on both clients.
 
 ## 1. Agree the money contract before building screens
 
