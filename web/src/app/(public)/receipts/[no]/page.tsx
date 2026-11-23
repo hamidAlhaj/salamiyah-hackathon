@@ -99,6 +99,18 @@ export default async function ReceiptPage({ params }: Props) {
         <dl className="divide-y divide-border px-6 text-sm">
           <Row label={t('donor')}>
             <span className="font-semibold">{receipt.donorName || t('anonymousDonor')}</span>
+            {receipt.donorCode && (
+              <span className="block text-xs text-muted">
+                {t('donorCode')}{' '}
+                <span
+                  dir="ltr"
+                  className="font-semibold tracking-wide"
+                  data-testid="receipt-donor-code"
+                >
+                  {receipt.donorCode}
+                </span>
+              </span>
+            )}
           </Row>
           <Row label={t('method')}>
             {receipt.methodLabel}

@@ -11,6 +11,8 @@ export interface CategoryInput {
   icon?: string;
   sortOrder?: number;
   isActive?: boolean;
+  /** Create only: the beneficiary kind its campaigns link (omitted = any kind). */
+  beneficiaryKind?: string;
 }
 
 /** ADMIN: every category with flags (read-only) and campaign counts. */

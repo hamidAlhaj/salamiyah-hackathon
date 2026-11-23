@@ -182,6 +182,7 @@ model User {
   isActive      Boolean  @default(true) @map("is_active")
   localCouncil  String?  @map("local_council")
   whatsappOptIn Boolean  @default(false) @map("whatsapp_opt_in")
+  donorCode     String?  @unique @map("donor_code") // D-XXXXXX: the donor's own reference (receipts, my donations)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -266,28 +267,29 @@ model Hospital {
 }
 
 model Case {
-  id              String       @id @default(uuid()) @db.Uuid
-  trackingNo      String       @unique @map("tracking_no")
-  beneficiaryId   String       @map("beneficiary_id") @db.Uuid
-  category        CaseCategory
-  description     String // internal: full description
-  requestedAmount Decimal      @map("requested_amount") @db.Decimal(14, 2)
-  currency        Currency     @default(SYP)
-  status          CaseStatus   @default(SUBMITTED)
-  priority        Priority?
-  route           CaseRoute?
-  hospitalId      String?      @map("hospital_id") @db.Uuid
-  doctorName      String?      @map("doctor_name")
-  approvedAmount  Decimal?     @map("approved_amount") @db.Decimal(14, 2)
-  isAnonymous     Boolean      @default(true) @map("is_anonymous")
-  redactedSummary String?      @map("redacted_summary") // what the public sees
-  rejectionReason String?      @map("rejection_reason")
-  submittedById   String       @map("submitted_by_id") @db.Uuid
-  reviewedById    String?      @map("reviewed_by_id") @db.Uuid
-  reviewedAt      DateTime?    @map("reviewed_at")
-  slaDueAt        DateTime?    @map("sla_due_at")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
+  id                String       @id @default(uuid()) @db.Uuid
+  trackingNo        String       @unique @map("tracking_no")
+  beneficiaryId     String       @map("beneficiary_id") @db.Uuid
+  category          CaseCategory
+  description       String // internal: full description
+  requestedAmount   Decimal      @map("requested_amount") @db.Decimal(14, 2)
+  currency          Currency     @default(SYP)
+  status            CaseStatus   @default(SUBMITTED)
+  priority          Priority?
+  route             CaseRoute?
+  hospitalId        String?      @map("hospital_id") @db.Uuid
+  doctorName        String?      @map("doctor_name")
+  approvedAmount    Decimal?     @map("approved_amount") @db.Decimal(14, 2)
+  isAnonymous       Boolean      @default(true) @map("is_anonymous")
+  redactedSummary   String?      @map("redacted_summary") // what the public sees
+  rejectionReason   String?      @map("rejection_reason")
+  submittedById     String       @map("submitted_by_id") @db.Uuid
+  reviewedById      String?      @map("reviewed_by_id") @db.Uuid
+  reviewedAt        DateTime?    @map("reviewed_at")
+  slaDueAt          DateTime?    @map("sla_due_at")
+  overdueNotifiedAt DateTime?    @map("overdue_notified_at") // the SLA alert went out (once per case)
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
 
   beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Restrict)
   hospital    Hospital?   @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
@@ -303,22 +305,25 @@ model Case {
 /// Campaign categories are data, not an enum. Business rules read the behaviour flags, never the code.
 /// System categories (seeded) can be deactivated but never deleted.
 model CampaignCategory {
-  id                         String   @id @default(uuid()) @db.Uuid
-  code                       String   @unique // e.g. MEDICAL_AID
-  nameAr                     String   @map("name_ar")
-  nameEn                     String   @map("name_en")
-  descriptionAr              String?  @map("description_ar")
-  descriptionEn              String?  @map("description_en")
+  id                         String           @id @default(uuid()) @db.Uuid
+  code                       String           @unique // e.g. MEDICAL_AID
+  nameAr                     String           @map("name_ar")
+  nameEn                     String           @map("name_en")
+  descriptionAr              String?          @map("description_ar")
+  descriptionEn              String?          @map("description_en")
   icon                       String // key from the fixed icon set (CATEGORY_ICONS), no uploads
-  sortOrder                  Int      @default(0) @map("sort_order")
-  isActive                   Boolean  @default(true) @map("is_active")
-  isSystem                   Boolean  @default(false) @map("is_system")
+  sortOrder                  Int              @default(0) @map("sort_order")
+  isActive                   Boolean          @default(true) @map("is_active")
+  isSystem                   Boolean          @default(false) @map("is_system")
   // Behaviour flags (new categories get none: generic campaign, any payee type)
-  requiresMedicalCase        Boolean  @default(false) @map("requires_medical_case")
-  lockedPayeeHospital        Boolean  @default(false) @map("locked_payee_hospital")
-  supportsMonthlySponsorship Boolean  @default(false) @map("supports_monthly_sponsorship")
-  createdAt                  DateTime @default(now()) @map("created_at")
-  updatedAt                  DateTime @updatedAt @map("updated_at")
+  requiresMedicalCase        Boolean          @default(false) @map("requires_medical_case")
+  lockedPayeeHospital        Boolean          @default(false) @map("locked_payee_hospital")
+  supportsMonthlySponsorship Boolean          @default(false) @map("supports_monthly_sponsorship")
+  // Which beneficiaries a campaign of this category links (null: any kind). The two flags above
+  // decide it first: requiresMedicalCase → PATIENT, supportsMonthlySponsorship → ORPHAN.
+  beneficiaryKind            BeneficiaryKind? @map("beneficiary_kind")
+  createdAt                  DateTime         @default(now()) @map("created_at")
+  updatedAt                  DateTime         @updatedAt @map("updated_at")
 
   campaigns Campaign[]
 

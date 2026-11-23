@@ -29,6 +29,8 @@ export interface CurrentUser {
   phone: string;
   role: Role;
   locale: 'ar' | 'en';
+  /** D-XXXXXX: the donor's own reference (shown in «تبرعاتي» and on official receipts). */
+  donorCode: string | null;
 }
 
 /** Body of POST /auth/login and POST /auth/register. One 8h access token, no refresh token. */
@@ -141,6 +143,8 @@ export interface CreatePledgeResult {
 export interface OfficialReceipt {
   receiptNo: string;
   donorName: string;
+  /** The donor account's code (D-XXXXXX); null for council and collector entries without an account. */
+  donorCode: string | null;
   amount: string;
   currency: Currency;
   method: PaymentMethod;

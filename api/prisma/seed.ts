@@ -241,15 +241,21 @@ async function main() {
   const passwordHash = await hash(SEED_PASSWORD, 10);
 
   // ── Users: one per role (fixed demo logins), a second collector, fictional donors ──
+  // Donor codes D-000001, D-000002, … in creation order: generated codes never contain 0 or 1, so
+  // these cannot collide with codes the app creates later.
+  let userNo = 0;
   const mkUser = (
     fullName: string,
     phone: string,
     role: Role,
     extra: Partial<Prisma.UserCreateInput> = {},
-  ) =>
-    prisma.user.create({
-      data: { fullName, phone, role, locale: 'ar', passwordHash, ...extra },
+  ) => {
+    userNo += 1;
+    const donorCode = `D-${String(userNo).padStart(6, '0')}`;
+    return prisma.user.create({
+      data: { fullName, phone, role, locale: 'ar', passwordHash, donorCode, ...extra },
     });
+  };
   const admin = await mkUser('مدير النظام', '+963900000001', 'ADMIN');
   const caseOfficer = await mkUser(
     'مدقق الحالات (هيئة الإنعاش)',
@@ -354,6 +360,7 @@ async function main() {
     sortOrder: 30,
     requiresMedicalCase: true,
     lockedPayeeHospital: true,
+    beneficiaryKind: 'PATIENT',
   });
   const orphanSponsorship = await mkCategory({
     code: 'ORPHAN_SPONSORSHIP',
@@ -365,6 +372,7 @@ async function main() {
     icon: 'child',
     sortOrder: 10,
     supportsMonthlySponsorship: true,
+    beneficiaryKind: 'ORPHAN',
   });
   const homeRenovation = await mkCategory({
     code: 'HOME_RENOVATION',
@@ -375,6 +383,7 @@ async function main() {
       'Repairing the homes of families in need; paid to the contractor or supplier with an invoice.',
     icon: 'home',
     sortOrder: 20,
+    beneficiaryKind: 'FAMILY',
   });
 
   // ── Receiving details per method. Every account name and number is FAKE (hackathon only). ──

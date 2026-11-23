@@ -1,3 +1,5 @@
+import type { BeneficiaryKind } from './enums';
+
 const ARABIC_INDIC = '٠١٢٣٤٥٦٧٨٩';
 const PERSIAN = '۰۱۲۳۴۵۶۷۸۹';
 
@@ -68,4 +70,19 @@ export function progressPercent(raised: string | number, target: string | number
 export function whatsappShareUrl(text: string, phone?: string): string {
   const base = phone ? `https://wa.me/${phone.replace(/^\+/, '')}` : 'https://wa.me/';
   return `${base}?text=${encodeURIComponent(text)}`;
+}
+
+/**
+ * Which beneficiaries a campaign of this category links: the behaviour flags decide first
+ * (requiresMedicalCase → PATIENT, supportsMonthlySponsorship → ORPHAN), then the category's own
+ * `beneficiaryKind` (data, e.g. FAMILY for home renovation). null = any kind.
+ */
+export function categoryBeneficiaryKind(category: {
+  requiresMedicalCase: boolean;
+  supportsMonthlySponsorship: boolean;
+  beneficiaryKind: BeneficiaryKind | null;
+}): BeneficiaryKind | null {
+  if (category.requiresMedicalCase) return 'PATIENT';
+  if (category.supportsMonthlySponsorship) return 'ORPHAN';
+  return category.beneficiaryKind;
 }

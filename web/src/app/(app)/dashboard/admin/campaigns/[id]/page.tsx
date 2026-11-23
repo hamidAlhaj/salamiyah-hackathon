@@ -2,11 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
+import { AuditHistory } from '@/components/admin/AuditHistory';
 import { CampaignCover } from '@/components/campaigns/CampaignCover';
 import { CategoryIcon } from '@/components/campaigns/CategoryIcon';
 import { NotForYourRole } from '@/components/layout/WorkspacePage';
 import { isUuid } from '@/lib/actions/validation';
 import { getStaffCampaign } from '@/lib/api/admin-campaigns';
+import { campaignHistory } from '@/lib/api/audit';
 import { ApiError } from '@/lib/api/client';
 import { requireWorkspace } from '@/lib/auth';
 import { DATE_TIME_SHORT } from '@/lib/format';
@@ -41,10 +43,11 @@ async function load(token: string, id: string): Promise<StaffCampaignDetail> {
 export default async function ManageCampaignPage({ params }: Props) {
   const { id } = await params;
   if (!isUuid(id)) notFound();
-  const { token, allowed } = await requireWorkspace('campaigns');
+  const { token, user, allowed } = await requireWorkspace('campaigns');
   if (!allowed) return <NotForYourRole />;
-  const [c, t, format, locale] = await Promise.all([
+  const [c, history, t, format, locale] = await Promise.all([
     load(token, id),
+    user.role === 'ADMIN' ? campaignHistory(token, id) : Promise.resolve(null),
     getTranslations('adminCampaigns'),
     getFormatter(),
     getLocale(),
@@ -296,6 +299,12 @@ export default async function ManageCampaignPage({ params }: Props) {
           )}
         </section>
       </div>
+
+      {history && (
+        <div className="mt-8">
+          <AuditHistory items={history} />
+        </div>
+      )}
     </div>
   );
 }

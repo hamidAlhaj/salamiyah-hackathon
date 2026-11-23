@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { AuditService } from '../audit/audit.service';
 import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
+import { allocateDonorCode } from '../common/utils/donor-code';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateUserDto, UpdateUserDto } from './users.dto';
 
@@ -16,6 +17,7 @@ const userSelect = {
   phone: true,
   role: true,
   isActive: true,
+  donorCode: true,
   createdAt: true,
   collectionPoints: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
 } satisfies Prisma.UserSelect;
@@ -53,6 +55,7 @@ export class UsersService {
           phone: dto.phone,
           passwordHash,
           role: dto.role,
+          donorCode: await allocateDonorCode(tx),
           collectionPoints: pointIds.length
             ? { connect: pointIds.map((id) => ({ id })) }
             : undefined,

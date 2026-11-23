@@ -10,6 +10,7 @@ describe('notification links point to routes that exist (bug B2)', () => {
     expect(isKnownLink(links.myDonations())).toBe(true);
     expect(isKnownLink(links.campaign('orphans-2027'))).toBe(true);
     expect(isKnownLink(links.officialReceipt('R-2026-000012'))).toBe(true);
+    expect(isKnownLink(links.staffCase('1c0e8f4e-0000-4000-8000-000000000000'))).toBe(true);
   });
 
   it('refuses the old /pledges/:id link and anything outside the patterns', () => {
@@ -22,6 +23,7 @@ describe('notification links point to routes that exist (bug B2)', () => {
     ['web «my donations»', 'web/src/app/(app)/dashboard/donations/page.tsx'],
     ['web campaign page', 'web/src/app/(public)/campaigns/[slug]/page.tsx'],
     ['web official receipt', 'web/src/app/(public)/receipts/[no]/page.tsx'],
+    ['web staff case (SLA alerts)', 'web/src/app/(app)/dashboard/cases/[id]/page.tsx'],
     [
       'mobile «my donations» (/dashboard/donations → /donations)',
       'mobile/src/app/donations.tsx',

@@ -84,7 +84,7 @@
     "notAccepting": "الحملة لا تستقبل تبرعات حالياً.",
     "funded": "اكتمل الهدف",
     "completed": "تم الإنجاز",
-    "shareText": "ساهم في «{title}» عبر مجلس فند — {percent}% من الهدف تحقق. {url}",
+    "shareText": "ساهم في «{title}» عبر مجلس فند — {percent}% من الهدف تحقق.",
     "pendingNote": "يشمل تحويلات بإيصال مرفوع وحصيلة نقاط الجمع، ولا يُحتسب قبل التحقق المالي.",
     "demo": "تجريبي",
     "demoBadge": "Demo",
@@ -120,7 +120,6 @@
     "noUpdates": "لا تحديثات بعد.",
     "area": "المنطقة",
     "backToAll": "كل الحملات",
-    "shareWhatsapp": "شارك عبر واتساب",
     "completedNote": "صُرف المبلغ المستهدف على المستفيدين.",
     "spentSoFar": "صُرف منها {amount}"
   },
@@ -152,7 +151,8 @@
     "verifyTitle": "تحقق من الإيصال",
     "verifyBody": "هذا الإيصال صادر عن المجلس بعد أن طابق المدقق المالي المبلغ. يفتح رمز QR هذه الصفحة نفسها على موقع المجلس: إن ظهرت البيانات ذاتها فالإيصال صحيح.",
     "shareText": "إيصال تبرعي الرسمي {no} من المجلس المحلي في السلمية: {url}",
-    "notFoundBody": "لا يوجد إيصال رسمي بالرقم {no}. تأكد من الرقم، أو امسح رمز QR المطبوع على الإيصال."
+    "notFoundBody": "لا يوجد إيصال رسمي بالرقم {no}. تأكد من الرقم، أو امسح رمز QR المطبوع على الإيصال.",
+    "donorCode": "رمز المتبرع"
   },
   "track": {
     "title": "تتبع طلب مساعدة",
@@ -719,7 +719,8 @@
     "case_review_pending": "الحالة الطبية قيد التدقيق: تُستأنف التبرعات حين يعيد مدقق الحالات نشرها.",
     "campaign_unchanged": "لم يتغير شيء: عدّل حقلاً أولاً.",
     "beneficiary_already_suspended": "السجل موقوف إدارياً من قبل.",
-    "beneficiary_not_suspended": "السجل غير موقوف."
+    "beneficiary_not_suspended": "السجل غير موقوف.",
+    "beneficiary_kind_mismatch": "نوع هذا المستفيد لا يناسب فئة الحملة (مثلاً: الأيتام لحملات الكفالة فقط)."
   },
   "adminCategories": {
     "title": "تصنيفات الحملات",
@@ -750,7 +751,12 @@
     "updated": "تم حفظ التصنيف.",
     "activated": "تم تفعيل التصنيف.",
     "deactivated": "تم إيقاف التصنيف.",
-    "empty": "لا تصنيفات بعد."
+    "empty": "لا تصنيفات بعد.",
+    "beneficiaryKind": "نوع المستفيدين",
+    "beneficiaryKindHint": "حملات هذه الفئة تربط مستفيدين من هذا النوع فقط.",
+    "beneficiaryKindAny": "أي نوع",
+    "kindOnly": "المستفيدون: {kind} فقط",
+    "kindAny": "المستفيدون: أي نوع"
   },
   "adminCampaigns": {
     "title": "الحملات",
@@ -872,7 +878,9 @@
         "complete": "اعتُمدت الحملة «تم الإنجاز».",
         "close": "أُغلقت الحملة."
       }
-    }
+    },
+    "beneficiariesOfKind": "يُعرض المستفيدون من نوع «{kind}» فقط، فهم وحدهم يُربطون بحملات هذه الفئة.",
+    "beneficiariesNoneOfKind": "لا مستفيدين مسجلين من نوع «{kind}». سجّل مستفيداً جديداً من النموذج المجاور."
   },
   "myDonations": {
     "title": "تبرعاتي",
@@ -894,7 +902,9 @@
       "DEMO_CONFIRMED": "دفع تجريبي",
       "REJECTED": "مرفوض",
       "CANCELLED": "ملغى"
-    }
+    },
+    "donorCode": "رمز المتبرع",
+    "donorCodeHint": "رمزك الخاص لدى المجلس: يظهر على إيصالاتك الرسمية، واذكره عند السؤال عن تبرعاتك بدل رقم هاتفك."
   },
   "notifications": {
     "title": "الإشعارات",
@@ -1284,5 +1294,56 @@
         }
       }
     }
+  },
+  "audit": {
+    "title": "سجل التغييرات",
+    "hint": "{count, plural, =0 {لا أحداث بعد} one {حدث واحد} two {حدثان} few {# أحداث} many {# حدثاً} other {# حدث}} — من فعل ماذا ومتى. للمدير فقط، والبيانات الشخصية مخفية.",
+    "empty": "لا أحداث مسجلة بعد.",
+    "system": "النظام (تلقائي)",
+    "actions": {
+      "campaign_create": "إنشاء الحملة",
+      "campaign_update": "تعديل نص الحملة أو غلافها",
+      "campaign_status": "تغيير حالة الحملة أو استقبال التبرعات",
+      "campaign_post_update": "نشر تحديث للحملة",
+      "campaign_beneficiary_link": "ربط مستفيد بالحملة",
+      "campaign_payment_account_set": "تعيين حساب استلام خاص بالحملة",
+      "campaign_payment_account_remove": "إزالة حساب الاستلام الخاص",
+      "expenditure_create": "تسجيل صرف مع إثبات",
+      "expenditure_monthly": "صرف الكفالة الشهرية",
+      "case_submit": "تسجيل الطلب",
+      "case_approve": "اعتماد الحالة",
+      "case_reject": "رفض الحالة",
+      "case_needs_info": "طلب معلومات إضافية",
+      "case_publish": "نشر الحالة حملةَ مساعدات طبية",
+      "case_hospital_amount_change_requires_review": "تغيير المشفى أو زيادة المبلغ (عودة للتدقيق)",
+      "case_amount_decrease": "تخفيض المبلغ المعتمد",
+      "case_overdue_alert": "تنبيه: تجاوز مهلة التدقيق",
+      "pledge_create": "تعهد تبرع بحوالة",
+      "pledge_demo": "دفع تجريبي (Demo)",
+      "pledge_cash": "تعهد نقدي في نقطة جمع",
+      "pledge_cash_collected": "استلام النقد في نقطة الجمع",
+      "pledge_collector": "تبرع نقدي سجّله مسؤول نقطة الجمع",
+      "pledge_council": "تبرع حضوري في المجلس",
+      "pledge_receipt_upload": "رفع إيصال الحوالة",
+      "pledge_verify": "تحقق مالي وإصدار الإيصال الرسمي",
+      "pledge_reject": "رفض التبرع",
+      "pledge_cancel": "إلغاء التعهد"
+    }
+  },
+  "share": {
+    "heading": "شارك الحملة",
+    "whatsapp": "واتساب",
+    "telegram": "تيليغرام",
+    "facebook": "فيسبوك",
+    "copy": "انسخ",
+    "copied": "نُسخ",
+    "copyLabel": "انسخ رابط الحملة",
+    "newWindow": "(يفتح في نافذة جديدة)"
+  },
+  "install": {
+    "title": "ثبّت مجلس فند على هاتفك",
+    "body": "افتح الحملات وتبرعاتك بلمسة من الشاشة الرئيسية.",
+    "action": "تثبيت",
+    "dismiss": "ليس الآن"
   }
 }

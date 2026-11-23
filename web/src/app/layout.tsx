@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Sans_Arabic, Noto_Kufi_Arabic } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
+import { InstallPrompt } from '@/components/layout/InstallPrompt';
 import { ServiceWorkerRegister } from '@/components/layout/ServiceWorkerRegister';
 import { ToastViewport } from '@/components/ui/ToastViewport';
 import { ThemeProvider, themeInitScript } from '@/context/ThemeContext';
@@ -27,6 +28,7 @@ const CLIENT_NAMESPACES = [
   'theme',
   'toast',
   'notifications',
+  'install',
 ] as const;
 
 // Downloaded once at build time and self-hosted by Next.js: no request to Google at runtime.
@@ -98,7 +100,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NextIntlClientProvider messages={clientMessages}>
           <ThemeProvider>
             <ToastProvider>
-              <StoreProvider initialUser={currentUser}>{children}</StoreProvider>
+              <StoreProvider initialUser={currentUser}>
+                {children}
+                <InstallPrompt />
+              </StoreProvider>
               <ToastViewport />
               <ServiceWorkerRegister />
             </ToastProvider>

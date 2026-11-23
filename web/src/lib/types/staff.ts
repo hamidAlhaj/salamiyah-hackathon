@@ -31,6 +31,8 @@ export interface AdminCategory {
   requiresMedicalCase: boolean;
   lockedPayeeHospital: boolean;
   supportsMonthlySponsorship: boolean;
+  /** Which beneficiaries its campaigns link (null: any kind); see categoryBeneficiaryKind. */
+  beneficiaryKind: BeneficiaryKind | null;
   _count: { campaigns: number };
 }
 
@@ -45,7 +47,15 @@ export interface StaffCampaignRow {
   targetAmount: string;
   verifiedAmount: string;
   spentAmount: string;
-  category: { id: string; code: string; nameAr: string; icon: string };
+  category: {
+    id: string;
+    code: string;
+    nameAr: string;
+    icon: string;
+    requiresMedicalCase: boolean;
+    supportsMonthlySponsorship: boolean;
+    beneficiaryKind: BeneficiaryKind | null;
+  };
   hospital: { id: string; nameAr: string } | null;
   _count: { beneficiaries: number };
 }
@@ -336,4 +346,19 @@ export interface StaffExpenditure {
   proofDocumentId: string | null;
   proofMimeType: string | null;
   proofPublic: boolean;
+}
+
+/** GET /audit/campaigns/:id and /audit/cases/:id (ADMIN). Personal values arrive masked. */
+export type AuditJson =
+  string | number | boolean | null | AuditJson[] | { [key: string]: AuditJson };
+export interface AuditHistoryItem {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  reference: string | null;
+  actor: { fullName: string; role: Role } | null;
+  before: AuditJson;
+  after: AuditJson;
+  createdAt: string;
 }

@@ -156,3 +156,27 @@ export function urgentCampaignMessage(
 export function whatsappText(text: MessageText, url: string): string {
   return `${text.title}\n${text.body}\n${url}`;
 }
+
+/** «يوم» / «يومين» / «3 أيام» / «11 يوماً» (Western digits). */
+function arabicDays(n: number): string {
+  if (n === 1) return 'يوم';
+  if (n === 2) return 'يومين';
+  return n <= 10 ? `${n} أيام` : `${n} يوماً`;
+}
+
+/** The in-app alert to case officers and admins when a case passes its review deadline (SLA). */
+export function overdueCaseMessage(
+  c: { trackingNo: string; daysLate: number },
+  lang: Lang,
+): MessageText {
+  if (lang === 'ar') {
+    return {
+      title: 'طلب متأخر عن مهلة التدقيق',
+      body: `الطلب ${c.trackingNo} تجاوز مهلة التدقيق منذ ${arabicDays(c.daysLate)}. راجعه من «تدقيق الحالات».`,
+    };
+  }
+  return {
+    title: 'A case is past its review deadline',
+    body: `Case ${c.trackingNo} passed its review deadline ${c.daysLate} day(s) ago. Review it under “Cases”.`,
+  };
+}

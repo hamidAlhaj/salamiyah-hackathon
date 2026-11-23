@@ -34,6 +34,8 @@ describe('AuthService.register', () => {
       role: 'DONOR',
       whatsappOptIn: true,
     });
+    expect(create.mock.calls[0][0].data.donorCode).toMatch(/^D-[A-HJ-NP-Z2-9]{6}$/);
+    expect(res.user.donorCode).toBe(create.mock.calls[0][0].data.donorCode);
     expect(res.accessToken).toBe('token');
     expect(res.user).not.toHaveProperty('passwordHash');
   });

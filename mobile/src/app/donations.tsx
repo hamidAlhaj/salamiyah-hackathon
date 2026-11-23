@@ -58,9 +58,16 @@ export default function DonationsScreen() {
       refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} />}
       ListHeaderComponent={
         user ? (
-          <AppText size="sm" tone="muted">
-            {user.fullName}
-          </AppText>
+          <View>
+            <AppText size="sm" tone="muted">
+              {user.fullName}
+            </AppText>
+            {user.donorCode && (
+              <AppText size="sm" weight="bold" testID="donor-code">
+                {t('donations.donorCode', { code: user.donorCode })}
+              </AppText>
+            )}
+          </View>
         ) : undefined
       }
       ListEmptyComponent={!loading ? <Notice tone="muted">{t('donations.empty')}</Notice> : undefined}

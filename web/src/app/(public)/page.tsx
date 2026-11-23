@@ -75,17 +75,17 @@ export default async function HomePage({
         >
           <StarLattice className="absolute inset-0 -z-10 h-full w-full" />
           <h2 className="font-display text-xl font-bold text-white">{t('ledgerTitle')}</h2>
-          <dl className="mt-6 space-y-5">
-            <div>
+          <div className="mt-6 space-y-5">
+            <dl>
               <dt className="text-sm text-panel-ink/80">{t('ledgerCollected')}</dt>
               <dd className="font-display text-3xl font-bold tabular-nums text-white sm:text-4xl">
                 {money(totals.verifiedAmount)}
               </dd>
-            </div>
+            </dl>
             <div className="flex h-2.5 overflow-hidden rounded-full bg-white/15" aria-hidden="true">
               <span className="h-full bg-white/80" style={{ width: `${spentShare}%` }} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <dl className="grid grid-cols-2 gap-4">
               <div>
                 <dt className="text-sm text-panel-ink/80">{t('ledgerSpent')}</dt>
                 <dd className="text-xl font-bold tabular-nums text-white">
@@ -98,8 +98,8 @@ export default async function HomePage({
                   {money(totals.remainingAmount)}
                 </dd>
               </div>
-            </div>
-          </dl>
+            </dl>
+          </div>
           <p className="mt-6 border-t border-white/15 pt-4 text-sm text-panel-ink/85">
             {t('ledgerBeneficiaries', { count: stats.beneficiaries.total })}
           </p>

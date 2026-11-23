@@ -34,7 +34,7 @@ const needsReceipt = (p: PledgeView) =>
 
 /** «تبرعاتي» on the web: every pledge of the donor with its status, reference and receipt. */
 export default async function MyDonationsPage() {
-  const { token, allowed } = await requireWorkspace('donations');
+  const { token, user, allowed } = await requireWorkspace('donations');
   if (!allowed) return <NotForYourRole />;
   const [pledges, t, format, locale] = await Promise.all([
     myPledges(token),
@@ -46,6 +46,19 @@ export default async function MyDonationsPage() {
 
   return (
     <WorkspacePage title={t('title')} intro={t('intro')} testId="my-donations">
+      {user.donorCode && (
+        <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-border bg-surface px-5 py-4 shadow-card">
+          <p className="text-sm text-muted">{t('donorCode')}</p>
+          <p
+            dir="ltr"
+            className="font-display text-xl font-bold tracking-wider text-accent-strong"
+            data-testid="donor-code"
+          >
+            {user.donorCode}
+          </p>
+          <p className="basis-full text-xs text-muted">{t('donorCodeHint')}</p>
+        </div>
+      )}
       {pledges.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border px-6 py-10 text-center">
           <p className="text-muted">{t('empty')}</p>

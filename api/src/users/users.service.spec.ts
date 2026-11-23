@@ -58,7 +58,7 @@ describe('UsersService', () => {
   it('creates a collector with assigned points and never returns the password hash', async () => {
     const create = jest.fn().mockResolvedValue(row({ role: Role.COLLECTOR }));
     const log = jest.fn();
-    const tx = { user: { create } };
+    const tx = { user: { create, findUnique: jest.fn().mockResolvedValue(null) } };
     const prisma = {
       user: { findUnique: jest.fn().mockResolvedValue(null) },
       collectionPoint: { count: jest.fn().mockResolvedValue(1) },
@@ -71,6 +71,7 @@ describe('UsersService', () => {
     const args = create.mock.calls[0][0];
     expect(args.data.collectionPoints).toEqual({ connect: [{ id: POINT_ID }] });
     expect(args.data.passwordHash).not.toBe('Secret@123');
+    expect(args.data.donorCode).toMatch(/^D-[A-HJ-NP-Z2-9]{6}$/);
     expect(args.select.passwordHash).toBeUndefined();
     expect(log.mock.calls[0][0]).toMatchObject({ action: 'user.create', entityId: USER_ID });
   });

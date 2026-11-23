@@ -60,7 +60,9 @@ export default async function CampaignsAdminPage({
           current: x === tab,
         }))}
       />
-      <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-card">
+      {/* relative: the visually hidden link labels stay inside the scroller (no sideways page
+          scroll at 375 px). */}
+      <div className="relative overflow-x-auto rounded-2xl border border-border bg-surface shadow-card">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-surface-muted text-start text-xs text-muted">
             <tr>

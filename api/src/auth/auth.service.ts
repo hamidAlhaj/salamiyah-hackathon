@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import type { AuthResponse, CurrentUser } from '../common/shared';
+import { allocateDonorCode } from '../common/utils/donor-code';
 import { PrismaService } from '../prisma/prisma.service';
 import type { LoginDto, RegisterDto } from './auth.dto';
 import type { JwtPayload } from './jwt.strategy';
@@ -28,6 +29,7 @@ export class AuthService {
         role: 'DONOR',
         locale: dto.locale ?? 'ar',
         whatsappOptIn: dto.whatsappOptIn ?? false,
+        donorCode: await allocateDonorCode(this.prisma),
       },
     });
     return this.issueToken(user);
@@ -66,5 +68,6 @@ function toCurrentUser(user: User): CurrentUser {
     phone: user.phone,
     role: user.role,
     locale: user.locale,
+    donorCode: user.donorCode,
   };
 }

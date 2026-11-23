@@ -480,7 +480,18 @@ export class CampaignsService {
         targetAmount: true,
         verifiedAmount: true,
         spentAmount: true,
-        category: { select: { id: true, code: true, nameAr: true, icon: true } },
+        category: {
+          select: {
+            id: true,
+            code: true,
+            nameAr: true,
+            icon: true,
+            // The registry's link form offers a beneficiary only campaigns of its kind.
+            requiresMedicalCase: true,
+            supportsMonthlySponsorship: true,
+            beneficiaryKind: true,
+          },
+        },
         hospital: { select: { id: true, nameAr: true } },
         ...activeBeneficiariesCount,
       },

@@ -9,14 +9,13 @@ import { CategoryIcon } from '@/components/campaigns/CategoryIcon';
 import { fundingSegments } from '@/components/campaigns/funding';
 import { LedgerCard } from '@/components/campaigns/LedgerCard';
 import { ReceivingAccounts } from '@/components/campaigns/ReceivingAccounts';
+import { ShareButtons } from '@/components/campaigns/ShareButtons';
 import { SpendingTimeline } from '@/components/campaigns/SpendingTimeline';
-import { buttonClasses } from '@/components/ui/Button';
 import { listCampaignBeneficiaries } from '@/lib/api/beneficiaries';
 import { getCampaign, getLedger } from '@/lib/api/campaigns';
 import { publicSpending } from '@/lib/api/expenditures';
 import { orNotFound } from '@/lib/api/client';
 import { getCampaignAccounts } from '@/lib/api/payment-methods';
-import { whatsappShareUrl } from '@/shared';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -27,7 +26,29 @@ async function lang(): Promise<'ar' | 'en'> {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const campaign = await orNotFound(getCampaign(slug, await lang()));
-  return { title: campaign.title, description: campaign.summary.slice(0, 160) };
+  const description = campaign.summary.slice(0, 160);
+  // Link previews (WhatsApp, Telegram, Facebook): the anonymised title and summary; the image is
+  // the campaign's opengraph-image (illustration + progress, never a beneficiary).
+  return {
+    title: campaign.title,
+    description,
+    metadataBase: new URL(siteUrl()),
+    alternates: { canonical: `/campaigns/${campaign.slug}` },
+    openGraph: {
+      type: 'website',
+      siteName: 'Majlis Fund · مجلس فند',
+      title: campaign.title,
+      description,
+      url: `/campaigns/${campaign.slug}`,
+      locale: (await lang()) === 'en' ? 'en_US' : 'ar_SY',
+    },
+    twitter: { card: 'summary_large_image', title: campaign.title, description },
+  };
+}
+
+/** The public address in shared links and previews (SITE_URL; the LAN address during the demo). */
+function siteUrl(): string {
+  return (process.env.SITE_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 }
 
 export default async function CampaignPage({ params }: Props) {
@@ -46,20 +67,13 @@ export default async function CampaignPage({ params }: Props) {
   // The live ledger is a Client Component: it only needs the campaign texts.
   const { campaign: campaignMessages } = await getMessages();
 
-  const siteUrl = process.env.SITE_URL ?? 'http://localhost:3000';
   const { verifiedPercent } = fundingSegments({
     target: ledger.targetAmount,
     verified: ledger.verifiedAmount,
     pending: ledger.pendingAmount,
     demo: ledger.demoAmount,
   });
-  const shareUrl = whatsappShareUrl(
-    t('shareText', {
-      title: campaign.title,
-      percent: verifiedPercent,
-      url: `${siteUrl}/campaigns/${campaign.slug}`,
-    }),
-  );
+  const shareText = t('shareText', { title: campaign.title, percent: verifiedPercent });
   const statusLabel =
     campaign.status === 'COMPLETED'
       ? t('completed')
@@ -150,7 +164,7 @@ export default async function CampaignPage({ params }: Props) {
         </p>
       </header>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-10">
           <p className="max-w-[70ch] text-lg leading-relaxed">{campaign.summary}</p>
 
@@ -187,14 +201,7 @@ export default async function CampaignPage({ params }: Props) {
               donateHref={`/campaigns/${campaign.slug}/donate`}
             />
           </NextIntlClientProvider>
-          <a
-            href={shareUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonClasses('secondary', 'md', 'w-full')}
-          >
-            {t('shareWhatsapp')}
-          </a>
+          <ShareButtons url={`${siteUrl()}/campaigns/${campaign.slug}`} text={shareText} />
           <ReceivingAccounts accounts={accounts} />
         </aside>
       </div>

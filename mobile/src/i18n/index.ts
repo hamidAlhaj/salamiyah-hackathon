@@ -136,6 +136,7 @@ const ar = {
   },
   donations: {
     empty: 'لم تتبرع بعد. اختر حملة وابدأ.',
+    donorCode: 'رمز المتبرع: {{code}}',
     rejection: 'السبب: {{reason}}',
     official: 'عرض الإيصال الرسمي',
     receiptNo: 'رقم الإيصال الرسمي',
@@ -373,6 +374,7 @@ const en: Messages = {
   },
   donations: {
     empty: 'You have not donated yet. Pick a campaign to start.',
+    donorCode: 'Donor code: {{code}}',
     rejection: 'Reason: {{reason}}',
     official: 'View official receipt',
     receiptNo: 'Official receipt no.',

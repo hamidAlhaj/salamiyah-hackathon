@@ -34,6 +34,11 @@ export function newCampaignSlug(prefix: string): string {
   return `${clean || 'case'}-${randomCode(5).toLowerCase()}`;
 }
 
+/** Donor code: D-7K3QX9. The donor's own reference on receipts and «تبرعاتي» (never a phone or name). */
+export function newDonorCode(): string {
+  return `D-${randomCode(6)}`;
+}
+
 /** Public beneficiary code: B-7K3Q. The only beneficiary identifier ever shown publicly. */
 export function newBeneficiaryCode(): string {
   return `B-${randomCode(4)}`;

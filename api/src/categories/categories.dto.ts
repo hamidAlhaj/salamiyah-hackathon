@@ -10,11 +10,17 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { CATEGORY_ICONS, type CategoryIcon } from '../common/shared';
+import {
+  BENEFICIARY_KINDS,
+  CATEGORY_ICONS,
+  type BeneficiaryKind,
+  type CategoryIcon,
+} from '../common/shared';
 
 /**
  * ADMIN creates a category. Behaviour flags are not accepted: a new category is always a generic
- * campaign category (any payee type, no medical case, no monthly sponsorship).
+ * campaign category (any payee type, no medical case, no monthly sponsorship). It may name the kind
+ * of beneficiary its campaigns link (e.g. FAMILY); without one, any kind can be linked.
  */
 export class CreateCategoryDto {
   @ApiProperty({
@@ -56,6 +62,14 @@ export class CreateCategoryDto {
   @Min(0)
   @Max(10000)
   sortOrder?: number;
+
+  @ApiPropertyOptional({
+    enum: BENEFICIARY_KINDS,
+    description: 'Which beneficiaries its campaigns link (omit: any kind)',
+  })
+  @IsOptional()
+  @IsIn(BENEFICIARY_KINDS)
+  beneficiaryKind?: BeneficiaryKind;
 }
 
 /** Names, descriptions, icon, order and active state. The code and the behaviour flags never change. */

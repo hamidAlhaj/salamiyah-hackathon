@@ -9,13 +9,15 @@ import { ActionForm } from '@/components/forms/ActionForm';
 import { Field, controlClass, labelClass } from '@/components/ui/Field';
 import { createCampaignAction, type CreateCampaignState } from '@/lib/actions/campaigns';
 import type { StaffBeneficiary } from '@/lib/types/staff';
-import { COVER_KEYS, CURRENCIES, PRIORITIES } from '@/shared';
+import { COVER_KEYS, CURRENCIES, PRIORITIES, type BeneficiaryKind } from '@/shared';
 
 export interface CategoryOption {
   id: string;
   name: string;
   icon: string;
   supportsMonthlySponsorship: boolean;
+  /** The only beneficiary kind its campaigns link (the API refuses others); null = any. */
+  beneficiaryKind: BeneficiaryKind | null;
 }
 
 export interface MethodOption {
@@ -44,15 +46,31 @@ export function CreateCampaignForm({
   const [query, setQuery] = useState('');
   const [method, setMethod] = useState('');
   const [createdSlug, setCreatedSlug] = useState<string | null>(null);
-  const monthly = categories.find((c) => c.id === categoryId)?.supportsMonthlySponsorship ?? false;
+  const category = categories.find((c) => c.id === categoryId);
+  const monthly = category?.supportsMonthlySponsorship ?? false;
+  const kind = category?.beneficiaryKind ?? null;
+  // Only beneficiaries of the category's kind can be linked (orphans for sponsorship, …).
+  const ofKind = useMemo(
+    () => (kind ? beneficiaries.filter((b) => b.kind === kind) : beneficiaries),
+    [beneficiaries, kind],
+  );
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return beneficiaries;
-    return beneficiaries.filter((b) =>
+    if (!q) return ofKind;
+    return ofKind.filter((b) =>
       [b.publicCode, b.fullName, b.area ?? ''].some((v) => v.toLowerCase().includes(q)),
     );
-  }, [beneficiaries, query]);
+  }, [ofKind, query]);
+
+  const chooseCategory = (id: string) => {
+    setCategoryId(id);
+    const next = categories.find((c) => c.id === id)?.beneficiaryKind ?? null;
+    // A ticked beneficiary of another kind would be refused: untick it.
+    setSelected((s) =>
+      next ? s.filter((sid) => beneficiaries.find((b) => b.id === sid)?.kind === next) : s,
+    );
+  };
 
   if (categories.length === 0) {
     return (
@@ -101,7 +119,7 @@ export function CreateCampaignForm({
                     name="categoryId"
                     value={c.id}
                     checked={categoryId === c.id}
-                    onChange={() => setCategoryId(c.id)}
+                    onChange={() => chooseCategory(c.id)}
                     className="peer sr-only"
                   />
                   <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium peer-checked:border-brand-700 peer-checked:bg-brand-700 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-ring dark:peer-checked:bg-brand-600">
@@ -205,8 +223,21 @@ export function CreateCampaignForm({
         <section className="space-y-3 rounded-2xl border border-border bg-surface p-6 shadow-card">
           <h2 className="font-display text-lg font-bold">{t('beneficiaries')}</h2>
           <p className="text-xs text-muted">{t('beneficiariesHint')}</p>
-          {beneficiaries.length === 0 ? (
-            <p className="text-sm text-muted">{t('beneficiariesEmpty')}</p>
+          {kind && (
+            <p
+              className="rounded-lg bg-accent-soft px-3 py-2 text-xs font-medium text-accent-strong"
+              data-testid="beneficiary-kind-filter"
+              data-kind={kind}
+            >
+              {t('beneficiariesOfKind', { kind: tKinds(kind) })}
+            </p>
+          )}
+          {ofKind.length === 0 ? (
+            <p className="text-sm text-muted">
+              {kind
+                ? t('beneficiariesNoneOfKind', { kind: tKinds(kind) })
+                : t('beneficiariesEmpty')}
+            </p>
           ) : (
             <>
               <input

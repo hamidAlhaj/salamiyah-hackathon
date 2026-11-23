@@ -448,6 +448,7 @@ export class PledgesService {
           },
         },
         collectionPoint: { select: { name: true, type: true } },
+        donor: { select: { donorCode: true } },
       },
     });
     if (!p || p.status !== 'VERIFIED' || !p.verifiedAt || p.isDemo)
@@ -462,6 +463,7 @@ export class PledgesService {
     return {
       receiptNo,
       donorName: p.isAnonymousDisplay ? '' : (p.donorName ?? ''),
+      donorCode: p.donor?.donorCode ?? null,
       amount: money(p.amount),
       currency: p.currency,
       method: p.method,

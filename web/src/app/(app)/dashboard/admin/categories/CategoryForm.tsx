@@ -6,12 +6,13 @@ import { ActionForm } from '@/components/forms/ActionForm';
 import { Field } from '@/components/ui/Field';
 import { createCategoryAction, updateCategoryAction } from '@/lib/actions/categories';
 import type { AdminCategory } from '@/lib/types/staff';
-import { CATEGORY_ICONS } from '@/shared';
+import { BENEFICIARY_KINDS, CATEGORY_ICONS } from '@/shared';
 
 /** Create (no `category`) or edit a category. The code is set once; flags are never editable here. */
 export function CategoryForm({ category }: { category?: AdminCategory }) {
   const t = useTranslations('adminCategories');
   const tCommon = useTranslations('common');
+  const tKinds = useTranslations('campaign.kinds');
   const editing = Boolean(category);
   const idPrefix = category ? `cat-${category.id}` : 'cat-new';
 
@@ -81,6 +82,23 @@ export function CategoryForm({ category }: { category?: AdminCategory }) {
           maxLength={500}
           defaultValue={category?.descriptionEn ?? ''}
         />
+        {!editing && (
+          <Field
+            as="select"
+            id={`${idPrefix}-kind`}
+            label={`${t('beneficiaryKind')} (${tCommon('optional')})`}
+            name="beneficiaryKind"
+            defaultValue=""
+            hint={t('beneficiaryKindHint')}
+          >
+            <option value="">{t('beneficiaryKindAny')}</option>
+            {BENEFICIARY_KINDS.map((k) => (
+              <option key={k} value={k}>
+                {tKinds(k)}
+              </option>
+            ))}
+          </Field>
+        )}
       </div>
       <fieldset>
         <legend className="text-sm font-medium">{t('icon')}</legend>

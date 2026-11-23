@@ -2,11 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { AuditHistory } from '@/components/admin/AuditHistory';
 import { CampaignCover } from '@/components/campaigns/CampaignCover';
 import { ActionForm } from '@/components/forms/ActionForm';
 import { NotForYourRole, WorkspacePage } from '@/components/layout/WorkspacePage';
 import { Field } from '@/components/ui/Field';
 import { changeHospitalAction, publishCaseAction, reviewCaseAction } from '@/lib/actions/cases';
+import { caseHistory } from '@/lib/api/audit';
 import { orNotFound } from '@/lib/api/client';
 import { getCase, listHospitals } from '@/lib/api/staff-cases';
 import { requireWorkspace } from '@/lib/auth';
@@ -26,7 +28,13 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   if (!UUID_RE.test(id)) notFound();
   const { token, user, allowed } = await requireWorkspace('cases');
   if (!allowed) return <NotForYourRole />;
-  const [c, hospitals] = await Promise.all([orNotFound(getCase(token, id)), listHospitals(token)]);
+  const isAdmin = user.role === 'ADMIN';
+  const [c, hospitals, history] = await Promise.all([
+    orNotFound(getCase(token, id)),
+    listHospitals(token),
+    // The history panel is ADMIN-only (the API refuses every other role).
+    isAdmin ? caseHistory(token, id) : Promise.resolve(null),
+  ]);
   const t = await getTranslations('cases');
   const tPriority = await getTranslations('priority');
   const tCategory = await getTranslations('category');
@@ -39,8 +47,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   const canReview = isOfficer && REVIEWABLE.includes(c.status);
   const canPublish =
     isOfficer && c.status === 'APPROVED' && c.route === 'CROWDFUNDING' && !c.campaign;
-  const canChange =
-    (isOfficer || user.role === 'ADMIN') && ['APPROVED', 'PUBLISHED'].includes(c.status);
+  const canChange = (isOfficer || isAdmin) && ['APPROVED', 'PUBLISHED'].includes(c.status);
   const hospitalOptions = hospitals.map((h) => (
     <option key={h.id} value={h.id}>
       {h.nameAr}
@@ -376,6 +383,11 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
           )}
         </aside>
       </div>
+      {history && (
+        <div className="mt-8">
+          <AuditHistory items={history} />
+        </div>
+      )}
     </WorkspacePage>
   );
 }

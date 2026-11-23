@@ -4,7 +4,7 @@ import { CategoryIcon } from '@/components/campaigns/CategoryIcon';
 import { NotForYourRole, WorkspacePage } from '@/components/layout/WorkspacePage';
 import { listAllCategories } from '@/lib/api/admin-categories';
 import { requireWorkspace } from '@/lib/auth';
-import { formatNumber } from '@/shared';
+import { categoryBeneficiaryKind, formatNumber } from '@/shared';
 import { CategoryForm } from './CategoryForm';
 import { ToggleActive } from './ToggleActive';
 
@@ -19,6 +19,7 @@ export default async function CategoriesPage() {
   if (!allowed) return <NotForYourRole />;
   const t = await getTranslations('adminCategories');
   const tCommon = await getTranslations('common');
+  const tKinds = await getTranslations('campaign.kinds');
   const locale = (await getLocale()) === 'en' ? 'en' : 'ar';
   const categories = await listAllCategories(token);
 
@@ -28,7 +29,11 @@ export default async function CategoriesPage() {
       c.lockedPayeeHospital && t('flagHospital'),
       c.supportsMonthlySponsorship && t('flagMonthly'),
     ].filter((f): f is string => Boolean(f));
-    return list.length ? list : [t('flagNone')];
+    const kind = categoryBeneficiaryKind(c);
+    return [
+      ...(list.length ? list : [t('flagNone')]),
+      kind ? t('kindOnly', { kind: tKinds(kind) }) : t('kindAny'),
+    ];
   };
 
   return (

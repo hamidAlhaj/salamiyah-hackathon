@@ -60,7 +60,21 @@ describe('CategoriesService', () => {
       requiresMedicalCase: false,
       lockedPayeeHospital: false,
       supportsMonthlySponsorship: false,
+      beneficiaryKind: null,
     });
+  });
+
+  it('stores the beneficiary kind its campaigns link (data, e.g. FAMILY)', async () => {
+    const create = jest
+      .fn()
+      .mockResolvedValue({ id: ID, code: 'SHELTER', beneficiaryKind: 'FAMILY' });
+    const tx = { campaignCategory: { create } };
+    const prisma = {
+      campaignCategory: { findUnique: jest.fn().mockResolvedValue(null) },
+      $transaction: (fn: (t: typeof tx) => unknown) => fn(tx),
+    };
+    await serviceWith(prisma).create({ ...createDto, beneficiaryKind: 'FAMILY' }, admin);
+    expect(create.mock.calls[0][0].data.beneficiaryKind).toBe('FAMILY');
   });
 
   it('refuses a duplicate code', async () => {

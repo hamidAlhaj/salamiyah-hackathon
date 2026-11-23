@@ -108,9 +108,12 @@ describe('BeneficiariesService.linkToCampaign', () => {
         }),
       },
       beneficiary: {
-        findUnique: jest
-          .fn()
-          .mockResolvedValue({ id: BENEFICIARY_ID, publicCode: 'B-7K3Q', isSuspended: false }),
+        findUnique: jest.fn().mockResolvedValue({
+          id: BENEFICIARY_ID,
+          publicCode: 'B-7K3Q',
+          kind: 'ORPHAN',
+          isSuspended: false,
+        }),
       },
       campaignBeneficiary: {
         findUnique: jest.fn().mockResolvedValue({ id: 'link', endedAt: new Date() }),
@@ -124,6 +127,72 @@ describe('BeneficiariesService.linkToCampaign', () => {
     );
     expect(update.mock.calls[0][0].data).toMatchObject({ endedAt: null });
     expect(tx.campaignBeneficiary.create).not.toHaveBeenCalled();
+  });
+
+  describe('beneficiary kind follows the category (flags first, then beneficiaryKind)', () => {
+    const category = (c: Partial<Record<string, unknown>>) => ({
+      requiresMedicalCase: false,
+      supportsMonthlySponsorship: false,
+      beneficiaryKind: null,
+      ...c,
+    });
+    const prismaFor = (cat: ReturnType<typeof category>, kind: string) => ({
+      campaign: {
+        findUnique: jest.fn().mockResolvedValue({ id: CAMPAIGN_ID, category: cat }),
+      },
+      beneficiary: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: BENEFICIARY_ID,
+          publicCode: 'B-7K3Q',
+          kind,
+          isSuspended: false,
+        }),
+      },
+      campaignBeneficiary: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({ monthlyAmount: null, startedAt: new Date() }),
+      },
+      $transaction: (fn: (t: unknown) => unknown) =>
+        fn({
+          campaignBeneficiary: {
+            create: jest
+              .fn()
+              .mockResolvedValue({ monthlyAmount: null, startedAt: new Date() }),
+          },
+        }),
+    });
+
+    it.each([
+      [
+        'monthly sponsorship (orphans)',
+        category({ supportsMonthlySponsorship: true }),
+        'FAMILY',
+      ],
+      ['medical case (patients)', category({ requiresMedicalCase: true }), 'ORPHAN'],
+      ['home renovation (FAMILY by data)', category({ beneficiaryKind: 'FAMILY' }), 'PATIENT'],
+    ])('%s refuses another kind', async (_label, cat, kind) => {
+      await expect(
+        serviceWith(prismaFor(cat, kind)).linkToCampaign(
+          CAMPAIGN_ID,
+          { beneficiaryId: BENEFICIARY_ID },
+          admin,
+        ),
+      ).rejects.toThrow('beneficiary_kind_mismatch');
+    });
+
+    it.each([
+      ['orphan to sponsorship', category({ supportsMonthlySponsorship: true }), 'ORPHAN'],
+      ['family to home renovation', category({ beneficiaryKind: 'FAMILY' }), 'FAMILY'],
+      ['any kind to a category without one', category({}), 'OTHER'],
+    ])('links %s', async (_label, cat, kind) => {
+      await expect(
+        serviceWith(prismaFor(cat, kind)).linkToCampaign(
+          CAMPAIGN_ID,
+          { beneficiaryId: BENEFICIARY_ID },
+          admin,
+        ),
+      ).resolves.toMatchObject({ code: 'B-7K3Q' });
+    });
   });
 });
 

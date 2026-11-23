@@ -22,6 +22,7 @@ const adminSelect = {
   requiresMedicalCase: true,
   lockedPayeeHospital: true,
   supportsMonthlySponsorship: true,
+  beneficiaryKind: true,
   _count: { select: { campaigns: true } },
 } satisfies Prisma.CampaignCategorySelect;
 
@@ -94,6 +95,7 @@ export class CategoriesService {
           requiresMedicalCase: false,
           lockedPayeeHospital: false,
           supportsMonthlySponsorship: false,
+          beneficiaryKind: dto.beneficiaryKind ?? null,
         },
         select: adminSelect,
       });
@@ -103,7 +105,11 @@ export class CategoriesService {
           action: 'category.create',
           entityType: 'CampaignCategory',
           entityId: category.id,
-          after: { code: category.code, icon: category.icon },
+          after: {
+            code: category.code,
+            icon: category.icon,
+            beneficiaryKind: category.beneficiaryKind,
+          },
         },
         tx,
       );

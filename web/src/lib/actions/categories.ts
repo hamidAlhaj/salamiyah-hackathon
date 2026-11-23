@@ -36,6 +36,7 @@ export async function createCategoryAction(
       descriptionEn: readOptional(formData, 'descriptionEn', 500),
       icon: readString(formData, 'icon', 30),
       sortOrder: readOrder(formData),
+      beneficiaryKind: readOptional(formData, 'beneficiaryKind', 20),
     });
   } catch (err) {
     return toErrorState(err);

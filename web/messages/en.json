@@ -84,7 +84,7 @@
     "notAccepting": "This campaign is not accepting donations right now.",
     "funded": "Target reached",
     "completed": "Completed",
-    "shareText": "Support “{title}” on Majlis Fund — {percent}% of the target is verified. {url}",
+    "shareText": "Support “{title}” on Majlis Fund — {percent}% of the target is verified.",
     "pendingNote": "Includes transfers with uploaded receipts and collection-point totals; not counted until finance verification.",
     "demo": "Simulated",
     "demoBadge": "Demo",
@@ -120,7 +120,6 @@
     "noUpdates": "No updates yet.",
     "area": "Area",
     "backToAll": "All campaigns",
-    "shareWhatsapp": "Share on WhatsApp",
     "completedNote": "The target amount was spent on the beneficiaries.",
     "spentSoFar": "{amount} spent"
   },
@@ -152,7 +151,8 @@
     "verifyTitle": "Check this receipt",
     "verifyBody": "The council issues this receipt after the finance verifier matched the amount. The QR code opens this same page on the council's website: if it shows the same details, the receipt is genuine.",
     "shareText": "My official donation receipt {no} from the Salamiyah Local Council: {url}",
-    "notFoundBody": "There is no official receipt numbered {no}. Check the number, or scan the QR code printed on the receipt."
+    "notFoundBody": "There is no official receipt numbered {no}. Check the number, or scan the QR code printed on the receipt.",
+    "donorCode": "Donor code"
   },
   "track": {
     "title": "Track an aid request",
@@ -719,7 +719,8 @@
     "case_review_pending": "The medical case is under review: donations resume when the case officer publishes it again.",
     "campaign_unchanged": "Nothing changed: edit a field first.",
     "beneficiary_already_suspended": "The record is already on administrative hold.",
-    "beneficiary_not_suspended": "The record is not on hold."
+    "beneficiary_not_suspended": "The record is not on hold.",
+    "beneficiary_kind_mismatch": "This beneficiary’s kind does not fit the campaign category (for example, orphans only for sponsorship)."
   },
   "adminCategories": {
     "title": "Campaign categories",
@@ -750,7 +751,12 @@
     "updated": "Category saved.",
     "activated": "Category activated.",
     "deactivated": "Category deactivated.",
-    "empty": "No categories yet."
+    "empty": "No categories yet.",
+    "beneficiaryKind": "Beneficiary kind",
+    "beneficiaryKindHint": "Campaigns in this category link beneficiaries of this kind only.",
+    "beneficiaryKindAny": "Any kind",
+    "kindOnly": "Beneficiaries: {kind} only",
+    "kindAny": "Beneficiaries: any kind"
   },
   "adminCampaigns": {
     "title": "Campaigns",
@@ -872,7 +878,9 @@
         "complete": "Campaign marked completed.",
         "close": "Campaign closed."
       }
-    }
+    },
+    "beneficiariesOfKind": "Only “{kind}” beneficiaries are shown: only they can be linked to campaigns in this category.",
+    "beneficiariesNoneOfKind": "No “{kind}” beneficiaries are registered yet. Register one with the form beside this one."
   },
   "myDonations": {
     "title": "My donations",
@@ -894,7 +902,9 @@
       "DEMO_CONFIRMED": "Demo payment",
       "REJECTED": "Rejected",
       "CANCELLED": "Cancelled"
-    }
+    },
+    "donorCode": "Donor code",
+    "donorCodeHint": "Your own code at the council: it is printed on your official receipts; quote it instead of your phone number when you ask about your donations."
   },
   "notifications": {
     "title": "Notifications",
@@ -1284,5 +1294,56 @@
         }
       }
     }
+  },
+  "audit": {
+    "title": "Change history",
+    "hint": "{count, plural, =0 {No events yet} one {# event} other {# events}} — who did what and when. Admin only; personal data is masked.",
+    "empty": "No events recorded yet.",
+    "system": "System (automatic)",
+    "actions": {
+      "campaign_create": "Campaign created",
+      "campaign_update": "Campaign text or cover edited",
+      "campaign_status": "Status or donations changed",
+      "campaign_post_update": "Update posted",
+      "campaign_beneficiary_link": "Beneficiary linked",
+      "campaign_payment_account_set": "Campaign receiving account set",
+      "campaign_payment_account_remove": "Campaign receiving account removed",
+      "expenditure_create": "Spending recorded with proof",
+      "expenditure_monthly": "Monthly sponsorship paid",
+      "case_submit": "Case registered",
+      "case_approve": "Case approved",
+      "case_reject": "Case rejected",
+      "case_needs_info": "More information requested",
+      "case_publish": "Published as a medical aid campaign",
+      "case_hospital_amount_change_requires_review": "Hospital or amount increased (back to review)",
+      "case_amount_decrease": "Approved amount reduced",
+      "case_overdue_alert": "Alert: past the review deadline",
+      "pledge_create": "Transfer pledge",
+      "pledge_demo": "Demo payment",
+      "pledge_cash": "Cash pledge at a collection point",
+      "pledge_cash_collected": "Cash received at the collection point",
+      "pledge_collector": "Cash donation recorded by a collector",
+      "pledge_council": "Donation at the council office",
+      "pledge_receipt_upload": "Transfer receipt uploaded",
+      "pledge_verify": "Verified, official receipt issued",
+      "pledge_reject": "Donation rejected",
+      "pledge_cancel": "Pledge cancelled"
+    }
+  },
+  "share": {
+    "heading": "Share this campaign",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "facebook": "Facebook",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyLabel": "Copy the campaign link",
+    "newWindow": "(opens in a new window)"
+  },
+  "install": {
+    "title": "Install Majlis Fund on your phone",
+    "body": "Open campaigns and your donations with one tap from the home screen.",
+    "action": "Install",
+    "dismiss": "Not now"
   }
 }

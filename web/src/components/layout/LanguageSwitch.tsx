@@ -19,7 +19,6 @@ export function LanguageSwitch() {
       <input type="hidden" name="next" value={pathname} />
       <button
         type="submit"
-        aria-label={t('switchLabel')}
         title={t('switchLabel')}
         data-testid="language-switch"
         className="flex items-center gap-1 rounded-xl px-2.5 py-2 text-sm font-semibold text-muted transition duration-150 hover:bg-surface-muted active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -33,6 +32,8 @@ export function LanguageSwitch() {
         <span lang="en" className={locale === 'en' ? 'text-accent-strong' : undefined}>
           EN
         </span>
+        {/* The visible "ع / EN" stays part of the accessible name (WCAG 2.5.3). */}
+        <span className="sr-only">{t('switchLabel')}</span>
       </button>
     </form>
   );

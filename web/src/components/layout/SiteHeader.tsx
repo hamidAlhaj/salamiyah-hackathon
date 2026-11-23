@@ -75,7 +75,7 @@ export function SiteHeader({ bell }: { bell?: React.ReactNode }) {
           <ThemeToggle />
           {user && bell}
           {user ? (
-            <div className="ms-1 flex items-center gap-3 border-s border-border ps-2 sm:ms-2 sm:ps-3">
+            <div className="ms-1 flex items-center gap-3 border-s border-border ps-1.5 sm:ms-2 sm:ps-3">
               <div className="hidden text-end leading-tight sm:block">
                 <p className="text-sm font-semibold" data-testid="header-user-name">
                   {user.fullName}
@@ -85,12 +85,26 @@ export function SiteHeader({ bell }: { bell?: React.ReactNode }) {
                 </p>
               </div>
               <form action={logoutAction}>
+                {/* Phones: an icon button (the signed-in header must fit 375 px); the label stays
+                    its accessible name. */}
                 <button
                   type="submit"
-                  className={buttonClasses('secondary', 'sm', 'whitespace-nowrap')}
+                  className={buttonClasses('secondary', 'sm', 'whitespace-nowrap max-sm:px-2')}
                   data-testid="logout"
                 >
-                  {t('logout')}
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 sm:hidden rtl:-scale-x-100"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
+                  </svg>
+                  <span className="max-sm:sr-only">{t('logout')}</span>
                 </button>
               </form>
             </div>

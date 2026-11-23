@@ -5,6 +5,7 @@ import { searchBeneficiaries } from '@/lib/api/admin-beneficiaries';
 import { listAllCategories } from '@/lib/api/admin-categories';
 import { listPaymentMethods } from '@/lib/api/payment-methods';
 import { requireWorkspace } from '@/lib/auth';
+import { categoryBeneficiaryKind } from '@/shared';
 import { CreateCampaignForm } from './CreateCampaignForm';
 import { NewBeneficiaryForm } from './NewBeneficiaryForm';
 
@@ -32,6 +33,8 @@ export default async function NewCampaignPage() {
       name: locale === 'en' ? c.nameEn : c.nameAr,
       icon: c.icon,
       supportsMonthlySponsorship: c.supportsMonthlySponsorship,
+      // Orphans for sponsorship, families for home renovation…; null shows every beneficiary.
+      beneficiaryKind: categoryBeneficiaryKind(c),
     }));
 
   return (

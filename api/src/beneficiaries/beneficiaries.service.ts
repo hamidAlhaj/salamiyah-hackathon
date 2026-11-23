@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
-import type { PublicBeneficiary } from '../common/shared';
+import { categoryBeneficiaryKind, type PublicBeneficiary } from '../common/shared';
 import { allocateBeneficiaryCodes } from '../common/utils/beneficiary-codes';
 import { money, toDecimal } from '../common/utils/money';
 import { PrismaService } from '../prisma/prisma.service';
@@ -135,7 +135,16 @@ export class BeneficiariesService {
     this.access.requireRole(actor, ['ADMIN']);
     const campaign = await this.prisma.campaign.findUnique({
       where: { id: campaignId },
-      select: { id: true, category: { select: { supportsMonthlySponsorship: true } } },
+      select: {
+        id: true,
+        category: {
+          select: {
+            requiresMedicalCase: true,
+            supportsMonthlySponsorship: true,
+            beneficiaryKind: true,
+          },
+        },
+      },
     });
     if (!campaign) throw new NotFoundException('campaign_not_found');
     if (dto.monthlyAmount && !campaign.category.supportsMonthlySponsorship) {
@@ -143,11 +152,16 @@ export class BeneficiariesService {
     }
     const beneficiary = await this.prisma.beneficiary.findUnique({
       where: { id: dto.beneficiaryId },
-      select: { id: true, publicCode: true, isSuspended: true },
+      select: { id: true, publicCode: true, kind: true, isSuspended: true },
     });
     // A suspended beneficiary gets the same generic answer as an unknown one.
     if (!beneficiary || beneficiary.isSuspended)
       throw new NotFoundException('beneficiary_not_found');
+    // Orphans for sponsorship, patients for medical aid, families for home renovation: the category
+    // (its flags, then its beneficiaryKind) decides; a category without a kind links anyone.
+    const kind = categoryBeneficiaryKind(campaign.category);
+    if (kind && beneficiary.kind !== kind)
+      throw new ConflictException('beneficiary_kind_mismatch');
     const existing = await this.prisma.campaignBeneficiary.findUnique({
       where: { campaignId_beneficiaryId: { campaignId, beneficiaryId: beneficiary.id } },
       select: { id: true, endedAt: true },

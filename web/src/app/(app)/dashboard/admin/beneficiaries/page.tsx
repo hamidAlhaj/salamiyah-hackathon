@@ -8,7 +8,7 @@ import { searchBeneficiaries } from '@/lib/api/admin-beneficiaries';
 import { listStaffCampaigns } from '@/lib/api/admin-campaigns';
 import { requireWorkspace } from '@/lib/auth';
 import { DATE_TIME_SHORT } from '@/lib/format';
-import { formatMoney, formatNumber } from '@/shared';
+import { categoryBeneficiaryKind, formatMoney, formatNumber, type BeneficiaryKind } from '@/shared';
 import { NewBeneficiaryForm } from '../campaigns/new/NewBeneficiaryForm';
 import {
   EditBeneficiaryForm,
@@ -51,7 +51,10 @@ export default async function BeneficiariesPage({
   ]);
   const linkable = campaigns
     .filter((c) => LINKABLE.includes(c.status))
-    .map((c) => ({ id: c.id, title: c.titleAr }));
+    .map((c) => ({ id: c.id, title: c.titleAr, kind: categoryBeneficiaryKind(c.category) }));
+  // A beneficiary is offered only the campaigns whose category takes its kind (or any kind).
+  const linkableFor = (kind: BeneficiaryKind) =>
+    linkable.filter((c) => c.kind === null || c.kind === kind);
 
   return (
     <WorkspacePage
@@ -174,7 +177,7 @@ export default async function BeneficiariesPage({
                           {t('beneficiaries.link')}
                         </summary>
                         <div className="mt-3">
-                          <LinkForm beneficiaryId={b.id} campaigns={linkable} />
+                          <LinkForm beneficiaryId={b.id} campaigns={linkableFor(b.kind)} />
                         </div>
                       </details>
                     )}
