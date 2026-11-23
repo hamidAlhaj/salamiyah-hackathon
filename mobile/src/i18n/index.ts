@@ -225,8 +225,30 @@ const ar = {
     VISA: 'Visa',
     CASH: 'نقداً',
   },
+  fund: {
+    cta: 'تبرّع لصندوق المجلس العام',
+    noTarget: 'لا هدف مالي للصندوق: يستقبل التبرعات المباشرة وفائض الحملات المكتملة بموافقة المتبرع.',
+    instead: 'تبرّع لصندوق المجلس العام بدلاً منها',
+    splitLine: 'منها {{fund}} لصندوق المجلس العام',
+  },
+  allocation: {
+    surplusTitle: 'اكتملت الحملة تقريباً',
+    surplusBody:
+      'المتبقي من احتياج الحملة {{remaining}}، وأنت تتبرع بـ{{offered}}. هل تريد الاحتفاظ بالباقي ({{surplus}}) أم التبرع به لصندوق المجلس العام؟',
+    onlyRemaining: 'تبرّع بالمتبقي فقط ({{remaining}})',
+    split: 'كامل المبلغ: {{remaining}} للحملة و{{surplus}} للصندوق',
+    cancel: 'إلغاء',
+    completeTitle: 'اكتملت هذه الحملة',
+    completeBody:
+      'لم يبقَ احتياج لهذه الحملة. يمكنك التبرع بالمبلغ نفسه ({{offered}}) لصندوق المجلس العام أو اختيار حملة أخرى.',
+    toFund: 'تبرّع لصندوق المجلس العام بدلاً منها',
+    browse: 'تصفح حملات أخرى',
+  },
   errors: {
     generic: 'حدث خطأ. حاول مرة أخرى.',
+    campaign_complete: 'اكتملت هذه الحملة. يمكنك التبرع لصندوق المجلس العام أو لحملة أخرى.',
+    surplus_choice_required: 'المبلغ أكبر من المتبقي للحملة: اختر ماذا نفعل بالباقي.',
+    allocation_changed: 'تغيّر المتبقي للحملة بسبب تبرع آخر. راجع التقسيم الجديد ثم أكّد.',
     notFound: 'لم نجد هذه الحملة.',
     campaign_not_accepting_pledges: 'الحملة لا تستقبل تبرعات حالياً.',
     duplicate_receipt: 'هذا الإيصال مرفوع مسبقاً لتعهد آخر.',
@@ -464,8 +486,30 @@ const en: Messages = {
     VISA: 'Visa',
     CASH: 'Cash',
   },
+  fund: {
+    cta: 'Donate to the general council fund',
+    noTarget: 'The fund has no target: it receives direct donations and, with the donor’s consent, surplus from completed campaigns.',
+    instead: 'Donate to the general council fund instead',
+    splitLine: '{{fund}} of it to the general council fund',
+  },
+  allocation: {
+    surplusTitle: 'This campaign is almost complete',
+    surplusBody:
+      'The campaign still needs {{remaining}} and you are giving {{offered}}. Keep the rest ({{surplus}}), or give it to the general council fund?',
+    onlyRemaining: 'Give only the remaining {{remaining}}',
+    split: 'Full amount: {{remaining}} to the campaign, {{surplus}} to the fund',
+    cancel: 'Cancel',
+    completeTitle: 'This campaign is complete',
+    completeBody:
+      'The campaign needs nothing more. You can give the same amount ({{offered}}) to the general council fund or choose another campaign.',
+    toFund: 'Donate to the general council fund instead',
+    browse: 'Browse other campaigns',
+  },
   errors: {
     generic: 'Something went wrong. Please try again.',
+    campaign_complete: 'This campaign is complete. You can give to the general council fund or another campaign.',
+    surplus_choice_required: 'The amount is more than the campaign still needs: choose what to do with the rest.',
+    allocation_changed: 'Another donation changed what the campaign still needs. Check the new split, then confirm.',
     notFound: 'We could not find this campaign.',
     campaign_not_accepting_pledges: 'This campaign is not accepting donations right now.',
     duplicate_receipt: 'This receipt was already uploaded for another pledge.',

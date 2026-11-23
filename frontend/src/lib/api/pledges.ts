@@ -1,9 +1,11 @@
 import 'server-only';
 import type {
+  AllocationPreview,
   CreatePledgeResult,
   PaymentMethod,
   PledgeView,
   PublicCollectionPoint,
+  SurplusChoice,
 } from '@/shared';
 import { apiFetch } from './client';
 
@@ -11,6 +13,24 @@ export interface PledgeInput {
   campaignId: string;
   amount: string;
   isAnonymousDisplay: boolean;
+  /** Only when the amount exceeds the campaign's remaining need (docs/fund-contract.md). */
+  surplusChoice?: SurplusChoice;
+  expectedCampaignShare?: string;
+}
+
+/** Public: how a donation would be split between the campaign and the general council fund. */
+export function previewAllocation(campaignId: string, amount: string, lang: 'ar' | 'en') {
+  const q = new URLSearchParams({ amount, lang });
+  return apiFetch<AllocationPreview>(`/campaigns/${campaignId}/allocation?${q}`);
+}
+
+/** Money held because the campaign was already full goes to the general council fund. */
+export function giveHeldToFund(token: string, pledgeId: string) {
+  return apiFetch<PledgeView>(`/pledges/${pledgeId}/allocation-decision`, {
+    method: 'POST',
+    token,
+    body: { decision: 'FUND' },
+  });
 }
 
 /** Pledge & Verify: the pledge, plus the campaign's receiving account and the reference for the note. */

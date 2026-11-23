@@ -262,6 +262,10 @@ export interface VerificationItem {
     id: string;
     referenceNo: string;
     amount: string;
+    /** amount = campaignShare + fundShare + heldAmount (docs/fund-contract.md). */
+    campaignShare: string;
+    fundShare: string;
+    heldAmount: string;
     currency: Currency;
     channel: PledgeChannel;
     method: PaymentMethod;

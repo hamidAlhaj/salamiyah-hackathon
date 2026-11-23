@@ -4,7 +4,7 @@ Project and team: «أثر» / Athar. The app UI and the Swagger title still sho
 (`Majlis Fund API`); rename in progress.
 
 `salamiyah-hackathon.postman_collection.json` — **Postman Collection v2.1**, every endpoint of the NestJS API
-(**101 endpoints in 17 folders** + 6 demo logins), grouped by domain in the same order as the README
+(**103 endpoints in 17 folders** + 6 demo logins), grouped by domain in the same order as the README
 "Backend API Overview".
 
 | Folder | Endpoints |
@@ -16,7 +16,7 @@ Project and team: «أثر» / Athar. The app UI and the Swagger title still sho
 | Payment methods & receiving accounts | 7 |
 | Beneficiaries | 9 |
 | Medical cases | 8 |
-| Donations (pledges) | 12 |
+| Donations (pledges) | 14 (incl. the fund: allocation preview, held money → fund) |
 | Collector (Mukhi) | 5 |
 | Verifications (finance) | 3 |
 | Expenditures (spending) | 6 |
@@ -81,7 +81,7 @@ Errors always have the shape `{ statusCode, message, error, path, timestamp }`, 
 | Script | What it does |
 |---|---|
 | `build-collection.cjs` | Rebuilds the collection from the running API's Swagger document (`/api/docs-json`) and saves `openapi.snapshot.json`; `--offline` rebuilds from the snapshot. Request bodies come from the DTO schemas and their examples. |
-| `compare-endpoints.cjs` | Reads every `@Controller` / `@Get|@Post|@Patch|@Put|@Delete` in `backend/src` and compares it with the collection. Result on 2026-11-23: **101 controller endpoints = 101 collection endpoints**. |
+| `compare-endpoints.cjs` | Reads every `@Controller` / `@Get|@Post|@Patch|@Put|@Delete` in `backend/src` and compares it with the collection. Result on 2026-11-24: **103 controller endpoints = 103 collection endpoints**. |
 | `run-collection.cjs` | Runs the main flow from the collection itself (public pages → donor pledge + receipt + demo payment + cash → collector → finance approval → official receipt → admin views → a 403 role check) through a small `pm` shim. It changes data: run `npm run demo:reset` in `backend/` afterwards. |
 
 ```powershell

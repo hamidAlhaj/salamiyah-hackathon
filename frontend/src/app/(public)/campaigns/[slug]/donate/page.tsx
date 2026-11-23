@@ -11,9 +11,12 @@ import { ApiError, orNotFound } from '@/lib/api/client';
 import { getCampaignAccounts } from '@/lib/api/payment-methods';
 import { listActiveCollectionPoints } from '@/lib/api/pledges';
 import { getSessionToken } from '@/lib/session';
-import type { CurrentUser } from '@/shared';
+import { GENERAL_FUND_SLUG, type CurrentUser } from '@/shared';
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ amount?: string | string[] }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -39,15 +42,30 @@ async function currentUser(): Promise<CurrentUser | null> {
  * Donate to a campaign on every path: simulated e-payment («Demo»), transfer + receipt, or cash at a
  * collection point. Donors only; guests are asked to log in and come back here.
  */
-export default async function DonatePage({ params }: Props) {
+export default async function DonatePage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { amount: amountParam } = await searchParams;
+  // Only a plain whole amount is prefilled (sent by a completed campaign's notice).
+  const initialAmount =
+    typeof amountParam === 'string' && /^[1-9][0-9]{0,11}$/.test(amountParam) ? amountParam : '';
   const locale = (await getLocale()) === 'en' ? 'en' : 'ar';
   const campaign = await orNotFound(getCampaign(slug, locale));
   const [user, t] = await Promise.all([currentUser(), getTranslations('donate')]);
 
   let body: React.ReactNode;
   if (!campaign.acceptsPledges) {
-    body = <Notice title={t('notAccepting')} />;
+    const tFund = await getTranslations('fund');
+    body = (
+      <Notice title={t('notAccepting')}>
+        <Link
+          href={`/campaigns/${GENERAL_FUND_SLUG}/donate`}
+          className={buttonClasses('give', 'lg', 'mt-5')}
+          data-testid="fund-instead"
+        >
+          {tFund('instead')}
+        </Link>
+      </Notice>
+    );
   } else if (!user) {
     body = (
       <Notice title={t('loginTitle')} text={t('loginBody')}>
@@ -92,6 +110,7 @@ export default async function DonatePage({ params }: Props) {
           }}
           accounts={accounts}
           points={points}
+          initialAmount={initialAmount}
         />
       </NextIntlClientProvider>
     );

@@ -8,7 +8,12 @@ import {
   Length,
   Matches,
 } from 'class-validator';
-import { DEMO_PAYMENT_METHODS, RECEIPT_PAYMENT_METHODS } from '../common/shared';
+import {
+  DEMO_PAYMENT_METHODS,
+  RECEIPT_PAYMENT_METHODS,
+  SURPLUS_CHOICES,
+} from '../common/shared';
+import type { SurplusChoice } from '../common/shared';
 import type { PaymentMethod } from '@prisma/client';
 import {
   AMOUNT_REGEX,
@@ -38,6 +43,23 @@ export class CreatePledgeDto {
   @IsOptional()
   @IsBoolean()
   isAnonymousDisplay?: boolean;
+  @ApiPropertyOptional({
+    enum: SURPLUS_CHOICES,
+    description:
+      'Only when the amount exceeds the remaining need: SPLIT = the surplus goes to the general council fund, REMAINING_ONLY = pledge only the remaining need',
+  })
+  @IsOptional()
+  @IsIn(SURPLUS_CHOICES)
+  surplusChoice?: SurplusChoice;
+
+  @ApiPropertyOptional({
+    example: '30000',
+    description:
+      'The campaign share the donor saw in the preview; a different server value → 409 allocation_changed',
+  })
+  @IsOptional()
+  @Matches(/^\d{1,12}(\.\d{1,2})?$/, { message: 'invalid_amount' })
+  expectedCampaignShare?: string;
 }
 
 export class DemoPledgeDto {
@@ -58,6 +80,23 @@ export class DemoPledgeDto {
   @IsOptional()
   @IsBoolean()
   isAnonymousDisplay?: boolean;
+  @ApiPropertyOptional({
+    enum: SURPLUS_CHOICES,
+    description:
+      'Only when the amount exceeds the remaining need: SPLIT = the surplus goes to the general council fund, REMAINING_ONLY = pledge only the remaining need',
+  })
+  @IsOptional()
+  @IsIn(SURPLUS_CHOICES)
+  surplusChoice?: SurplusChoice;
+
+  @ApiPropertyOptional({
+    example: '30000',
+    description:
+      'The campaign share the donor saw in the preview; a different server value → 409 allocation_changed',
+  })
+  @IsOptional()
+  @Matches(/^\d{1,12}(\.\d{1,2})?$/, { message: 'invalid_amount' })
+  expectedCampaignShare?: string;
 }
 
 /**
@@ -82,6 +121,23 @@ export class CashPledgeDto {
   @IsOptional()
   @IsBoolean()
   isAnonymousDisplay?: boolean;
+  @ApiPropertyOptional({
+    enum: SURPLUS_CHOICES,
+    description:
+      'Only when the amount exceeds the remaining need: SPLIT = the surplus goes to the general council fund, REMAINING_ONLY = pledge only the remaining need',
+  })
+  @IsOptional()
+  @IsIn(SURPLUS_CHOICES)
+  surplusChoice?: SurplusChoice;
+
+  @ApiPropertyOptional({
+    example: '30000',
+    description:
+      'The campaign share the donor saw in the preview; a different server value → 409 allocation_changed',
+  })
+  @IsOptional()
+  @Matches(/^\d{1,12}(\.\d{1,2})?$/, { message: 'invalid_amount' })
+  expectedCampaignShare?: string;
 }
 
 /** FR-18: تبرع حضوري في المجلس — الاسم والهاتف إلزاميان (إيصال باسمه). */
@@ -149,4 +205,27 @@ export class UploadReceiptDto {
 
   @ApiProperty({ type: 'string', format: 'binary', description: 'صورة/PDF الإيصال (≤ 5MB)' })
   receipt?: unknown;
+}
+
+/** GET /campaigns/:id/allocation: the amount the donor is about to give. */
+export class AllocationQueryDto {
+  @ApiProperty({ example: '50000' })
+  @NormalizeAmount()
+  @Matches(AMOUNT_REGEX, { message: 'invalid_amount' })
+  amount: string;
+
+  @ApiPropertyOptional({ enum: ['ar', 'en'], default: 'ar' })
+  @IsOptional()
+  @IsIn(['ar', 'en'])
+  lang: 'ar' | 'en' = 'ar';
+}
+
+/** POST /pledges/:id/allocation-decision: what to do with money held because the campaign was full. */
+export class AllocationDecisionDto {
+  @ApiProperty({
+    enum: ['FUND'],
+    description: 'FUND = give the held amount to the general council fund',
+  })
+  @IsIn(['FUND'])
+  decision: 'FUND';
 }

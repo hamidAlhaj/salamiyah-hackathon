@@ -31,6 +31,7 @@ export default async function ReceiptPage({ params }: Props) {
   const no = decodeURIComponent((await params).no);
   const locale = (await getLocale()) === 'en' ? 'en' : 'ar';
   const t = await getTranslations('receipt');
+  const tFund = await getTranslations('fund');
   if (!RECEIPT_NO.test(no)) return <ReceiptNotFound no={no} />;
   const receipt = await getOfficialReceipt(no, locale).catch((err: unknown) => {
     if (err instanceof ApiError && err.statusCode === 404) return null;
@@ -92,6 +93,16 @@ export default async function ReceiptPage({ params }: Props) {
               >
                 {formatMoney(receipt.amount, receipt.currency, locale)}
               </dd>
+              {Number(receipt.fundShare) > 0 && (
+                <dd
+                  className="text-xs text-panel-ink/80 print:text-black"
+                  data-testid="receipt-split"
+                >
+                  {tFund('splitLine', {
+                    fund: formatMoney(receipt.fundShare, receipt.currency, locale),
+                  })}
+                </dd>
+              )}
             </div>
           </dl>
         </header>

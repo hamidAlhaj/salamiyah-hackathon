@@ -57,10 +57,16 @@ export function LedgerCard({
   ledger: initial,
   donateHref,
   acceptsPledges,
+  isGeneralFund = false,
+  fundHref,
 }: {
   ledger: CampaignLedger;
   donateHref: string;
   acceptsPledges: boolean;
+  /** The general council fund has no target: no progress bar, no target row. */
+  isGeneralFund?: boolean;
+  /** A campaign that no longer accepts donations points to the general council fund. */
+  fundHref?: string;
 }) {
   const ledger = useLiveLedger(initial);
   const t = useTranslations('campaign');
@@ -77,23 +83,31 @@ export function LedgerCard({
       <h2 id="ledger-title" className="font-display text-lg font-bold">
         {t('account')}
       </h2>
-      <div className="mt-4">
-        <FundingBar
-          target={ledger.targetAmount}
-          verified={ledger.verifiedAmount}
-          pending={ledger.pendingAmount}
-          demo={ledger.demoAmount}
-          label={t('progressLabel')}
-          legend={{ verified: t('verified'), pending: t('pending'), demo: t('demo') }}
-        />
-      </div>
-      <dl className="mt-4 divide-y divide-border text-sm">
-        <div className={row}>
-          <dt className="text-muted">{t('target')}</dt>
-          <dd className="tabular-nums" data-ledger="target" data-value={ledger.targetAmount}>
-            {money(ledger.targetAmount)}
-          </dd>
+      {isGeneralFund ? (
+        <p className="mt-3 text-sm text-muted" data-testid="fund-no-target">
+          {t('fundNoTarget')}
+        </p>
+      ) : (
+        <div className="mt-4">
+          <FundingBar
+            target={ledger.targetAmount}
+            verified={ledger.verifiedAmount}
+            pending={ledger.pendingAmount}
+            demo={ledger.demoAmount}
+            label={t('progressLabel')}
+            legend={{ verified: t('verified'), pending: t('pending'), demo: t('demo') }}
+          />
         </div>
+      )}
+      <dl className="mt-4 divide-y divide-border text-sm">
+        {!isGeneralFund && (
+          <div className={row}>
+            <dt className="text-muted">{t('target')}</dt>
+            <dd className="tabular-nums" data-ledger="target" data-value={ledger.targetAmount}>
+              {money(ledger.targetAmount)}
+            </dd>
+          </div>
+        )}
         <div className={row}>
           <dt>{t('verified')}</dt>
           <dd
@@ -147,9 +161,20 @@ export function LedgerCard({
           {t('donateNow')}
         </Link>
       ) : (
-        <p className="mt-5 rounded-xl bg-surface-muted px-4 py-3 text-sm text-muted">
-          {t('notAccepting')}
-        </p>
+        <>
+          <p className="mt-5 rounded-xl bg-surface-muted px-4 py-3 text-sm text-muted">
+            {t('notAccepting')}
+          </p>
+          {fundHref && (
+            <Link
+              href={fundHref}
+              className={buttonClasses('secondary', 'md', 'mt-3 w-full')}
+              data-testid="fund-cta"
+            >
+              {t('fundInstead')}
+            </Link>
+          )}
+        </>
       )}
     </section>
   );

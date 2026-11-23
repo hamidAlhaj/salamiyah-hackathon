@@ -8,22 +8,22 @@ Read-only audit of the OpenAPI document served by the API (`http://localhost:400
 
 | | |
 |---|---|
-| Endpoints in Swagger | **101** (= 101 controller routes, see `docs/postman/tools/compare-endpoints.cjs`) |
+| Endpoints in Swagger | **103** (= 101 controller routes, see `docs/postman/tools/compare-endpoints.cjs`) |
 | Tags | 19, every endpoint tagged |
-| Summary (`@ApiOperation`) | 99/101 |
-| Bearer auth shown on protected endpoints | 80 protected, all with the lock (`@ApiBearerAuth()` at class level) |
-| Request bodies with a DTO schema | 39 (all bodies) |
-| Success responses with a schema | 13/101 (file/redirect responses counted as fine) |
-| Endpoints with no gap | **3/101** |
-| **Gaps (endpoint × missing item)** | **376** |
+| Summary (`@ApiOperation`) | 101/103 |
+| Bearer auth shown on protected endpoints | 81 protected, all with the lock (`@ApiBearerAuth()` at class level) |
+| Request bodies with a DTO schema | 40 (all bodies) |
+| Success responses with a schema | 13/103 (file/redirect responses counted as fine) |
+| Endpoints with no gap | **3/103** |
+| **Gaps (endpoint × missing item)** | **384** |
 
 | Gap kind | Count | Fix |
 |---|---|---|
-| schema | 85 | success response without a schema → response DTO class + `@ApiOkResponse/@ApiCreatedResponse({ type })` |
-| 400 | 80 | validation error not documented |
-| 401 | 80 | missing token not documented |
-| 403 | 74 | role refusal not documented |
-| 404 | 47 | not found not documented |
+| schema | 87 | success response without a schema → response DTO class + `@ApiOkResponse/@ApiCreatedResponse({ type })` |
+| 400 | 82 | validation error not documented |
+| 401 | 81 | missing token not documented |
+| 403 | 75 | role refusal not documented |
+| 404 | 49 | not found not documented |
 | produces | 4 | file download without `@ApiProduces` |
 | success | 3 | document the success status |
 | summary | 2 | add `@ApiOperation({ summary })` |
@@ -42,7 +42,7 @@ Gaps per controller file:
 
 | File | Gaps |
 |---|---|
-| `backend/src/pledges/pledges.controller.ts` | 49 |
+| `backend/src/pledges/pledges.controller.ts` | 57 |
 | `backend/src/beneficiaries/beneficiaries.controller.ts` | 41 |
 | `backend/src/campaigns/campaigns.controller.ts` | 35 |
 | `backend/src/cases/cases.controller.ts` | 35 |
@@ -174,18 +174,20 @@ Gaps per controller file:
 
 | Endpoint | Handler | Documented | Missing → add |
 |---|---|---|---|
-| `GET /official-receipts/{no}` | `backend/src/pledges/pledges.controller.ts:36` | tag `pledges` · summary · public · path no · query lang · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
-| `POST /pledges` | `backend/src/pledges/pledges.controller.ts:51` | tag `pledges` · summary · Bearer · body `CreatePledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
-| `POST /pledges/demo` | `backend/src/pledges/pledges.controller.ts:57` | tag `pledges` · summary · Bearer · body `DemoPledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
-| `POST /pledges/cash` | `backend/src/pledges/pledges.controller.ts:63` | tag `pledges` · summary · Bearer · body `CashPledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
-| `POST /pledges/council` | `backend/src/pledges/pledges.controller.ts:71` | tag `pledges` · summary · Bearer · body `CouncilPledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
-| `POST /pledges/collector` | `backend/src/pledges/pledges.controller.ts:77` | tag `pledges` · summary · Bearer · body `CollectorPledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
-| `GET /pledges/mine` | `backend/src/pledges/pledges.controller.ts:83` | tag `pledges` · summary · Bearer · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
-| `GET /pledges/recorded` | `backend/src/pledges/pledges.controller.ts:89` | tag `pledges` · summary · Bearer · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
-| `GET /pledges/{id}` | `backend/src/pledges/pledges.controller.ts:95` | tag `pledges` · summary · Bearer · path id · query lang · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
-| `POST /pledges/{id}/receipts` | `backend/src/pledges/pledges.controller.ts:105` | tag `pledges` · summary · Bearer · body `UploadReceiptDto` (multipart) · path id · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
-| `POST /pledges/{id}/cancel` | `backend/src/pledges/pledges.controller.ts:119` | tag `pledges` · summary · Bearer · path id · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
-| `GET /receipts/{id}/file` | `backend/src/pledges/pledges.controller.ts:125` | tag `pledges` · summary · Bearer · path id · responses 200 | file response: `@ApiProduces('application/octet-stream')` (or text/csv) + `@ApiOkResponse({ description: 'file' })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
+| `GET /campaigns/{id}/allocation` | `backend/src/pledges/pledges.controller.ts:42` | tag `pledges` · summary · public · path id · query amount, lang · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
+| `GET /official-receipts/{no}` | `backend/src/pledges/pledges.controller.ts:54` | tag `pledges` · summary · public · path no · query lang · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
+| `POST /pledges` | `backend/src/pledges/pledges.controller.ts:69` | tag `pledges` · summary · Bearer · body `CreatePledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
+| `POST /pledges/demo` | `backend/src/pledges/pledges.controller.ts:75` | tag `pledges` · summary · Bearer · body `DemoPledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
+| `POST /pledges/cash` | `backend/src/pledges/pledges.controller.ts:81` | tag `pledges` · summary · Bearer · body `CashPledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
+| `POST /pledges/council` | `backend/src/pledges/pledges.controller.ts:89` | tag `pledges` · summary · Bearer · body `CouncilPledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
+| `POST /pledges/collector` | `backend/src/pledges/pledges.controller.ts:95` | tag `pledges` · summary · Bearer · body `CollectorPledgeDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
+| `GET /pledges/mine` | `backend/src/pledges/pledges.controller.ts:101` | tag `pledges` · summary · Bearer · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
+| `GET /pledges/recorded` | `backend/src/pledges/pledges.controller.ts:107` | tag `pledges` · summary · Bearer · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole) |
+| `GET /pledges/{id}` | `backend/src/pledges/pledges.controller.ts:113` | tag `pledges` · summary · Bearer · path id · query lang · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
+| `POST /pledges/{id}/receipts` | `backend/src/pledges/pledges.controller.ts:123` | tag `pledges` · summary · Bearer · body `UploadReceiptDto` (multipart) · path id · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
+| `POST /pledges/{id}/cancel` | `backend/src/pledges/pledges.controller.ts:137` | tag `pledges` · summary · Bearer · path id · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
+| `POST /pledges/{id}/allocation-decision` | `backend/src/pledges/pledges.controller.ts:143` | tag `pledges` · summary · Bearer · body `AllocationDecisionDto` · path id · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
+| `GET /receipts/{id}/file` | `backend/src/pledges/pledges.controller.ts:156` | tag `pledges` · summary · Bearer · path id · responses 200 | file response: `@ApiProduces('application/octet-stream')` (or text/csv) + `@ApiOkResponse({ description: 'file' })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level)<br>`@ApiForbiddenResponse({ type: ErrorResponseDto })` (RoleAccessService.requireRole)<br>`@ApiNotFoundResponse({ type: ErrorResponseDto })` |
 
 ### collector
 

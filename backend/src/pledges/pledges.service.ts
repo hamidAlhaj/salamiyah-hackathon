@@ -23,6 +23,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { mergePaymentAccounts } from '../payment-methods/payment-accounts';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { AllocationService } from './allocation.service';
 import type { DonationEvent } from './donation-events';
 import type {
   CashPledgeDto,
@@ -45,6 +46,19 @@ const pledgeInclude = {
 
 type PledgeWithRefs = Prisma.PledgeGetPayload<{ include: typeof pledgeInclude }>;
 
+/** amount = campaign share + fund share + held money (docs/fund-contract.md). */
+export function shares(p: {
+  amount: Prisma.Decimal;
+  fundAmount: Prisma.Decimal;
+  heldAmount: Prisma.Decimal;
+}): Pick<PledgeView, 'campaignShare' | 'fundShare' | 'heldAmount'> {
+  return {
+    campaignShare: money(p.amount.minus(p.fundAmount).minus(p.heldAmount)),
+    fundShare: money(p.fundAmount),
+    heldAmount: money(p.heldAmount),
+  };
+}
+
 const FINANCE_ROLES: Role[] = ['FINANCE_VERIFIER', 'ADMIN'];
 
 /** Which donation path a payment method is used for (PaymentMethodConfig flags decide). */
@@ -59,6 +73,7 @@ export class PledgesService {
     private readonly notifications: NotificationsService,
     private readonly config: ConfigService,
     private readonly access: RoleAccessService,
+    private readonly allocation: AllocationService,
   ) {}
 
   /**
@@ -71,6 +86,13 @@ export class PledgesService {
     await this.methodConfig(dto.method, 'receipt');
     await this.assertCampaignOpen(dto.campaignId);
     const pledge = await this.prisma.$transaction(async (tx) => {
+      const plan = await this.allocation.planInTx(
+        tx,
+        dto.campaignId,
+        dto.amount,
+        dto.surplusChoice,
+        dto.expectedCampaignShare,
+      );
       const p = await tx.pledge.create({
         data: {
           referenceNo: newPledgeRef(),
@@ -79,7 +101,8 @@ export class PledgesService {
           donorName: donor.fullName,
           donorPhone: donor.phone,
           isAnonymousDisplay: dto.isAnonymousDisplay ?? false,
-          amount: dto.amount,
+          amount: plan.amount,
+          fundAmount: plan.fundAmount,
           currency: await this.campaignCurrency(tx, dto.campaignId),
           channel: 'PLATFORM',
           method: dto.method,
@@ -93,7 +116,11 @@ export class PledgesService {
           action: 'pledge.create',
           entityType: 'Pledge',
           entityId: p.id,
-          after: { amount: dto.amount, method: dto.method },
+          after: {
+            amount: money(plan.amount),
+            fundAmount: money(plan.fundAmount),
+            method: dto.method,
+          },
         },
         tx,
       );
@@ -118,6 +145,13 @@ export class PledgesService {
     await this.methodConfig(dto.method, 'demo');
     await this.assertCampaignOpen(dto.campaignId);
     const pledge = await this.prisma.$transaction(async (tx) => {
+      const plan = await this.allocation.planInTx(
+        tx,
+        dto.campaignId,
+        dto.amount,
+        dto.surplusChoice,
+        dto.expectedCampaignShare,
+      );
       const ref = newPledgeRef();
       const p = await tx.pledge.create({
         data: {
@@ -127,7 +161,8 @@ export class PledgesService {
           donorName: donor.fullName,
           donorPhone: donor.phone,
           isAnonymousDisplay: dto.isAnonymousDisplay ?? false,
-          amount: dto.amount,
+          amount: plan.amount,
+          fundAmount: plan.fundAmount,
           currency: await this.campaignCurrency(tx, dto.campaignId),
           channel: 'PLATFORM',
           method: dto.method,
@@ -144,7 +179,11 @@ export class PledgesService {
           action: 'pledge.demo',
           entityType: 'Pledge',
           entityId: p.id,
-          after: { amount: dto.amount, method: dto.method },
+          after: {
+            amount: money(plan.amount),
+            fundAmount: money(plan.fundAmount),
+            method: dto.method,
+          },
         },
         tx,
       );
@@ -169,6 +208,13 @@ export class PledgesService {
     await this.methodConfig('CASH', 'cash');
     await this.assertCampaignOpen(dto.campaignId);
     const pledge = await this.prisma.$transaction(async (tx) => {
+      const plan = await this.allocation.planInTx(
+        tx,
+        dto.campaignId,
+        dto.amount,
+        dto.surplusChoice,
+        dto.expectedCampaignShare,
+      );
       const p = await tx.pledge.create({
         data: {
           referenceNo: newPledgeRef(),
@@ -177,7 +223,8 @@ export class PledgesService {
           donorName: donor.fullName,
           donorPhone: donor.phone,
           isAnonymousDisplay: dto.isAnonymousDisplay ?? false,
-          amount: dto.amount,
+          amount: plan.amount,
+          fundAmount: plan.fundAmount,
           currency: await this.campaignCurrency(tx, dto.campaignId),
           channel: 'PLATFORM',
           method: 'CASH',
@@ -192,7 +239,11 @@ export class PledgesService {
           action: 'pledge.cash',
           entityType: 'Pledge',
           entityId: p.id,
-          after: { amount: dto.amount, collectionPointId: point.id },
+          after: {
+            amount: money(plan.amount),
+            fundAmount: money(plan.fundAmount),
+            collectionPointId: point.id,
+          },
         },
         tx,
       );
@@ -465,6 +516,8 @@ export class PledgesService {
       donorName: p.isAnonymousDisplay ? '' : (p.donorName ?? ''),
       donorCode: p.donor?.donorCode ?? null,
       amount: money(p.amount),
+      campaignShare: shares(p).campaignShare,
+      fundShare: shares(p).fundShare,
       currency: p.currency,
       method: p.method,
       methodLabel: (en ? config?.labelEn : config?.labelAr) ?? p.method,
@@ -483,6 +536,45 @@ export class PledgesService {
       url,
       qrSvg: await qrSvg(url),
     };
+  }
+
+  /**
+   * Verified money held because the campaign was already full goes to the general council fund when its
+   * donor (or finance, at the desk on the donor's request) decides so. One transaction, audited.
+   */
+  async decideHeld(id: string, actor: AuthenticatedUser): Promise<PledgeView> {
+    this.access.requireRole(actor, ['DONOR', 'FINANCE_VERIFIER']);
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM pledges WHERE id = ${id}::uuid FOR UPDATE`;
+      const p = await tx.pledge.findUnique({ where: { id } });
+      if (!p || (actor.role === 'DONOR' && p.donorId !== actor.id))
+        throw new NotFoundException('pledge_not_found');
+      if (p.heldAmount.isZero()) throw new ConflictException('nothing_held');
+      const fund = await this.allocation.fund(tx);
+      if (!fund) throw new ConflictException('general_fund_missing');
+      await tx.campaign.update({
+        where: { id: fund.id },
+        data: { verifiedAmount: { increment: p.heldAmount } },
+      });
+      const row = await tx.pledge.update({
+        where: { id },
+        data: { fundAmount: { increment: p.heldAmount }, heldAmount: 0 },
+        include: pledgeInclude,
+      });
+      await this.audit.log(
+        {
+          actorId: actor.id,
+          action: 'pledge.held_to_fund',
+          entityType: 'Pledge',
+          entityId: id,
+          before: { heldAmount: money(p.heldAmount), fundAmount: money(p.fundAmount) },
+          after: { heldAmount: '0.00', fundAmount: money(row.fundAmount) },
+        },
+        tx,
+      );
+      return row;
+    });
+    return this.toView(updated);
   }
 
   /** The public web address (QR codes and WhatsApp links must open from a phone). */
@@ -587,6 +679,7 @@ export class PledgesService {
       method: p.method,
       status: p.status,
       isDemo: p.isDemo,
+      ...shares(p),
       isAnonymousDisplay: p.isAnonymousDisplay,
       officialReceiptNo: p.officialReceiptNo,
       rejectionReason: p.status === 'REJECTED' ? (p.verifications[0]?.reason ?? null) : null,

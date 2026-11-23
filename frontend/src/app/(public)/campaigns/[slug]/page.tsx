@@ -16,6 +16,7 @@ import { getCampaign, getLedger } from '@/lib/api/campaigns';
 import { publicSpending } from '@/lib/api/expenditures';
 import { orNotFound } from '@/lib/api/client';
 import { getCampaignAccounts } from '@/lib/api/payment-methods';
+import { GENERAL_FUND_SLUG } from '@/shared';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -199,6 +200,10 @@ export default async function CampaignPage({ params }: Props) {
               ledger={ledger}
               acceptsPledges={campaign.acceptsPledges}
               donateHref={`/campaigns/${campaign.slug}/donate`}
+              isGeneralFund={campaign.isGeneralFund}
+              fundHref={
+                campaign.isGeneralFund ? undefined : `/campaigns/${GENERAL_FUND_SLUG}/donate`
+              }
             />
           </NextIntlClientProvider>
           <ShareButtons url={`${siteUrl()}/campaigns/${campaign.slug}`} text={shareText} />

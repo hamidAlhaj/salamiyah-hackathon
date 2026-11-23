@@ -2614,6 +2614,60 @@
       "description": "Every donation path: transfer + receipt, simulated payment (Demo), cash at a collection point, council and collector entries, official receipts.",
       "item": [
         {
+          "name": "Preview how a donation is split: campaign share and surplus for the general council fund (public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:id/allocation?amount=50000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":id",
+                "allocation"
+              ],
+              "query": [
+                {
+                  "key": "amount",
+                  "value": "50000",
+                  "description": "required",
+                  "disabled": false
+                },
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "optional",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{campaignId}}"
+                }
+              ]
+            },
+            "description": "Preview how a donation is split: campaign share and surplus for the general council fund (public)\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/OfficialReceiptsController_allocationPreview"
+          },
+          "response": []
+        },
+        {
           "name": "الإيصال الرسمي برقمه (FR-16)",
           "event": [
             {
@@ -2687,7 +2741,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"500000\",\n  \"method\": \"BEMO_TRANSFER\",\n  \"isAnonymousDisplay\": false\n}",
+              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"500000\",\n  \"method\": \"BEMO_TRANSFER\",\n  \"isAnonymousDisplay\": false,\n  \"surplusChoice\": \"SPLIT\",\n  \"expectedCampaignShare\": \"30000\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2730,7 +2784,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"100000\",\n  \"method\": \"BEMO_TRANSFER\",\n  \"isAnonymousDisplay\": false\n}",
+              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"100000\",\n  \"method\": \"BEMO_TRANSFER\",\n  \"isAnonymousDisplay\": false,\n  \"surplusChoice\": \"SPLIT\",\n  \"expectedCampaignShare\": \"30000\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2778,7 +2832,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"250000\",\n  \"collectionPointId\": \"{{collectionPointId}}\",\n  \"isAnonymousDisplay\": false\n}",
+              "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": \"250000\",\n  \"collectionPointId\": \"{{collectionPointId}}\",\n  \"isAnonymousDisplay\": false,\n  \"surplusChoice\": \"SPLIT\",\n  \"expectedCampaignShare\": \"30000\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3080,6 +3134,57 @@
               ]
             },
             "description": "إلغاء تعهد قبل التحقق (DONOR)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_cancel"
+          },
+          "response": []
+        },
+        {
+          "name": "Give money held for a full campaign to the general council fund (DONOR owner, FINANCE_VERIFIER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"FUND\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pledges/:id/allocation-decision",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pledges",
+                ":id",
+                "allocation-decision"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{pledgeId}}"
+                }
+              ]
+            },
+            "description": "Give money held for a full campaign to the general council fund (DONOR owner, FINANCE_VERIFIER)\n\nRequires `Authorization: Bearer {{token}}` — log in with the role named in the summary first (folder Auth → Demo logins).\n\nSwagger: {{baseUrl}}/api/docs#/pledges/PledgesController_decideHeld"
           },
           "response": []
         },

@@ -7,6 +7,7 @@ import { RoleAccessService } from '../common/access/role-access.service';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import type { NotificationsService } from '../notifications/notifications.service';
 import type { PrismaService } from '../prisma/prisma.service';
+import type { AllocationService } from './allocation.service';
 import type { StorageService } from '../storage/storage.service';
 import type {
   CashPledgeDto,
@@ -35,6 +36,7 @@ function serviceWith(prisma: unknown) {
     untouchable<NotificationsService>('notifications'),
     untouchable<ConfigService>('config'),
     new RoleAccessService(),
+    allocationStub,
   );
 }
 
@@ -98,6 +100,8 @@ function donorPrisma(opts: { config?: unknown; point?: unknown } = {}) {
     id: 'p1',
     ...data,
     amount: new Prisma.Decimal(data.amount as string),
+    fundAmount: new Prisma.Decimal((data.fundAmount as Prisma.Decimal | undefined) ?? 0),
+    heldAmount: new Prisma.Decimal(0),
     campaign: { id: CAMPAIGN_ID, slug: 'c', titleAr: 'حملة' },
     collectionPoint: data.collectionPointId
       ? { name: 'نقطة', area: 'حي', type: 'CENTER' }
@@ -137,6 +141,14 @@ function donorPrisma(opts: { config?: unknown; point?: unknown } = {}) {
   return { prisma, create };
 }
 
+/** Within the remaining need: the pledge keeps its amount and has no fund share. */
+const allocationStub = {
+  planInTx: jest.fn(async (_tx: unknown, _id: string, amount: string) => ({
+    amount: new Prisma.Decimal(amount),
+    fundAmount: new Prisma.Decimal(0),
+  })),
+} as unknown as AllocationService;
+
 const notificationsMock = {
   donationEvent: jest.fn().mockResolvedValue(undefined),
 } as unknown as NotificationsService;
@@ -149,6 +161,7 @@ function donorService(prisma: unknown, demoMode = 'true') {
     notificationsMock,
     { get: () => demoMode } as unknown as ConfigService,
     new RoleAccessService(),
+    allocationStub,
   );
 }
 
@@ -342,6 +355,7 @@ describe('PledgesService receipt upload', () => {
       untouchable<NotificationsService>('notifications'),
       untouchable<ConfigService>('config'),
       new RoleAccessService(),
+      allocationStub,
     );
     return { service, prisma };
   }

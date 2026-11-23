@@ -7,7 +7,10 @@ const CAMPAIGN = '22222222-2222-2222-2222-222222222222';
 const d = (n: number) => new Prisma.Decimal(n);
 
 function statsWith(groups: unknown[], demoMode = 'true') {
-  const prisma = { pledge: { groupBy: jest.fn().mockResolvedValue(groups) } };
+  const prisma = {
+    pledge: { groupBy: jest.fn().mockResolvedValue(groups) },
+    campaign: { findFirst: jest.fn().mockResolvedValue(null) },
+  };
   const config = { get: () => demoMode } as unknown as ConfigService;
   return new CampaignStatsService(prisma as unknown as PrismaService, config);
 }

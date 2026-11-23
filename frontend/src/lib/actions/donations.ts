@@ -1,7 +1,14 @@
 'use server';
 
-import type { CreatePledgeResult, PaymentMethod, PledgeView } from '@/shared';
-import { DEMO_PAYMENT_METHODS, RECEIPT_PAYMENT_METHODS } from '@/shared';
+import { getLocale } from 'next-intl/server';
+import type {
+  AllocationPreview,
+  CreatePledgeResult,
+  PaymentMethod,
+  PledgeView,
+  SurplusChoice,
+} from '@/shared';
+import { DEMO_PAYMENT_METHODS, RECEIPT_PAYMENT_METHODS, SURPLUS_CHOICES } from '@/shared';
 import * as pledgesApi from '../api/pledges';
 import { requireSessionToken } from '../session';
 import { toErrorState } from './errors';
@@ -17,19 +24,32 @@ export interface DonationInput {
   /** Whole currency units, digits only (e.g. "50000"). */
   amount: string;
   isAnonymousDisplay: boolean;
+  /** The donor's choice in the surplus notice (docs/fund-contract.md); absent within the need. */
+  surplusChoice?: SurplusChoice;
+  /** The campaign share the donor saw; the API refuses a stale one (allocation_changed). */
+  expectedCampaignShare?: string;
 }
 
 const AMOUNT_RE = /^[1-9][0-9]{0,11}$/;
 const SLUG_RE = /^[a-z0-9_-]{3,60}$/;
+const SHARE_RE = /^\d{1,12}(\.\d{1,2})?$/;
 
 function clean(input: DonationInput) {
   assertUuid(input.campaignId, 'campaignId');
   if (!SLUG_RE.test(input.campaignSlug)) throw new Error('Invalid campaignSlug');
   if (!AMOUNT_RE.test(input.amount)) throw new Error('Invalid amount');
+  const allocation: Pick<DonationInput, 'surplusChoice' | 'expectedCampaignShare'> = {};
+  if (input.surplusChoice !== undefined) {
+    if (!isOneOf(SURPLUS_CHOICES, input.surplusChoice)) throw new Error('Invalid surplusChoice');
+    if (!SHARE_RE.test(input.expectedCampaignShare ?? '')) throw new Error('Invalid share');
+    allocation.surplusChoice = input.surplusChoice;
+    allocation.expectedCampaignShare = input.expectedCampaignShare;
+  }
   return {
     campaignId: input.campaignId,
     amount: input.amount,
     isAnonymousDisplay: input.isAnonymousDisplay === true,
+    ...allocation,
   };
 }
 
@@ -118,6 +138,38 @@ export async function cashPledgeAction(
       collectionPointId: input.collectionPointId,
     });
     safeRevalidate('/dashboard/donations');
+    return { data };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+/**
+ * Before any pledge: how the amount would be split (public data, no session needed). WITHIN keeps the
+ * normal flow; SURPLUS and COMPLETE open the notice in the donate flow.
+ */
+export async function previewAllocationAction(input: {
+  campaignId: string;
+  amount: string;
+}): Promise<DonateResult<AllocationPreview>> {
+  assertUuid(input.campaignId, 'campaignId');
+  if (!AMOUNT_RE.test(input.amount)) throw new Error('Invalid amount');
+  const lang = (await getLocale()) === 'en' ? 'en' : 'ar';
+  try {
+    return { data: await pledgesApi.previewAllocation(input.campaignId, input.amount, lang) };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+/** «تبرعاتي»: the donor gives money held for a full campaign to the general council fund. */
+export async function giveHeldToFundAction(pledgeId: string): Promise<DonateResult<PledgeView>> {
+  assertUuid(pledgeId, 'pledgeId');
+  const token = await requireSessionToken();
+  try {
+    const data = await pledgesApi.giveHeldToFund(token, pledgeId);
+    safeRevalidate('/dashboard/donations');
+    safeRevalidate('/');
     return { data };
   } catch (err) {
     return fail(err);

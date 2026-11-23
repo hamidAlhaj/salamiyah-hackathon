@@ -12,7 +12,8 @@
     "logout": "Log out",
     "main": "Main navigation",
     "skip": "Skip to content",
-    "transparency": "Transparency"
+    "transparency": "Transparency",
+    "fund": "Council fund"
   },
   "home": {
     "filterAll": "All",
@@ -121,7 +122,9 @@
     "area": "Area",
     "backToAll": "All campaigns",
     "completedNote": "The target amount was spent on the beneficiaries.",
-    "spentSoFar": "{amount} spent"
+    "spentSoFar": "{amount} spent",
+    "fundNoTarget": "The fund has no target: it receives direct donations and, with the donor’s consent, surplus from completed campaigns.",
+    "fundInstead": "Donate to the general council fund instead"
   },
   "receipt": {
     "title": "Official donation receipt",
@@ -647,7 +650,20 @@
     },
     "phoneTitle": "Add your phone number first",
     "phoneBody": "We need your phone number to send your donation confirmation and official receipt on WhatsApp. It takes a minute.",
-    "phoneCta": "Add phone number"
+    "phoneCta": "Add phone number",
+    "allocation": {
+      "surplusTitle": "This campaign is almost complete",
+      "surplusBody": "The campaign still needs {remaining} and you are giving {offered}. Keep the rest ({surplus}), or give it to the general council fund?",
+      "onlyRemaining": "Give only the remaining {remaining} and keep the rest",
+      "split": "Give the full amount: {remaining} to the campaign and {surplus} to the general council fund",
+      "cancel": "Cancel",
+      "completeTitle": "This campaign is complete",
+      "completeBody": "The campaign needs nothing more. You can give the same amount ({offered}) to the general council fund or choose another campaign.",
+      "toFund": "Donate to the general council fund instead",
+      "browse": "Browse other campaigns",
+      "checking": "Checking what is still needed…",
+      "chosenSplit": "{campaign} to the campaign and {fund} to the general council fund"
+    }
   },
   "workspace": {
     "label": "Workspace",
@@ -742,7 +758,12 @@
     "google_staff_account": "Council staff accounts log in with their phone number and password only.",
     "google_account_mismatch": "This email is linked to a different Google account.",
     "google_sign_in_disabled": "Sign in with Google is not enabled.",
-    "google_sign_in_failed": "Signing in with Google did not work."
+    "google_sign_in_failed": "Signing in with Google did not work.",
+    "campaign_complete": "This campaign is complete. You can give to the general council fund or another campaign.",
+    "surplus_choice_required": "The amount is more than the campaign still needs: choose what to do with the rest.",
+    "allocation_changed": "Another donation just changed what the campaign still needs. Check the new split, then confirm.",
+    "nothing_held": "Nothing from this donation is waiting for your decision.",
+    "general_fund_missing": "The general council fund is not set up yet."
   },
   "adminCategories": {
     "title": "Campaign categories",
@@ -1391,5 +1412,22 @@
     "saved": "Phone number saved.",
     "continue": "Continue to donate",
     "required": "Enter your phone number."
+  },
+  "fund": {
+    "cta": "Donate to the general council fund",
+    "nav": "Council fund",
+    "title": "General council fund",
+    "lead": "Give to the council directly, without a specific campaign. Spent where needed, with every payment published with its proof.",
+    "collected": "Collected",
+    "spent": "Spent",
+    "remaining": "Remaining",
+    "noTarget": "The fund has no target: it receives direct donations and, with the donor’s consent, surplus from completed campaigns.",
+    "instead": "Donate to the general council fund instead",
+    "splitLine": "{fund} of it to the general council fund",
+    "heldLine": "{held} is waiting for your decision because the campaign was completed",
+    "giveHeld": "Give it to the general council fund",
+    "giveHeldDone": "The amount now goes to the general council fund.",
+    "campaignShare": "To the campaign",
+    "fundShare": "To the general council fund"
   }
 }

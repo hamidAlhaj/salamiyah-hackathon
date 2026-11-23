@@ -348,6 +348,8 @@ model Campaign {
   hospitalId     String?        @map("hospital_id") @db.Uuid
   status         CampaignStatus @default(DRAFT)
   acceptsPledges Boolean        @default(true) @map("accepts_pledges")
+  /// The general council fund («صندوق المجلس العام»): one campaign, no target, ongoing (docs/fund-contract.md).
+  isGeneralFund  Boolean        @default(false) @map("is_general_fund")
   verifiedAmount Decimal        @default(0) @map("verified_amount") @db.Decimal(14, 2) // real, verified money only
   spentAmount    Decimal        @default(0) @map("spent_amount") @db.Decimal(14, 2) // remaining = verified - spent
   coverKey       String?        @map("cover_key") // bundled illustration key, never a photo
@@ -419,6 +421,10 @@ model Pledge {
   method             PaymentMethod
   status             PledgeStatus
   isDemo             Boolean       @default(false) @map("is_demo")
+  /// Surplus share that goes to the general council fund (campaign share = amount − fundAmount − heldAmount).
+  fundAmount         Decimal       @default(0) @map("fund_amount") @db.Decimal(14, 2)
+  /// Verified money neither the full campaign nor the fund may take: waits for the donor's decision.
+  heldAmount         Decimal       @default(0) @map("held_amount") @db.Decimal(14, 2)
   collectionPointId  String?       @map("collection_point_id") @db.Uuid
   recordedById       String?       @map("recorded_by_id") @db.Uuid
   officialReceiptNo  String?       @unique @map("official_receipt_no")

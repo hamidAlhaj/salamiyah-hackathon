@@ -1953,6 +1953,52 @@
         ]
       }
     },
+    "/campaigns/{id}/allocation": {
+      "get": {
+        "operationId": "OfficialReceiptsController_allocationPreview",
+        "summary": "Preview how a donation is split: campaign share and surplus for the general council fund (public)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "amount",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "50000",
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ]
+      }
+    },
     "/official-receipts/{no}": {
       "get": {
         "operationId": "OfficialReceiptsController_officialReceipt",
@@ -2275,6 +2321,45 @@
             }
           }
         ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/{id}/allocation-decision": {
+      "post": {
+        "operationId": "PledgesController_decideHeld",
+        "summary": "Give money held for a full campaign to the general council fund (DONOR owner, FINANCE_VERIFIER)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocationDecisionDto"
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": ""
@@ -4069,6 +4154,19 @@
             "type": "boolean",
             "default": false,
             "description": "العرض العام كـ«فاعل خير»؛ الإيصال الرسمي يبقى باسمه"
+          },
+          "surplusChoice": {
+            "type": "string",
+            "enum": [
+              "SPLIT",
+              "REMAINING_ONLY"
+            ],
+            "description": "Only when the amount exceeds the remaining need: SPLIT = the surplus goes to the general council fund, REMAINING_ONLY = pledge only the remaining need"
+          },
+          "expectedCampaignShare": {
+            "type": "string",
+            "example": "30000",
+            "description": "The campaign share the donor saw in the preview; a different server value → 409 allocation_changed"
           }
         },
         "required": [
@@ -4102,6 +4200,19 @@
           "isAnonymousDisplay": {
             "type": "boolean",
             "default": false
+          },
+          "surplusChoice": {
+            "type": "string",
+            "enum": [
+              "SPLIT",
+              "REMAINING_ONLY"
+            ],
+            "description": "Only when the amount exceeds the remaining need: SPLIT = the surplus goes to the general council fund, REMAINING_ONLY = pledge only the remaining need"
+          },
+          "expectedCampaignShare": {
+            "type": "string",
+            "example": "30000",
+            "description": "The campaign share the donor saw in the preview; a different server value → 409 allocation_changed"
           }
         },
         "required": [
@@ -4127,6 +4238,19 @@
           "isAnonymousDisplay": {
             "type": "boolean",
             "default": false
+          },
+          "surplusChoice": {
+            "type": "string",
+            "enum": [
+              "SPLIT",
+              "REMAINING_ONLY"
+            ],
+            "description": "Only when the amount exceeds the remaining need: SPLIT = the surplus goes to the general council fund, REMAINING_ONLY = pledge only the remaining need"
+          },
+          "expectedCampaignShare": {
+            "type": "string",
+            "example": "30000",
+            "description": "The campaign share the donor saw in the preview; a different server value → 409 allocation_changed"
           }
         },
         "required": [
@@ -4207,6 +4331,21 @@
         },
         "required": [
           "receipt"
+        ]
+      },
+      "AllocationDecisionDto": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "FUND"
+            ],
+            "description": "FUND = give the held amount to the general council fund"
+          }
+        },
+        "required": [
+          "decision"
         ]
       },
       "RejectVerificationDto": {

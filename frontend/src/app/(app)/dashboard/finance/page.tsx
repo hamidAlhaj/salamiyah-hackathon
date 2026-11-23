@@ -43,6 +43,7 @@ export default async function FinancePage({ searchParams }: Props) {
     getLocale(),
   ]);
   const lang = locale === 'en' ? 'en' : 'ar';
+  const tFund = await getTranslations('fund');
 
   return (
     <WorkspacePage title={t('title')} intro={t('intro')} testId="finance-page">
@@ -124,6 +125,14 @@ export default async function FinancePage({ searchParams }: Props) {
                     <p className="font-display text-2xl font-bold tabular-nums text-accent">
                       {formatMoney(v.pledge.amount, v.pledge.currency, lang)}
                     </p>
+                    {(Number(v.pledge.fundShare) > 0 || Number(v.pledge.heldAmount) > 0) && (
+                      <p className="w-full text-xs text-muted" data-testid="finance-split">
+                        {tFund('campaignShare')}:{' '}
+                        {formatMoney(v.pledge.campaignShare, v.pledge.currency, lang)} ·{' '}
+                        {tFund('fundShare')}:{' '}
+                        {formatMoney(v.pledge.fundShare, v.pledge.currency, lang)}
+                      </p>
+                    )}
                     <span className="rounded-full bg-surface-muted px-2.5 py-0.5 text-xs font-semibold">
                       {t(`channelTitle.${channel}`)}
                     </span>

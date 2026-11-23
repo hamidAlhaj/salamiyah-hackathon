@@ -46,6 +46,13 @@ export function SiteHeader({ bell }: { bell?: React.ReactNode }) {
             {t('transparency')}
           </Link>
           <Link
+            href="/campaigns/general-fund"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-surface-muted hover:text-ink"
+            data-testid="nav-fund"
+          >
+            {t('fund')}
+          </Link>
+          <Link
             href="/track"
             className="rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-surface-muted hover:text-ink"
           >

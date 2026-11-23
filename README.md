@@ -12,6 +12,50 @@ total collected, the amounts spent with proof, and the beneficiaries — by anon
 > the judges' walkthrough in [DEMO.md](DEMO.md) (Arabic) and a Playwright suite for it in `e2e/`. The build log is
 > `docs/_analysis/overnight-report.md`; the plan is `docs/_analysis/05-execution-plan.md` §7.
 
+## Main Features
+
+- **Campaigns by category** (data, not an enum): medical aid, orphan sponsorship, home renovation and any category an
+  admin adds, each with a target amount, an anonymised summary and a public campaign account (verified, pending, demo,
+  spent, remaining).
+- **Donations on every path**, web and mobile: transfer + receipt photo (Pledge & Verify), simulated e-wallet / card
+  («Demo», never counted as verified money), cash handed to the «مكي» (Mukhi) at a collection point, council desk entry.
+- **General council fund** («صندوق المجلس العام»): give to the council without a campaign; when a donation is more than a
+  campaign still needs, the donor chooses to give only the remaining need or the full amount with the surplus to the
+  fund (`docs/fund-contract.md`). One transfer is counted once in the platform totals.
+- **Instant notifications** on every donation (in-app + WhatsApp outbox with `wa.me` links), then an **official receipt**
+  `R-YYYY-NNNNNN` with a verification QR after finance approval (separation of duties).
+- **Spending with public-safe proof**, monthly sponsorship runs, campaign lifecycle and an audit log.
+- **Transparency dashboard**: totals collected / spent / remaining, per category and month, beneficiaries by anonymous
+  code `B-XXXX` only.
+- **Medical pipeline** (intake → review → publish), beneficiary import, admin setup, Arabic RTL first + English,
+  light / dark themes, collector PWA and an Expo donor app.
+
+## Backend API Overview
+
+Every endpoint, grouped by domain like the Postman folders (`docs/postman/`); full request and response
+schemas in Swagger at `http://localhost:4000/api/docs`. 🔒 = `Authorization: Bearer <token>` (role checked in the
+service); the others are public.
+
+| Domain | Endpoints |
+|---|---|
+| Health (1) | `GET /health` |
+| Auth (7) | `POST /auth/register` · `POST /auth/login` · `GET /auth/google/enabled` · `GET /auth/google` · `GET /auth/google/callback` · `GET /auth/me` 🔒 · `PATCH /auth/me/phone` 🔒 |
+| Categories (5) | `GET /categories` · `POST /categories` 🔒 · `GET /categories/all` 🔒 · `PATCH /categories/:id` 🔒 · `DELETE /categories/:id` 🔒 |
+| Campaigns (10) | `GET /campaigns` · `POST /campaigns` 🔒 · `GET /campaigns/:slug` · `GET /campaigns/:id/ledger` · `GET /campaigns/:id/transparency` · `GET /campaigns/staff/all` 🔒 · `GET /campaigns/staff/:id` 🔒 · `PATCH /campaigns/:id` 🔒 · `PATCH /campaigns/:id/status` 🔒 · `POST /campaigns/:id/updates` 🔒 |
+| Payment methods & receiving accounts (7) | `GET /payment-methods` · `GET /campaigns/:id/payment-accounts` · `GET /payment-methods/config` 🔒 · `PATCH /payment-methods/config/:method` 🔒 · `GET /campaigns/:id/payment-accounts/overrides` 🔒 · `PUT /campaigns/:id/payment-accounts/:method` 🔒 · `DELETE /campaigns/:id/payment-accounts/:method` 🔒 |
+| Beneficiaries (9) | `GET /campaigns/:id/beneficiaries` · `POST /campaigns/:id/beneficiaries` 🔒 · `GET /beneficiaries` 🔒 · `POST /beneficiaries` 🔒 · `PATCH /beneficiaries/:id` 🔒 · `POST /beneficiaries/:id/suspend` 🔒 · `POST /beneficiaries/:id/reactivate` 🔒 · `POST /beneficiaries/:id/notes` 🔒 · `PATCH /campaigns/:id/beneficiaries/:beneficiaryId` 🔒 |
+| Medical cases (8) | `GET /cases/track` · `POST /cases` 🔒 · `GET /cases` 🔒 · `GET /cases/:id` 🔒 · `POST /cases/:id/review` 🔒 · `PATCH /cases/:id/hospital-amount` 🔒 · `POST /cases/:id/publish` 🔒 · `GET /documents/:id/file` 🔒 |
+| Donations (pledges) (14) | `GET /campaigns/:id/allocation` · `GET /official-receipts/:no` · `POST /pledges` 🔒 · `POST /pledges/demo` 🔒 · `POST /pledges/cash` 🔒 · `POST /pledges/council` 🔒 · `POST /pledges/collector` 🔒 · `GET /pledges/mine` 🔒 · `GET /pledges/recorded` 🔒 · `GET /pledges/:id` 🔒 · `POST /pledges/:id/receipts` 🔒 · `POST /pledges/:id/cancel` 🔒 · `POST /pledges/:id/allocation-decision` 🔒 · `GET /receipts/:id/file` 🔒 |
+| Collector (Mukhi) (5) | `GET /collector/points` 🔒 · `GET /collector/pledges` 🔒 · `GET /collector/pledges/by-reference/:referenceNo` 🔒 · `POST /collector/pledges/:id/confirm` 🔒 · `GET /collector/history` 🔒 |
+| Verifications (finance) (3) | `GET /verifications` 🔒 · `POST /verifications/:id/approve` 🔒 · `POST /verifications/:id/reject` 🔒 |
+| Expenditures (spending) (6) | `GET /campaigns/:id/spending` · `GET /expenditures/:id/proof` · `POST /expenditures` 🔒 · `POST /campaigns/:id/expenditures/monthly` 🔒 · `GET /campaigns/:id/spending-context` 🔒 · `GET /campaigns/:id/expenditures` 🔒 |
+| Notifications & WhatsApp outbox (7) | `GET /notifications` 🔒 · `GET /notifications/unread-count` 🔒 · `POST /notifications/read-all` 🔒 · `POST /notifications/:id/read` 🔒 · `GET /outbox` 🔒 · `GET /outbox/next` 🔒 · `POST /outbox/:id/opened` 🔒 |
+| Transparency (stats) (2) | `GET /stats/transparency` · `GET /stats/transparency.csv` |
+| Hospitals & collection points (9) | `GET /collection-points/active` · `GET /hospitals` 🔒 · `POST /hospitals` 🔒 · `GET /hospitals/all` 🔒 · `PATCH /hospitals/:id` 🔒 · `GET /collection-points` 🔒 · `POST /collection-points` 🔒 · `GET /collection-points/mine` 🔒 · `PATCH /collection-points/:id` 🔒 |
+| Users (3) | `GET /users` 🔒 · `POST /users` 🔒 · `PATCH /users/:id` 🔒 |
+| Imports (4) | `POST /imports/preview` 🔒 · `POST /imports/:id/validate` 🔒 · `POST /imports/:id/commit` 🔒 · `GET /imports/:id/errors.csv` 🔒 |
+| Audit (3) | `GET /audit` 🔒 · `GET /audit/campaigns/:id` 🔒 · `GET /audit/cases/:id` 🔒 |
+
 ## Repository layout
 
 ```

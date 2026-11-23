@@ -8,6 +8,7 @@ import { myPledges } from '@/lib/api/pledges';
 import { requireWorkspace } from '@/lib/auth';
 import { DATE_MEDIUM } from '@/lib/format';
 import { formatMoney, type PledgeStatus, type PledgeView } from '@/shared';
+import { HeldToFund } from './HeldToFund';
 import { PendingReceipt } from './PendingReceipt';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -43,6 +44,7 @@ export default async function MyDonationsPage() {
     getLocale(),
   ]);
   const lang = locale === 'en' ? 'en' : 'ar';
+  const tFund = await getTranslations('fund');
 
   return (
     <WorkspacePage title={t('title')} intro={t('intro')} testId="my-donations">
@@ -110,6 +112,19 @@ export default async function MyDonationsPage() {
                   <p className="mt-3 text-sm text-muted">
                     {t('point', { name: p.collectionPoint.name, area: p.collectionPoint.area })}
                   </p>
+                )}
+                {Number(p.fundShare) > 0 && (
+                  <p className="mt-3 text-sm text-muted" data-testid="pledge-split">
+                    {tFund('splitLine', { fund: formatMoney(p.fundShare, p.currency, lang) })}
+                  </p>
+                )}
+                {Number(p.heldAmount) > 0 && (
+                  <HeldToFund
+                    pledgeId={p.id}
+                    text={tFund('heldLine', { held: formatMoney(p.heldAmount, p.currency, lang) })}
+                    label={tFund('giveHeld')}
+                    doneLabel={tFund('giveHeldDone')}
+                  />
                 )}
                 {p.isDemo && <p className="mt-3 text-xs text-muted">{t('demo')}</p>}
                 {p.rejectionReason && (

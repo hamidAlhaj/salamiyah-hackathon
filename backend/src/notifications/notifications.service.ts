@@ -6,7 +6,12 @@ import { money } from '../common/utils/money';
 import type { DonationEvent, DonationEventType } from '../pledges/donation-events';
 import { PrismaService } from '../prisma/prisma.service';
 import { links } from './links';
-import { donationMessage, urgentCampaignMessage, whatsappText } from './messages';
+import {
+  allocationNote,
+  donationMessage,
+  urgentCampaignMessage,
+  whatsappText,
+} from './messages';
 
 /** The outbox template of each donation event (the outbox screen filters by it). */
 const TEMPLATES: Record<DonationEventType, OutboxTemplate> = {
@@ -83,6 +88,15 @@ export class NotificationsService {
       },
       lang,
     );
+    const note = allocationNote(
+      {
+        fundShare: money(p.fundAmount),
+        heldAmount: money(p.heldAmount),
+        currency: p.currency,
+      },
+      lang,
+    );
+    if (note) text.body = `${text.body} ${note}`;
     const link =
       event.type === 'pledge.verified' && p.officialReceiptNo
         ? links.officialReceipt(p.officialReceiptNo)

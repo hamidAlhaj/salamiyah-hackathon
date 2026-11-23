@@ -9,19 +9,30 @@ import { DemoBadge } from '@/components/campaigns/DemoBadge';
 import { Button, buttonClasses } from '@/components/ui/Button';
 import { controlClass } from '@/components/ui/Field';
 import { FormError } from '@/components/ui/FormParts';
-import { cashPledgeAction, demoDonateAction, transferPledgeAction } from '@/lib/actions/donations';
+import {
+  cashPledgeAction,
+  demoDonateAction,
+  previewAllocationAction,
+  transferPledgeAction,
+} from '@/lib/actions/donations';
 import {
   formatMoney,
+  type AllocationPreview,
   type CreatePledgeResult,
   type Currency,
   type PaymentAccount,
   type PledgeView,
   type PublicCollectionPoint,
+  type SurplusChoice,
 } from '@/shared';
+import { AllocationNotice } from './AllocationNotice';
 import { DemoCheckout } from './DemoCheckout';
 import { ReceiptUpload } from './ReceiptUpload';
 
 type Path = 'demo' | 'transfer' | 'cash';
+
+/** The donor's answer to the surplus notice, sent with the pledge (empty within the need). */
+type Allocation = { surplusChoice?: SurplusChoice; expectedCampaignShare?: string };
 
 const PRESETS: Record<Currency, number[]> = {
   SYP: [25_000, 50_000, 100_000, 250_000],
@@ -50,10 +61,13 @@ export function DonateFlow({
   campaign,
   accounts,
   points,
+  initialAmount = '',
 }: {
   campaign: DonateCampaign;
   accounts: PaymentAccount[];
   points: PublicCollectionPoint[];
+  /** Prefilled from ?amount= (e.g. a completed campaign sending the donor to the general fund). */
+  initialAmount?: string;
 }) {
   const t = useTranslations('donate');
   const locale = useLocale() === 'en' ? 'en' : 'ar';
@@ -73,13 +87,17 @@ export function DonateFlow({
 
   const [path, setPath] = useState<Path | null>(null);
   const [method, setMethod] = useState<PaymentAccount | null>(null);
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(initialAmount);
   const [anonymous, setAnonymous] = useState(false);
   const [pointId, setPointId] = useState<string | null>(null);
   const [pledge, setPledge] = useState<CreatePledgeResult | null>(null);
   const [done, setDone] = useState<PledgeView | null>(null);
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
+  const [notice, setNotice] = useState<{
+    preview: AllocationPreview;
+    go: (a: Allocation) => void;
+  } | null>(null);
   const router = useRouter();
   // A finished donation: re-render the layout so the header bell shows the new notification at once.
   const finish = (pledge: PledgeView) => {
@@ -112,6 +130,29 @@ export function DonateFlow({
     });
   }
 
+  /**
+   * Every pledge first asks the server how the amount would be split (docs/fund-contract.md). Within the
+   * campaign's remaining need nothing changes; above it the notice asks the donor before any record exists.
+   */
+  function donate(go: (a: Allocation) => void) {
+    setError(undefined);
+    startTransition(async () => {
+      const r = await previewAllocationAction({ campaignId: campaign.id, amount });
+      if (r.error !== undefined) setError(r.error);
+      else if (r.data !== undefined) {
+        if (r.data.state === 'WITHIN') go({});
+        else setNotice({ preview: r.data, go });
+      }
+    });
+  }
+
+  function choose(choice: SurplusChoice) {
+    if (!notice) return;
+    const { preview, go } = notice;
+    setNotice(null);
+    go({ surplusChoice: choice, expectedCampaignShare: preview.campaignShare });
+  }
+
   if (done) {
     return (
       <DonationDone
@@ -119,6 +160,7 @@ export function DonateFlow({
         campaignSlug={campaign.slug}
         amountLabel={money(done.amount)}
         methodLabel={method?.label ?? ''}
+        money={money}
       />
     );
   }
@@ -269,7 +311,15 @@ export function DonateFlow({
           <h2 id="step-finish" className="mb-4">
             <StepLabel step={3}>{t('stepFinish')}</StepLabel>
           </h2>
-          {!ready ? (
+          {notice ? (
+            <AllocationNotice
+              preview={notice.preview}
+              money={money}
+              pending={pending}
+              onChoose={choose}
+              onCancel={() => setNotice(null)}
+            />
+          ) : !ready ? (
             <p className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted">
               {amount && !amountOk ? t('invalidAmount') : t('chooseFirst')}
             </p>
@@ -279,7 +329,11 @@ export function DonateFlow({
               amountLabel={money(amount)}
               pending={pending}
               error={error}
-              onPay={() => run(() => demoDonateAction({ ...input, method: method.method }), finish)}
+              onPay={() =>
+                donate((a) =>
+                  run(() => demoDonateAction({ ...input, ...a, method: method.method }), finish),
+                )
+              }
             />
           ) : path === 'transfer' && method ? (
             pledge ? (
@@ -299,12 +353,14 @@ export function DonateFlow({
                   disabled={pending}
                   data-testid="transfer-create"
                   onClick={() =>
-                    run(
-                      () => transferPledgeAction({ ...input, method: method.method }),
-                      (r: CreatePledgeResult) => {
-                        setPledge(r);
-                        router.refresh();
-                      },
+                    donate((a) =>
+                      run(
+                        () => transferPledgeAction({ ...input, ...a, method: method.method }),
+                        (r: CreatePledgeResult) => {
+                          setPledge(r);
+                          router.refresh();
+                        },
+                      ),
                     )
                   }
                 >
@@ -360,7 +416,12 @@ export function DonateFlow({
                   data-testid="cash-confirm"
                   onClick={() => {
                     if (!pointId) return setError(t('cash.choosePoint'));
-                    run(() => cashPledgeAction({ ...input, collectionPointId: pointId }), finish);
+                    donate((a) =>
+                      run(
+                        () => cashPledgeAction({ ...input, ...a, collectionPointId: pointId }),
+                        finish,
+                      ),
+                    );
                   }}
                 >
                   {pending ? t('submitting') : t('cash.confirm')}
@@ -518,13 +579,16 @@ function DonationDone({
   campaignSlug,
   amountLabel,
   methodLabel,
+  money,
 }: {
   pledge: PledgeView;
   campaignSlug: string;
   amountLabel: string;
   methodLabel: string;
+  money: (v: string) => string;
 }) {
   const t = useTranslations('donate.done');
+  const tAlloc = useTranslations('donate.allocation');
   const kind = pledge.isDemo ? 'demo' : pledge.method === 'CASH' ? 'cash' : 'transfer';
   return (
     <div
@@ -565,6 +629,14 @@ function DonationDone({
             {pledge.isDemo && <DemoBadge />}
           </dd>
         </div>
+        {Number(pledge.fundShare) > 0 && (
+          <p className="py-3 text-xs text-muted" data-testid="done-split">
+            {tAlloc('chosenSplit', {
+              campaign: money(pledge.campaignShare),
+              fund: money(pledge.fundShare),
+            })}
+          </p>
+        )}
       </dl>
       <div className="mt-7 flex flex-wrap justify-center gap-3">
         <Link

@@ -18,6 +18,8 @@ import { LIMITS } from '../common/shared';
 import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { LangQueryDto } from '../campaigns/campaigns.dto';
 import {
+  AllocationDecisionDto,
+  AllocationQueryDto,
   CashPledgeDto,
   CollectorPledgeDto,
   CouncilPledgeDto,
@@ -25,13 +27,29 @@ import {
   DemoPledgeDto,
   UploadReceiptDto,
 } from './pledges.dto';
+import { AllocationService } from './allocation.service';
 import { PledgesService } from './pledges.service';
 
 /** Public official-receipt lookup by receipt number (FR-16). */
 @ApiTags('pledges')
 @Controller()
 export class OfficialReceiptsController {
-  constructor(private readonly pledges: PledgesService) {}
+  constructor(
+    private readonly pledges: PledgesService,
+    private readonly allocation: AllocationService,
+  ) {}
+
+  @Get('campaigns/:id/allocation')
+  @ApiOperation({
+    summary:
+      'Preview how a donation is split: campaign share and surplus for the general council fund (public)',
+  })
+  allocationPreview(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: AllocationQueryDto,
+  ) {
+    return this.allocation.preview(id, query.amount, query.lang);
+  }
 
   @Get('official-receipts/:no')
   @ApiOperation({ summary: 'الإيصال الرسمي برقمه (FR-16)' })
@@ -120,6 +138,19 @@ export class PledgesController {
   @ApiOperation({ summary: 'إلغاء تعهد قبل التحقق (DONOR)' })
   cancel(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.pledges.cancel(id, user);
+  }
+
+  @Post('pledges/:id/allocation-decision')
+  @ApiOperation({
+    summary:
+      'Give money held for a full campaign to the general council fund (DONOR owner, FINANCE_VERIFIER)',
+  })
+  decideHeld(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() _dto: AllocationDecisionDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.pledges.decideHeld(id, user);
   }
 
   @Get('receipts/:id/file')

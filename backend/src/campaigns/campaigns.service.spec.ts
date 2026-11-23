@@ -153,7 +153,11 @@ describe('public campaign responses never contain identity fields', () => {
   it('the public list query never selects people (only counts beneficiaries)', async () => {
     const findMany = jest.fn().mockResolvedValue([pollutedRow]);
     const prisma = {
-      campaign: { count: jest.fn().mockResolvedValue(1), findMany },
+      campaign: {
+        count: jest.fn().mockResolvedValue(1),
+        findMany,
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
       pledge: { groupBy: jest.fn().mockResolvedValue([]) },
       $transaction: (ops: Promise<unknown>[]) => Promise.all(ops),
     };

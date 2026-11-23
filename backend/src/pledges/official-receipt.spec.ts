@@ -7,6 +7,7 @@ import { RoleAccessService } from '../common/access/role-access.service';
 import { qrSvg } from '../common/utils/qr';
 import type { NotificationsService } from '../notifications/notifications.service';
 import type { PrismaService } from '../prisma/prisma.service';
+import type { AllocationService } from './allocation.service';
 import type { StorageService } from '../storage/storage.service';
 import { PledgesService } from './pledges.service';
 
@@ -28,6 +29,7 @@ function serviceFor(found: unknown) {
     untouchable<NotificationsService>('notifications'),
     { get: () => `${SITE}/` } as unknown as ConfigService,
     new RoleAccessService(),
+    untouchable<AllocationService>('allocation'),
   );
 }
 
@@ -39,6 +41,8 @@ const verified = {
   donorName: 'متبرع تجريبي',
   donorPhone: '+963900000006',
   amount: new Prisma.Decimal(75000),
+  fundAmount: new Prisma.Decimal(0),
+  heldAmount: new Prisma.Decimal(0),
   currency: 'SYP',
   method: 'BEMO_TRANSFER',
   channel: 'PLATFORM',

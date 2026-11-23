@@ -153,6 +153,34 @@ export function urgentCampaignMessage(
 }
 
 /** The WhatsApp text: title, body and the full link on its own line. */
+/**
+ * The surplus split of a donation (docs/fund-contract.md), appended to every donation message so the
+ * donor's personal confirmation always says where the money goes. Empty for a normal donation.
+ */
+export function allocationNote(
+  c: { fundShare: string; heldAmount: string; currency: Currency },
+  lang: Lang,
+): string {
+  const parts: string[] = [];
+  if (Number(c.fundShare) > 0) {
+    const fund = formatMoney(c.fundShare, c.currency, lang);
+    parts.push(
+      lang === 'ar'
+        ? `منها ${fund} لصندوق المجلس العام.`
+        : `${fund} of it goes to the general council fund.`,
+    );
+  }
+  if (Number(c.heldAmount) > 0) {
+    const held = formatMoney(c.heldAmount, c.currency, lang);
+    parts.push(
+      lang === 'ar'
+        ? `اكتملت الحملة قبل التحقق، فبقي ${held} بانتظار قرارك: افتح «تبرعاتي» لتحويله إلى صندوق المجلس العام.`
+        : `The campaign was completed before verification, so ${held} is waiting for your decision: open “My donations” to give it to the general council fund.`,
+    );
+  }
+  return parts.join(' ');
+}
+
 export function whatsappText(text: MessageText, url: string): string {
   return `${text.title}\n${text.body}\n${url}`;
 }

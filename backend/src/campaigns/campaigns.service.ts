@@ -109,6 +109,8 @@ export class CampaignsService {
   async listPublic(query: ListCampaignsQueryDto): Promise<Paginated<PublicCampaign>> {
     const where: Prisma.CampaignWhereInput = {
       status: query.status ? query.status : { in: [...PUBLIC_STATUSES] },
+      // The general council fund has its own page and call to action, not a card among campaigns.
+      isGeneralFund: false,
       // The category filter is a public display filter by code, not a business rule.
       ...(query.category ? { category: { code: query.category, isActive: true } } : {}),
       ...(query.priority ? { priority: query.priority } : {}),
@@ -531,6 +533,7 @@ export function toPublicCampaign(
       icon: row.category.icon,
     },
     isOngoing: row.isOngoing,
+    isGeneralFund: row.isGeneralFund,
     title: en && row.titleEn ? row.titleEn : row.titleAr,
     summary: en && row.summaryEn ? row.summaryEn : row.summaryAr,
     coverKey: row.coverKey,

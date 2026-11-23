@@ -59,8 +59,8 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 |---|---|---|
 | Overview · Project Structure · Installation · Backend/Frontend/Mobile setup & run · Database migration & seed · Demo accounts | `README.md` §§ intro, 1–8 | done |
 | Team Members (name, role, contribution, GitHub) matching the brief and Git | missing | **TODO-team (teammates are editing code)** |
-| Main Features · Tech Stack · Prerequisites · Environment Variables (as named sections) | partly present under other headings | **TODO-team (teammates are editing code)** |
-| Backend API Overview (method + path by domain) | missing — `docs/postman/README.md` has the domain table to copy | **TODO-team (teammates are editing code)** |
+| Main Features · Tech Stack · Prerequisites · Environment Variables (as named sections) | **Main Features** section added (incl. the general council fund); Tech Stack / Prerequisites / Environment Variables still under other headings (Repository layout, Install once, steps 4–6) | partly done — TODO-team (rename headings) |
+| Backend API Overview (method + path by domain) | README **Backend API Overview**: all 103 endpoints by domain, generated from the Postman collection, 🔒 marks protected ones | done |
 | Swagger Documentation · Postman Collection sections | missing — link `/api/docs` and `docs/postman/` | **TODO-team (teammates are editing code)** |
 | Demo URL · Mobile APK / Expo link · Known Limitations | missing | **TODO-team** + needs human (APK needs an Expo account) |
 
@@ -87,12 +87,12 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| README "Backend API Overview" grouped by domain | missing in README | **TODO-team (teammates are editing code)** |
-| Swagger with `@nestjs/swagger` at `/api/docs` | `backend/src/main.ts` → `/api/docs` (UI answers 200); 101 endpoints, all tagged | done |
-| Swagger documents DTOs, auth, bodies, responses, main errors | bodies + auth complete; **376 gaps** (85 responses without schema, 400/401/403/404 undocumented) — `docs/swagger-audit.md` lists file:line and the decorator for each | **TODO-team (teammates are editing code)** |
+| README "Backend API Overview" grouped by domain | README section, same 17 domains as the Postman folders | done |
+| Swagger with `@nestjs/swagger` at `/api/docs` | `backend/src/main.ts` → `/api/docs` (UI answers 200); 103 endpoints, all tagged | done |
+| Swagger documents DTOs, auth, bodies, responses, main errors | bodies + auth complete; **384 gaps** (103 endpoints) (85 responses without schema, 400/401/403/404 undocumented) — `docs/swagger-audit.md` lists file:line and the decorator for each | **TODO-team (teammates are editing code)** |
 | Postman Collection v2.1 | `docs/postman/salamiyah-hackathon.postman_collection.json` (schema v2.1.0) | done |
 | `{{baseUrl}}` / `{{token}}` variables, no hardcoded values | collection variables; Bearer `{{token}}` at collection level; login saves the token | done |
-| All backend endpoints | 101 / 101 (`docs/postman/tools/compare-endpoints.cjs`) | done |
+| All backend endpoints | 103 / 103 (`docs/postman/tools/compare-endpoints.cjs`), incl. the two fund endpoints | done |
 | Request examples, bodies, authentication | bodies from the DTO schemas; 36/36 main-flow requests pass (`run-collection.cjs`) | done |
 | Folders match the README API overview | 17 domain folders, listed in `docs/postman/README.md` (README section still to add) | done (README side TODO-team) |
 | No secrets or real tokens | checked: no JWT, no real phone numbers | done |

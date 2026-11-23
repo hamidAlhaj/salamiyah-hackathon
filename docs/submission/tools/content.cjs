@@ -113,6 +113,7 @@ const analysis = {
         'FR12 مسار الحالات الطبية: استقبال ← تدقيق ← نشر حملة.',
         'FR13 ربط المستفيدين بالحملات برمز B-XXXX واستيرادهم من Excel/CSV.',
         'FR14 سجل تدقيق لكل تعديل وتنبيهات تجاوز مهلة التدقيق.',
+        'FR15 صندوق المجلس العام: تبرع مباشر بلا حملة، وعند تجاوز المبلغ لاحتياج الحملة يختار المتبرع المتبقي فقط أو كامل المبلغ مع ذهاب الفائض للصندوق.',
       ]],
       ['h', '4. المتطلبات غير الوظيفية (Non-Functional Requirements)'],
       ['ul', [
@@ -201,6 +202,7 @@ const analysis = {
         'FR12 Medical pipeline: intake → review → publish a campaign.',
         'FR13 Link beneficiaries to campaigns by code B-XXXX and import them from Excel/CSV.',
         'FR14 Audit log for every change and overdue-review alerts.',
+        'FR15 General council fund: direct donations without a campaign; above a campaign’s remaining need the donor gives only the remaining need or the full amount with the surplus to the fund.',
       ]],
       ['h', '4. Non-Functional Requirements'],
       ['ul', [

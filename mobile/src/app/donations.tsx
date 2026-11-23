@@ -93,6 +93,11 @@ export default function DonationsScreen() {
           <AppText size="xs" tone="muted">
             {`${item.referenceNo} — ${date(item.createdAt, lang)}`}
           </AppText>
+          {Number(item.fundShare) > 0 && (
+            <AppText size="xs" tone="muted" testID="pledge-split">
+              {t('fund.splitLine', { fund: money(item.fundShare, item.currency, lang) })}
+            </AppText>
+          )}
           {item.collectionPoint && (
             <AppText size="xs" tone="muted">
               {t('donations.point', { name: item.collectionPoint.name, area: item.collectionPoint.area })}

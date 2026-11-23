@@ -117,6 +117,7 @@ export class StatsService {
         status: true,
         currency: true,
         categoryId: true,
+        isGeneralFund: true,
         targetAmount: true,
         verifiedAmount: true,
         spentAmount: true,
@@ -218,7 +219,13 @@ export class StatsService {
     // ── totals per currency, and per category in the primary currency ──
     const byCurrency = new Map<Currency, Acc>();
     const byCategory = new Map<string, Acc & { campaigns: number }>();
-    const counts = { active: 0, funded: 0, completed: 0, total: campaigns.length };
+    // The general council fund adds to the money totals but is not a campaign in the counts.
+    const counts = {
+      active: 0,
+      funded: 0,
+      completed: 0,
+      total: campaigns.filter((c) => !c.isGeneralFund).length,
+    };
     for (const c of campaigns) {
       const s = stats.get(c.id);
       const acc = byCurrency.get(c.currency) ?? {
@@ -234,7 +241,9 @@ export class StatsService {
       acc.pending = acc.pending.plus(s?.pending ?? 0);
       acc.demo = acc.demo.plus(s?.demo ?? 0);
       byCurrency.set(c.currency, acc);
-      if (c.status === 'ACTIVE') counts.active++;
+      if (c.isGeneralFund) {
+        // counted in the money totals above and in its own category below, not as a campaign
+      } else if (c.status === 'ACTIVE') counts.active++;
       else if (c.status === 'FUNDED') counts.funded++;
       else counts.completed++;
 

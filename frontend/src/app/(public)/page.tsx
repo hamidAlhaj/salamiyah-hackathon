@@ -8,7 +8,7 @@ import { StarLattice } from '@/components/ui/StarLattice';
 import { listCampaigns } from '@/lib/api/campaigns';
 import { listCategories } from '@/lib/api/categories';
 import { transparencyStats } from '@/lib/api/stats';
-import { formatMoney, PRIORITIES, type Priority } from '@/shared';
+import { formatMoney, GENERAL_FUND_SLUG, PRIORITIES, type Priority } from '@/shared';
 
 interface Step {
   title: string;
@@ -26,6 +26,7 @@ export default async function HomePage({
   const params = await searchParams;
   const locale = (await getLocale()) === 'en' ? 'en' : 'ar';
   const t = await getTranslations('home');
+  const tFund = await getTranslations('fund');
   const tPriority = await getTranslations('priority');
 
   const categories = await listCategories(locale);
@@ -66,6 +67,14 @@ export default async function HomePage({
               {t('ctaTrack')}
             </Link>
           </div>
+          {/* A donation without a specific campaign: the general council fund (docs/fund-contract.md). */}
+          <Link
+            href={`/campaigns/${GENERAL_FUND_SLUG}/donate`}
+            className={buttonClasses('give', 'lg', 'mt-3 self-start')}
+            data-testid="home-fund-cta"
+          >
+            {tFund('cta')}
+          </Link>
         </div>
 
         {/* The brand panel is the open account: collected, spent, remaining. */}

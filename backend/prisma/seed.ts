@@ -40,7 +40,7 @@ import {
   SEED_SAFETY_OVERRIDE_ENV_VAR,
 } from '../src/common/seed-safety.util';
 import { officialReceiptNo } from '../src/common/utils/codes';
-import { normalizePhone } from '../src/common/shared';
+import { GENERAL_FUND_SLUG, normalizePhone } from '../src/common/shared';
 
 /** كلمة مرور تجريبية موحّدة لكل حسابات الـseed (تطوير فقط). */
 export const SEED_PASSWORD = 'Majlis@2026';
@@ -405,6 +405,20 @@ async function main() {
     beneficiaryKind: 'FAMILY',
   });
 
+  // The general council fund's own category: inactive, so no ordinary campaign can be created in it
+  // (docs/fund-contract.md). It still appears in the transparency totals through the fund.
+  const generalFundCategory = await mkCategory({
+    code: 'GENERAL_FUND',
+    nameAr: 'صندوق المجلس العام',
+    nameEn: 'General council fund',
+    descriptionAr: 'تبرعات مباشرة للمجلس وفائض الحملات المكتملة، يُصرف حيث الحاجة مع إثبات.',
+    descriptionEn:
+      'Direct donations to the council and surplus from completed campaigns, spent where needed with proof.',
+    icon: 'hands',
+    sortOrder: 90,
+    isActive: false,
+  });
+
   // ── Receiving details per method. Every account name and number is FAKE (hackathon only). ──
   await prisma.paymentMethodConfig.createMany({ data: PAYMENT_METHODS });
 
@@ -743,6 +757,30 @@ async function main() {
           },
         ],
       },
+    },
+  });
+  // The general council fund: one campaign, no target, never completed. Starts empty so the seeded
+  // totals in DEMO.md stay the same; donations and campaign surpluses fill it during the demo.
+  await prisma.campaign.create({
+    data: {
+      slug: GENERAL_FUND_SLUG,
+      categoryId: generalFundCategory.id,
+      isGeneralFund: true,
+      isOngoing: true,
+      titleAr: 'صندوق المجلس العام',
+      titleEn: 'General council fund',
+      summaryAr:
+        'تبرّع للمجلس مباشرة دون حملة محددة، ويصل إليه أيضاً فائض الحملات المكتملة بموافقة المتبرع. يُصرف حيث الحاجة، وكل صرف منشور مع إثباته.',
+      summaryEn:
+        'Give to the council directly without a specific campaign; surplus from completed campaigns also arrives here with the donor’s consent. Spent where needed, with every payment published with its proof.',
+      priority: 'NORMAL',
+      targetAmount: 0,
+      coverKey: 'community-1',
+      area: 'السلمية',
+      status: 'ACTIVE',
+      publishedAt: at(2, 1),
+      createdAt: at(2, 1),
+      createdById: admin.id,
     },
   });
   const rain = await prisma.campaign.create({
