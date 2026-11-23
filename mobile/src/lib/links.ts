@@ -4,7 +4,7 @@ import { SITE_URL } from './config';
 export type LinkTarget = { kind: 'screen'; href: string } | { kind: 'web'; url: string };
 
 /**
- * Notifications store web paths (api/src/notifications/links.ts, the same patterns). The app maps
+ * Notifications store web paths (backend/src/notifications/links.ts, the same patterns). The app maps
  * each one to its own screen; the official receipt page opens in the browser. Unknown links → null.
  */
 export function resolveLink(link: string | null): LinkTarget | null {

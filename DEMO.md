@@ -1,7 +1,7 @@
 # عرض «مجلس فند» للجنة التحكيم
 
 دليل العرض الحي: سيناريو من 7 خطوات على الحاسوب وهاتفين، ونسخة دقيقتين، وقائمة تحقق قبل العرض، وحلول للمشاكل.
-كل البيانات **وهمية** (أسماء ومبالغ وحسابات استلام وأرقام هواتف)، وتُعاد بأمر واحد: `npm run demo:reset` داخل `api/`.
+كل البيانات **وهمية** (أسماء ومبالغ وحسابات استلام وأرقام هواتف)، وتُعاد بأمر واحد: `npm run demo:reset` داخل `backend/`.
 الأرقام أدناه محسوبة من الـseed ومُتحقَّق منها على التطبيق وهو يعمل (اختبار Playwright في `e2e/`).
 
 ## الحسابات (كلمة المرور لكل الحسابات: `Majlis@2026`)
@@ -167,17 +167,17 @@
      الجلسة ويفشل الدخول) و `SITE_URL="http://<LAN-IP>:3000"`.
    - الـAPI: `PUBLIC_WEB_URL="http://<LAN-IP>:3000"` (روابط QR وواتساب تفتح على الهواتف)، وأضف
      `http://<LAN-IP>:3000,http://<LAN-IP>:8081` إلى `WEB_ORIGIN` إذا فُتح تطبيق Expo في متصفح (Expo Go لا يحتاجه).
-   - اختياري: `DEMO_WHATSAPP_NUMBERS="+963…,+963…"` في `api/.env` فقط (أرقام الفريق، لا تُرفع ولا تُطبع أبداً)، ثم أعد الضبط.
+   - اختياري: `DEMO_WHATSAPP_NUMBERS="+963…,+963…"` في `backend/.env` فقط (أرقام الفريق، لا تُرفع ولا تُطبع أبداً)، ثم أعد الضبط.
    - `scripts/demo-start.ps1` يضبط متغيرات الويب والـAPI للعملية فقط (لا يغيّر ملفات `.env`).
-5. **إعادة الضبط** قبل كل بروفة وقبل العرض مباشرة: `cd api; npm run demo:reset`.
+5. **إعادة الضبط** قبل كل بروفة وقبل العرض مباشرة: `cd backend; npm run demo:reset`.
 6. **ترتيب التشغيل**: خدمة PostgreSQL ← الـAPI (4000) ← الويب (3000) ← Expo (8081). كلها بأمر واحد:
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts\demo-start.ps1 -Reset
    ```
-   أو يدوياً: `cd api; npm run build; node dist/main` ← `cd web; npm run build; npm start -- -H 0.0.0.0` ←
+   أو يدوياً: `cd backend; npm run build; node dist/main` ← `cd frontend; npm run build; npm start -- -H 0.0.0.0` ←
    `cd mobile; $env:REACT_NATIVE_PACKAGER_HOSTNAME="<LAN-IP>"; npx expo start`.
 7. على كل هاتف: افتح `http://<LAN-IP>:3000` وسجّل الدخول مرة للتأكد؛ في Expo Go امسح QR وأعد التحميل مرة (اتجاه RTL).
-8. اختبار سريع اختياري (يغيّر البيانات، فأعد الضبط بعده): `cd e2e; npx playwright test` ثم `cd api; npm run demo:reset`.
+8. اختبار سريع اختياري (يغيّر البيانات، فأعد الضبط بعده): `cd e2e; npx playwright test` ثم `cd backend; npm run demo:reset`.
 9. أطفئ إشعارات الحاسوب، وكبّر خط المتصفح على جهاز العرض، وافتح النوافذ الخاصة لكل دور مسبقاً.
 
 ## حل المشاكل

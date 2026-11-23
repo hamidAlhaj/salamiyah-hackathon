@@ -25,7 +25,7 @@ async function shot(page: Page, name: string) {
 const SLUG = SLUGS.roof;
 const NEW_SUMMARY = 'ترميم سقف منزل أسرة في حي البعث تضرر من أمطار الشتاء، مع عزل مائي كامل.';
 const UPDATE = 'وصلت مواد العزل إلى الموقع وبدأ العمل هذا الأسبوع.';
-// Seeded overdue case MF-2026-DEMO5 (fictional national ID, see api/prisma/seed.ts).
+// Seeded overdue case MF-2026-DEMO5 (fictional national ID, see backend/prisma/seed.ts).
 const HELD = { code: 'B-0105', nationalId: '04010100205' };
 const GENERIC_REFUSAL = 'تعذّر تسجيل الطلب. راجع المجلس المحلي.';
 

@@ -1,7 +1,7 @@
 import type { ConfigService } from '@nestjs/config';
 import type { GoogleSignInConfig } from '../common/shared';
 
-/** The Google OAuth client (api/.env). Sign in with Google is off unless all three are set. */
+/** The Google OAuth client (backend/.env). Sign in with Google is off unless all three are set. */
 export interface GoogleSettings {
   clientID: string;
   clientSecret: string;

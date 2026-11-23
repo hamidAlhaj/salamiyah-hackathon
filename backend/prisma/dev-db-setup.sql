@@ -6,9 +6,9 @@
 -- Run as the postgres superuser. The app password is passed on the command line and is never stored
 -- in this file:
 --
---   psql -U postgres -h localhost -p 5432 -v app_password="<choose-a-password>" -f api/prisma/dev-db-setup.sql
+--   psql -U postgres -h localhost -p 5432 -v app_password="<choose-a-password>" -f backend/prisma/dev-db-setup.sql
 --
--- Then put the same password in api/.env (never commit it):
+-- Then put the same password in backend/.env (never commit it):
 --   DATABASE_URL="postgresql://majlis:<choose-a-password>@localhost:5432/majlis_fund?schema=public"
 
 \set ON_ERROR_STOP on

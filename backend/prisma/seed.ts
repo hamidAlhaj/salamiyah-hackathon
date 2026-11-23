@@ -4,7 +4,7 @@
  * Deterministic: fixed people, codes, references and amounts; dates are whole months before "now",
  * so the transparency charts always show the last six months. What it creates:
  * - one user per role (+ a second collector and a few fictional donors), opted-in alert donors
- *   (DEMO_WHATSAPP_NUMBERS from api/.env when set, never printed; fictional numbers otherwise);
+ *   (DEMO_WHATSAPP_NUMBERS from backend/.env when set, never printed; fictional numbers otherwise);
  * - collection points CENTER / MOSQUE / OFFICE, three hospitals, the three system categories;
  * - fake receiving accounts for every method, plus one per-campaign override;
  * - 7 public campaigns (2 orphan sponsorship, 2 home renovation, 3 medical aid from the case
@@ -283,7 +283,7 @@ async function main() {
   const karim = await mkUser('كريم ه. (مثال)', '+963900000015', 'DONOR');
 
   // Opted-in alert donors («الخيرين»): the team's real numbers from DEMO_WHATSAPP_NUMBERS in
-  // api/.env only — never committed or printed — or fictional numbers when it is empty.
+  // backend/.env only — never committed or printed — or fictional numbers when it is empty.
   const realNumbers = (process.env.DEMO_WHATSAPP_NUMBERS ?? '')
     .split(',')
     .map((n) => normalizePhone(n.trim()))

@@ -20,10 +20,10 @@ describe('notification links point to routes that exist (bug B2)', () => {
   });
 
   it.each([
-    ['web «my donations»', 'web/src/app/(app)/dashboard/donations/page.tsx'],
-    ['web campaign page', 'web/src/app/(public)/campaigns/[slug]/page.tsx'],
-    ['web official receipt', 'web/src/app/(public)/receipts/[no]/page.tsx'],
-    ['web staff case (SLA alerts)', 'web/src/app/(app)/dashboard/cases/[id]/page.tsx'],
+    ['web «my donations»', 'frontend/src/app/(app)/dashboard/donations/page.tsx'],
+    ['web campaign page', 'frontend/src/app/(public)/campaigns/[slug]/page.tsx'],
+    ['web official receipt', 'frontend/src/app/(public)/receipts/[no]/page.tsx'],
+    ['web staff case (SLA alerts)', 'frontend/src/app/(app)/dashboard/cases/[id]/page.tsx'],
     [
       'mobile «my donations» (/dashboard/donations → /donations)',
       'mobile/src/app/donations.tsx',

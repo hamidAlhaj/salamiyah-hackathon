@@ -8,7 +8,7 @@ datasource db {
 }
 
 // ───────────── Enums ─────────────
-// Keep in sync with api/src/common/shared/enums.ts (and the web/mobile copies).
+// Keep in sync with backend/src/common/shared/enums.ts (and the frontend/mobile copies).
 // Campaign categories are DATA (CampaignCategory table), not an enum.
 
 enum Role {

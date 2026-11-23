@@ -23,7 +23,7 @@ async function shot(page: Page, name: string) {
   });
 }
 
-// Seeded overdue case (api/prisma/seed.ts): the API alerts case officers and admins once.
+// Seeded overdue case (backend/prisma/seed.ts): the API alerts case officers and admins once.
 const OVERDUE_CASE = 'MF-2026-DEMO5';
 
 test('guest: the campaign page carries the OG card and plain share links', async ({

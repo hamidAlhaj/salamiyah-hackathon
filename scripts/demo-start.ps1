@@ -7,11 +7,11 @@
   1. Works out the PC's LAN IP: -LanIp, else the host of EXPO_PUBLIC_API_URL in mobile/.env, else the
      first private IPv4 of an "up" Wi-Fi/Ethernet adapter.
   2. Refuses to start when port 3000, 4000 or 8081 is already in use (stop the old servers first).
-  3. Optional -Reset: `npm run demo:reset` in api/ (migrate reset + deterministic seed; refuses any
+  3. Optional -Reset: `npm run demo:reset` in backend/ (migrate reset + deterministic seed; refuses any
      database other than the local majlis_fund).
   4. Builds the API and starts `node dist/main` with WEB_ORIGIN extended by the LAN origins (Expo web
      from a phone) and PUBLIC_WEB_URL=http://<LAN-IP>:3000 (QR codes and wa.me links open on phones).
-     These are process variables only: api/.env is not changed.
+     These are process variables only: backend/.env is not changed.
   5. Builds the web app and starts `next start -H 0.0.0.0` with SESSION_COOKIE_SECURE=false (plain
      HTTP on the LAN; otherwise phones drop the session cookie) and SITE_URL=http://<LAN-IP>:3000.
   6. Starts Expo with REACT_NATIVE_PACKAGER_HOSTNAME=<LAN-IP> so the QR code uses the Wi-Fi address.
@@ -32,8 +32,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$api = Join-Path $root 'api'
-$web = Join-Path $root 'web'
+$api = Join-Path $root 'backend'
+$web = Join-Path $root 'frontend'
 $mobile = Join-Path $root 'mobile'
 
 # 1. LAN IP

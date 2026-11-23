@@ -27,7 +27,7 @@ export default async function LoginPage({
   const t = await getTranslations('auth');
   const points = t.raw('panelPoints') as string[];
   const safeNext = typeof next === 'string' ? safeNextPath(next) : undefined;
-  // Sign in with Google appears only when api/.env configures it (and on the callback host).
+  // Sign in with Google appears only when backend/.env configures it (and on the callback host).
   const [config, host] = await Promise.all([
     authApi.googleConfig().catch((): GoogleSignInConfig | null => null),
     headers().then((h) => h.get('host')),

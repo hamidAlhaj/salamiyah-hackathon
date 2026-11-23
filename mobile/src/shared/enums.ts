@@ -1,6 +1,6 @@
 /**
- * Shared enums. Must match the Prisma enums in api/prisma/schema.prisma exactly,
- * and the copies in web/src/shared and mobile/src/shared.
+ * Shared enums. Must match the Prisma enums in backend/prisma/schema.prisma exactly,
+ * and the copies in frontend/src/shared and mobile/src/shared.
  * Campaign categories are data (CampaignCategory table), not an enum: they are not listed here.
  */
 

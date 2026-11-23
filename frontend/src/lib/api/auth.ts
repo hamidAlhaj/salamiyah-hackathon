@@ -10,7 +10,7 @@ export function login(phone: string, password: string) {
 /** Memoised per request: the root layout, (app) layout and page share one GET /auth/me. */
 export const me = cache((token: string) => apiFetch<CurrentUser>('/auth/me', { token }));
 
-/** Whether Sign in with Google is configured in api/.env (the login page hides the button if not). */
+/** Whether Sign in with Google is configured in backend/.env (the login page hides the button if not). */
 export function googleConfig() {
   return apiFetch<GoogleSignInConfig>('/auth/google/enabled');
 }

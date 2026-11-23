@@ -5,7 +5,7 @@
  *    prisma/seed.ts, with the same explicit override variable).
  * 2. `prisma migrate reset --force --skip-seed`: drops the schema and re-applies every migration.
  * 3. Empties the local uploads folder (seed images, receipts and proofs of the old database), but
- *    only when it lies inside this api/ folder.
+ *    only when it lies inside this backend/ folder.
  * 4. Runs the deterministic demo seed.
  */
 import { spawnSync } from 'node:child_process';
@@ -46,7 +46,7 @@ async function main() {
     await rm(uploads, { recursive: true, force: true });
     console.log(`Emptied ${rel}/`);
   } else {
-    console.log(`Kept ${uploads} (outside api/, not emptied)`);
+    console.log(`Kept ${uploads} (outside backend/, not emptied)`);
   }
 
   run('npx ts-node prisma/seed.ts');

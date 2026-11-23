@@ -121,7 +121,7 @@ describe('formatMoney / formatNumber use Western digits in both languages', () =
 });
 
 describe('mobile/src/shared is an exact copy of this folder (no shared packages)', () => {
-  // The web copy has its own Vitest check (web/src/shared/shared.test.ts); mobile has no test runner,
+  // The web copy has its own Vitest check (frontend/src/shared/shared.test.ts); mobile has no test runner,
   // so its copy is checked here.
   const mobileShared = join(__dirname, '../../../../mobile/src/shared');
 

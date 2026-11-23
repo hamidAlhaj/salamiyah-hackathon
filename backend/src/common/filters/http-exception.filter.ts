@@ -9,7 +9,7 @@ import {
 import { Request, Response } from 'express';
 
 // Consistent error shape across the whole API: { statusCode, message, error, path, timestamp }.
-// `message` keeps the stable codes (e.g. phone_taken) that web/mobile map to text.
+// `message` keeps the stable codes (e.g. phone_taken) that frontend/mobile map to text.
 // Unknown errors become a 500 with a generic message; the stack is logged, never returned.
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {

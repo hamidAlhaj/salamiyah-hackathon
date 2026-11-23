@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import type { CategoryIcon as CategoryIconKey } from '@/shared';
 
-/** The same 24px stroke icons as web/src/components/campaigns/CategoryIcon.tsx (CATEGORY_ICONS keys). */
+/** The same 24px stroke icons as frontend/src/components/campaigns/CategoryIcon.tsx (CATEGORY_ICONS keys). */
 const PATHS: Record<CategoryIconKey, ReactNode> = {
   'heart-pulse': (
     <>

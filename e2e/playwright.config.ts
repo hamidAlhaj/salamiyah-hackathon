@@ -6,7 +6,7 @@ import { defineConfig, devices } from '@playwright/test';
  * http://localhost:3000). Point E2E_WEB_URL at http://<LAN-IP>:3000 to check the LAN demo.
  * Uses the installed Google Chrome (channel "chrome"), so no browser download is needed.
  *
- * The scenario mutates the database: run `npm run demo:reset` in api/ before it, and again after it.
+ * The scenario mutates the database: run `npm run demo:reset` in backend/ before it, and again after it.
  */
 export default defineConfig({
   testDir: './tests',
