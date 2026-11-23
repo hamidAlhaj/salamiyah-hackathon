@@ -7,8 +7,9 @@ target amount. Donors browse campaigns and give by transfer, local e-wallet (sim
 cash at a collection point, and get an instant notification confirming receipt. A public transparency view shows the
 total collected, the amounts spent with proof, and the beneficiaries — by anonymous code only, never their identities.
 
-> **Status:** `api/` (P02–P06) and the public `web/` pages (P04, P07: home, campaign account, track, receipts) are in
-> place. Staff screens, donations, notifications and `mobile/` follow (see `docs/_analysis/05-execution-plan.md` §7).
+> **Status:** demo-ready (P16): api, web (public pages, staff workspace, collector PWA, transparency dashboard) and the
+> Expo donor app, with a deterministic demo seed, the judges' walkthrough in [DEMO.md](DEMO.md) (Arabic) and a Playwright
+> suite for it in `e2e/`. Later prompts are in `docs/_analysis/05-execution-plan.md` §7.
 
 ## Repository layout
 
@@ -16,10 +17,13 @@ total collected, the amounts spent with proof, and the beneficiaries — by anon
 api/      NestJS 10 + Prisma 5 + PostgreSQL       (own package.json / package-lock.json)
 web/      Next.js 15 (App Router) + Tailwind 3      (own package.json / package-lock.json)
 mobile/   Expo SDK 58 donor app                     (own package.json / package-lock.json)
+e2e/      Playwright smoke + demo scenario          (own package.json / package-lock.json, dev tool only)
+scripts/  demo-start.ps1 (starts api, web and Expo for the LAN demo)
+DEMO.md   the judges' walkthrough (Arabic): roles, logins, clicks, expected numbers, checklist
 docs/     input/ (source PDFs, brief, idea, meeting) · analysis/ · _analysis/ (reports 01–05) · tools/
 ```
 
-Three separate npm projects: no workspaces, no shared packages, no Docker. Rules for contributors and Claude Code are in
+Three separate npm projects (plus the `e2e/` test tool): no workspaces, no shared packages, no Docker. Rules for contributors and Claude Code are in
 [CLAUDE.md](CLAUDE.md).
 
 ## Run it locally (Windows first)
@@ -82,6 +86,10 @@ npm run start:dev
 ```
 API on `http://localhost:4000`, Swagger at `http://localhost:4000/api/docs`.
 
+`npm run demo:reset` rebuilds the demo database in one step: it refuses unless `DATABASE_URL` is the local
+`majlis_fund` database (the seed-safety check), runs `prisma migrate reset --force --skip-seed`, empties `api/uploads/`
+and runs the deterministic seed. Run it before every rehearsal and before the demo.
+
 ### 5. Web
 ```powershell
 cd web
@@ -96,6 +104,10 @@ npm ci
 npm run dev
 ```
 Open `http://localhost:3000`. Collector pages are mobile-first and installable from the phone browser (PWA).
+
+`SESSION_COOKIE_SECURE` (in `web/.env`) sets the `Secure` flag of the HttpOnly session cookie. Empty = on in production,
+off in development. For the **LAN demo** (a production build served over plain HTTP at `http://<LAN-IP>:3000`) set it
+to `"false"`, otherwise phones drop the cookie and login fails. Never set it to `"false"` behind HTTPS.
 
 ### 6. Mobile (donor app)
 ```powershell
@@ -122,6 +134,7 @@ PowerShell:
 New-NetFirewallRule -DisplayName "Majlis Fund dev (API 4000, Metro 8081)" -Direction Inbound -Protocol TCP -LocalPort 4000,8081 -RemoteAddress LocalSubnet -Action Allow -Profile Private,Public
 ```
 Remove it after the hackathon: `Remove-NetFirewallRule -DisplayName "Majlis Fund dev (API 4000, Metro 8081)"`.
+For the LAN demo, phones also open the web app on port 3000: see the checklist in [DEMO.md](DEMO.md).
 
 ### 7. Install the collector app (PWA)
 Collectors («مسؤول نقطة جمع») use the web dashboard `/dashboard/collector` on their phone and can add it to the home
@@ -141,9 +154,40 @@ cd web; npm run build; npm start
 - Alternative for a quick demo: in Chrome on the phone open `chrome://flags/#unsafely-treat-insecure-origin-as-secure`,
   add `http://<LAN-IP>:3000`, relaunch. Use only on a demo device.
 
-### 8. Demo accounts
-`npm run seed` prints one fictional account per role (DONOR, STAFF, CASE_OFFICER, FINANCE_VERIFIER, ADMIN, COLLECTOR).
-The demo walkthrough is in `DEMO.md` (added in P13).
+### 8. Demo accounts and the walkthrough
+All seed accounts are fictional and share the password `Majlis@2026` (development only):
+
+| Role | Login |
+|---|---|
+| ADMIN | `0900000001` |
+| CASE_OFFICER | `0900000002` |
+| FINANCE_VERIFIER | `0900000003` |
+| STAFF | `0900000004` |
+| COLLECTOR («مسؤول نقطة جمع», CENTER + MOSQUE points) | `0900000005` |
+| DONOR (opted in to WhatsApp alerts) | `0900000006` |
+| DONOR (diaspora, English) | `+4915100000007` |
+
+The judges' scenario, the 2-minute version, the expected numbers, the pre-demo checklist (VPN, firewall, LAN variables,
+start order) and troubleshooting are in [DEMO.md](DEMO.md). `scripts/demo-start.ps1` starts api, web and Expo for the
+LAN demo (read it first; it is documented step by step).
+
+### 9. End-to-end tests (Playwright)
+`e2e/` is a fourth, test-only npm project with one pinned dev dependency (`@playwright/test`, see "Additions beyond
+b4f"). It is separate so the three app projects stay unchanged, and it runs on the installed Google Chrome
+(`channel: "chrome"`), so no browser download is needed. `npx playwright@<version> test` alone cannot work: test files
+import `@playwright/test`, which must resolve from a local `node_modules`.
+```powershell
+cd api; npm run demo:reset
+```
+```powershell
+cd e2e; npm ci; npx playwright test
+```
+With api (4000) and web (3000) running, it logs in once per role, checks the public pages (seeded numbers, the completed
+campaign with public proofs, a verifiable receipt, no beneficiary identity or phone on any public page or endpoint) and
+runs the 7-step demo scenario. The scenario changes the data: run `npm run demo:reset` again afterwards. Options:
+`E2E_WEB_URL` / `E2E_API_URL` (defaults `http://localhost:3000` / `:4000`), `E2E_LAN_URL=http://<LAN-IP>:3000` (checks the
+LAN login), `E2E_ALERT_DONORS` (1 + the count of `DEMO_WHATSAPP_NUMBERS`, default 3), `E2E_SCREENSHOTS=1` (writes
+`docs/screenshots/p16/`).
 
 ## Checks before every push
 ```powershell
@@ -163,7 +207,7 @@ skips it in the version check.
   separately and never counts as verified money. The real path is Pledge & Verify (transfer → receipt upload → finance
   verification).
 - **Bemo account details** in the transfer instructions are **fake placeholders**.
-- **All seed data is fictional** (hospitals, collection points, collectors, donors, cases). Real team WhatsApp numbers
+- **All seed data is fictional** (hospitals, collection points, collectors, donors, cases, beneficiaries, payment accounts). Real team WhatsApp numbers
   for the live demo go only in `api/.env` (`DEMO_WHATSAPP_NUMBERS`); the seed falls back to fictional numbers when it is empty.
 - **WhatsApp:** messages are generated in an internal outbox and sent with one-tap `wa.me` links. No WhatsApp API is used.
 
@@ -188,6 +232,7 @@ Libraries used here that the b4f reference does not have. Each one is pinned to 
 | `expo-clipboard` | mobile | Copy a receiving account number (Expo 58 SDK module) | ~58.0.4 | P09 |
 | `@expo-google-fonts/ibm-plex-sans-arabic`, `@expo-google-fonts/noto-kufi-arabic` | mobile | The web fonts (IBM Plex Sans Arabic body, Noto Kufi Arabic headings) bundled for expo-font | 0.4.2 / 0.4.3 | P09 |
 | `qrcode`, `@types/qrcode` (dev) | api | QR code (server-side SVG) on official receipts, encoding the public receipt URL | 1.5.4 / 1.5.6 | P13 |
+| `@playwright/test` (dev) | e2e | Smoke tests and the demo scenario in a separate test-only project; runs on the installed Chrome | 1.64.1 | P16 |
 
 ## Docs
 - `docs/input/`: council PoC proposal (**primary requirement source**), full system specification, team brief (ar/en),

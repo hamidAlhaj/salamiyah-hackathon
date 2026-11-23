@@ -1,16 +1,34 @@
 /**
- * Fictional development/demo data — nothing here is real.
- * 3 system campaign categories, fake payment accounts, 5 medical cases (all anonymous), one orphan
- * sponsorship and one home renovation campaign, one user per role, Pledge & Verify scenarios. Full demo seed: P16.
+ * Final demo seed (P16). Fictional data only — nothing here is real.
+ *
+ * Deterministic: fixed people, codes, references and amounts; dates are whole months before "now",
+ * so the transparency charts always show the last six months. What it creates:
+ * - one user per role (+ a second collector and a few fictional donors), opted-in alert donors
+ *   (DEMO_WHATSAPP_NUMBERS from api/.env when set, never printed; fictional numbers otherwise);
+ * - collection points CENTER / MOSQUE / OFFICE, three hospitals, the three system categories;
+ * - fake receiving accounts for every method, plus one per-campaign override;
+ * - 7 public campaigns (2 orphan sponsorship, 2 home renovation, 3 medical aid from the case
+ *   pipeline) in the states ACTIVE / FUNDED / COMPLETED («تم الإنجاز», with public proofs);
+ * - a registered incubator case ready for review (demo step 2) and an overdue case;
+ * - 12 unlinked orphans B-0412…B-0423 for the live «كفالة 12 يتيماً لعام 2027» (demo step 1);
+ * - verified donations over 6 months on every channel, expenditures with public proofs, orphan
+ *   sponsorship paid up to last month (this month is paid live in step 7);
+ * - pledges in every status and pending items in the finance and collector queues.
  *
  * Run: npm run seed (refuses to run unless DATABASE_URL is the local majlis_fund database).
+ * Full reset: npm run demo:reset. The expected demo numbers are listed in DEMO.md.
  */
 import {
   PrismaClient,
   Prisma,
+  type Campaign,
   type CaseCategory,
+  type CollectionPoint,
+  type PayeeType,
+  type PaymentMethod,
   type Priority,
   type Role,
+  type User,
 } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { createHash, createHmac, randomUUID } from 'node:crypto';
@@ -21,7 +39,7 @@ import {
   checkSeedDatabaseUrl,
   SEED_SAFETY_OVERRIDE_ENV_VAR,
 } from '../src/common/seed-safety.util';
-import { allocateBeneficiaryCodes } from '../src/common/utils/beneficiary-codes';
+import { officialReceiptNo } from '../src/common/utils/codes';
 import { normalizePhone } from '../src/common/shared';
 
 /** كلمة مرور تجريبية موحّدة لكل حسابات الـseed (تطوير فقط). */
@@ -30,6 +48,21 @@ export const SEED_PASSWORD = 'Majlis@2026';
 const prisma = new PrismaClient();
 const uploadsRoot = resolve(process.env.STORAGE_LOCAL_DIR ?? 'uploads');
 const hmacKey = process.env.NATIONAL_ID_HMAC_KEY ?? 'dev-national-id-key-change-me';
+const NOW = new Date();
+
+// ───────────── helpers ─────────────
+
+/** Day `day` of the month `monthsAgo` whole months before now (UTC), never later than now. */
+function at(monthsAgo: number, day: number, hour = 10): Date {
+  const d = new Date(Date.UTC(NOW.getUTCFullYear(), NOW.getUTCMonth() - monthsAgo, day, hour));
+  return d > NOW ? new Date(NOW.getTime() - 60 * 60_000) : d;
+}
+
+/** YYYY-MM of the month `monthsAgo` whole months before now (UTC). */
+function period(monthsAgo: number): string {
+  const d = new Date(Date.UTC(NOW.getUTCFullYear(), NOW.getUTCMonth() - monthsAgo, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+}
 
 async function placeholderImage(folder: string, lines: string[]) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800">
@@ -57,11 +90,11 @@ function nationalId(id: string) {
   };
 }
 
-async function nextReceiptNo(): Promise<string> {
+async function nextReceiptNo(verifiedAt: Date): Promise<string> {
   const [row] = await prisma.$queryRaw<
     { nextval: bigint }[]
   >`SELECT nextval('official_receipt_seq')`;
-  return `R-${new Date().getFullYear()}-${String(Number(row?.nextval ?? 0)).padStart(6, '0')}`;
+  return officialReceiptNo(Number(row?.nextval ?? 0), verifiedAt);
 }
 
 // Refuse the destructive reset unless DATABASE_URL clearly points at the dedicated local database.
@@ -112,13 +145,111 @@ async function reset() {
   await prisma.$executeRaw`ALTER SEQUENCE official_receipt_seq RESTART WITH 1`;
 }
 
+// ───────────── fixed reference data ─────────────
+
+const PAYMENT_METHODS: Prisma.PaymentMethodConfigCreateManyInput[] = [
+  {
+    method: 'BEMO_TRANSFER',
+    kind: 'TRANSFER',
+    labelAr: 'حوالة بنك بيمو',
+    labelEn: 'Bemo bank transfer',
+    accountName: 'المجلس المحلي في السلمية (تجريبي)',
+    accountNameEn: 'Salamiyah Local Council (demo)',
+    accountNumber: '0000-1111-2222 (FAKE)',
+    instructionsAr: 'اكتب رقم مرجع التبرع في ملاحظة الحوالة، ثم ارفع صورة الإيصال.',
+    instructionsEn:
+      'Write the donation reference in the transfer note, then upload the receipt.',
+    allowsReceiptUpload: true,
+    allowsDemoCheckout: true,
+    sortOrder: 10,
+  },
+  {
+    method: 'BANK_TRANSFER',
+    kind: 'TRANSFER',
+    labelAr: 'حوالة مصرفية',
+    labelEn: 'Bank transfer',
+    accountName: 'المجلس المحلي في السلمية (تجريبي)',
+    accountNameEn: 'Salamiyah Local Council (demo)',
+    accountNumber: 'SY00 0000 0000 0000 (FAKE)',
+    allowsReceiptUpload: true,
+    allowsDemoCheckout: true,
+    sortOrder: 20,
+  },
+  {
+    method: 'SHAM_CASH',
+    kind: 'WALLET',
+    labelAr: 'شام كاش',
+    labelEn: 'ShamCash',
+    accountName: 'المجلس المحلي في السلمية (تجريبي)',
+    accountNameEn: 'Salamiyah Local Council (demo)',
+    accountNumber: '0930 000 001 (FAKE)',
+    allowsReceiptUpload: true,
+    allowsDemoCheckout: true,
+    sortOrder: 30,
+  },
+  {
+    method: 'SYRIATEL_CASH',
+    kind: 'WALLET',
+    labelAr: 'سيريتل كاش',
+    labelEn: 'Syriatel Cash',
+    accountName: 'المجلس المحلي في السلمية (تجريبي)',
+    accountNameEn: 'Salamiyah Local Council (demo)',
+    accountNumber: '0930 000 002 (FAKE)',
+    allowsReceiptUpload: true,
+    allowsDemoCheckout: true,
+    sortOrder: 40,
+  },
+  {
+    method: 'MTN_CASH',
+    kind: 'WALLET',
+    labelAr: 'MTN كاش',
+    labelEn: 'MTN Cash',
+    accountName: 'المجلس المحلي في السلمية (تجريبي)',
+    accountNameEn: 'Salamiyah Local Council (demo)',
+    accountNumber: '0940 000 003 (FAKE)',
+    allowsReceiptUpload: true,
+    allowsDemoCheckout: true,
+    sortOrder: 50,
+  },
+  {
+    method: 'PAYPAL',
+    kind: 'CARD',
+    labelAr: 'PayPal',
+    labelEn: 'PayPal',
+    allowsDemoCheckout: true,
+    sortOrder: 60,
+  },
+  {
+    method: 'VISA',
+    kind: 'CARD',
+    labelAr: 'بطاقة Visa',
+    labelEn: 'Visa card',
+    allowsDemoCheckout: true,
+    sortOrder: 70,
+  },
+  {
+    method: 'CASH',
+    kind: 'CASH',
+    labelAr: 'نقداً في نقطة جمع',
+    labelEn: 'Cash at a collection point',
+    sortOrder: 80,
+  },
+];
+
 async function main() {
   await reset();
   const passwordHash = await hash(SEED_PASSWORD, 10);
 
-  // ── مستخدم لكل دور ──
-  const mkUser = (fullName: string, phone: string, role: Role, locale: 'ar' | 'en' = 'ar') =>
-    prisma.user.create({ data: { fullName, phone, role, locale, passwordHash } });
+  // ── Users: one per role (fixed demo logins), a second collector, fictional donors ──
+  const mkUser = (
+    fullName: string,
+    phone: string,
+    role: Role,
+    extra: Partial<Prisma.UserCreateInput> = {},
+  ) =>
+    prisma.user.create({
+      data: { fullName, phone, role, locale: 'ar', passwordHash, ...extra },
+    });
   const admin = await mkUser('مدير النظام', '+963900000001', 'ADMIN');
   const caseOfficer = await mkUser(
     'مدقق الحالات (هيئة الإنعاش)',
@@ -128,14 +259,22 @@ async function main() {
   const finance = await mkUser('المدقق المالي', '+963900000003', 'FINANCE_VERIFIER');
   const staff = await mkUser('موظف المجلس المحلي', '+963900000004', 'STAFF');
   const collector = await mkUser('مسؤول نقاط الجمع', '+963900000005', 'COLLECTOR');
-  const donor = await mkUser('متبرع تجريبي', '+963900000006', 'DONOR');
-  const diaspora = await mkUser('Diaspora Donor', '+4915100000007', 'DONOR', 'en');
+  const donor = await mkUser('متبرع تجريبي', '+963900000006', 'DONOR', {
+    whatsappOptIn: true,
+  });
+  const diaspora = await mkUser('Diaspora Donor', '+4915100000007', 'DONOR', {
+    locale: 'en',
+  });
+  const officeCollector = await mkUser('مسؤول نقطة المكتب', '+963900000008', 'COLLECTOR');
+  // Fictional donors with accounts (Pledge & Verify and cash at a point need a donor account).
+  const nour = await mkUser('نور ش. (مثال)', '+963900000011', 'DONOR');
+  const rami = await mkUser('رامي ك. (مثال)', '+963900000012', 'DONOR');
+  const waseem = await mkUser('وسيم ع. (مثال)', '+963900000013', 'DONOR');
+  const suad = await mkUser('سعاد ن. (مثال)', '+963900000014', 'DONOR');
+  const karim = await mkUser('كريم ه. (مثال)', '+963900000015', 'DONOR');
 
-  // ── Opted-in donors («الخيرين»): instant receipts and urgent-campaign alerts on WhatsApp. The demo
-  //    donor opts in (fictional number); the diaspora donor does not (no outbox for them). Extra
-  //    alert donors take the team's real numbers from DEMO_WHATSAPP_NUMBERS in api/.env only — never
-  //    committed or printed — and fall back to fictional numbers when it is empty. ──
-  await prisma.user.update({ where: { id: donor.id }, data: { whatsappOptIn: true } });
+  // Opted-in alert donors («الخيرين»): the team's real numbers from DEMO_WHATSAPP_NUMBERS in
+  // api/.env only — never committed or printed — or fictional numbers when it is empty.
   const realNumbers = (process.env.DEMO_WHATSAPP_NUMBERS ?? '')
     .split(',')
     .map((n) => normalizePhone(n.trim()))
@@ -143,19 +282,10 @@ async function main() {
   const alertPhones =
     realNumbers.length > 0 ? realNumbers : ['+963999900001', '+963999900002'];
   for (const [i, phone] of alertPhones.entries()) {
-    await prisma.user.create({
-      data: {
-        fullName: `فاعل خير ${i + 1} (مثال)`,
-        phone,
-        role: 'DONOR',
-        locale: 'ar',
-        passwordHash,
-        whatsappOptIn: true,
-      },
-    });
+    await mkUser(`فاعل خير ${i + 1} (مثال)`, phone, 'DONOR', { whatsappOptIn: true });
   }
 
-  // ── مشافي (تجريبية — تُستبدل بقائمة المجلس، سؤال Q10) ──
+  // ── Hospitals (fictional) ──
   const national = await prisma.hospital.create({
     data: {
       nameAr: 'المشفى الوطني بالسلمية',
@@ -179,7 +309,7 @@ async function main() {
     },
   });
 
-  // ── Collection points (fictional). The contact person is not a user; the COLLECTOR is linked to both. ──
+  // ── Collection points CENTER / MOSQUE / OFFICE (fictional contacts, who are not users) ──
   const pointNorth = await prisma.collectionPoint.create({
     data: {
       name: 'نقطة جمع الحي الشمالي',
@@ -189,7 +319,7 @@ async function main() {
       collectors: { connect: { id: collector.id } },
     },
   });
-  await prisma.collectionPoint.create({
+  const pointWest = await prisma.collectionPoint.create({
     data: {
       name: 'نقطة جمع الحي الغربي',
       type: 'MOSQUE',
@@ -198,14 +328,17 @@ async function main() {
       collectors: { connect: { id: collector.id } },
     },
   });
-  await prisma.collectionPoint.create({
+  const pointOffice = await prisma.collectionPoint.create({
     data: {
       name: 'مكتب المجلس المحلي',
       type: 'OFFICE',
       contactName: 'موظف الاستقبال (مثال)',
       area: 'وسط المدينة',
+      collectors: { connect: { id: officeCollector.id } },
     },
   });
+  const collectorOf = (point: CollectionPoint) =>
+    point.id === pointOffice.id ? officeCollector : collector;
 
   // ── System campaign categories (data, not an enum). Rules read the flags, never the code. ──
   const mkCategory = (data: Prisma.CampaignCategoryCreateInput) =>
@@ -245,98 +378,50 @@ async function main() {
   });
 
   // ── Receiving details per method. Every account name and number is FAKE (hackathon only). ──
-  const methods: Prisma.PaymentMethodConfigCreateManyInput[] = [
-    {
-      method: 'BEMO_TRANSFER',
-      kind: 'TRANSFER',
-      labelAr: 'حوالة بنك بيمو',
-      labelEn: 'Bemo bank transfer',
-      accountName: 'المجلس المحلي في السلمية (تجريبي)',
-      accountNameEn: 'Salamiyah Local Council (demo)',
-      accountNumber: '0000-1111-2222 (FAKE)',
-      instructionsAr: 'اكتب رقم مرجع التبرع في ملاحظة الحوالة، ثم ارفع صورة الإيصال.',
-      instructionsEn:
-        'Write the donation reference in the transfer note, then upload the receipt.',
-      allowsReceiptUpload: true,
-      allowsDemoCheckout: true,
-      sortOrder: 10,
-    },
-    {
-      method: 'BANK_TRANSFER',
-      kind: 'TRANSFER',
-      labelAr: 'حوالة مصرفية',
-      labelEn: 'Bank transfer',
-      accountName: 'المجلس المحلي في السلمية (تجريبي)',
-      accountNameEn: 'Salamiyah Local Council (demo)',
-      accountNumber: 'SY00 0000 0000 0000 (FAKE)',
-      allowsReceiptUpload: true,
-      allowsDemoCheckout: true,
-      sortOrder: 20,
-    },
-    {
-      method: 'SHAM_CASH',
-      kind: 'WALLET',
-      labelAr: 'شام كاش',
-      labelEn: 'ShamCash',
-      accountName: 'المجلس المحلي في السلمية (تجريبي)',
-      accountNameEn: 'Salamiyah Local Council (demo)',
-      accountNumber: '0930 000 001 (FAKE)',
-      allowsReceiptUpload: true,
-      allowsDemoCheckout: true,
-      sortOrder: 30,
-    },
-    {
-      method: 'SYRIATEL_CASH',
-      kind: 'WALLET',
-      labelAr: 'سيريتل كاش',
-      labelEn: 'Syriatel Cash',
-      accountName: 'المجلس المحلي في السلمية (تجريبي)',
-      accountNameEn: 'Salamiyah Local Council (demo)',
-      accountNumber: '0930 000 002 (FAKE)',
-      allowsReceiptUpload: true,
-      allowsDemoCheckout: true,
-      sortOrder: 40,
-    },
-    {
-      method: 'MTN_CASH',
-      kind: 'WALLET',
-      labelAr: 'MTN كاش',
-      labelEn: 'MTN Cash',
-      accountName: 'المجلس المحلي في السلمية (تجريبي)',
-      accountNameEn: 'Salamiyah Local Council (demo)',
-      accountNumber: '0940 000 003 (FAKE)',
-      allowsReceiptUpload: true,
-      allowsDemoCheckout: true,
-      sortOrder: 50,
-    },
-    {
-      method: 'PAYPAL',
-      kind: 'CARD',
-      labelAr: 'PayPal',
-      labelEn: 'PayPal',
-      allowsDemoCheckout: true,
-      sortOrder: 60,
-    },
-    {
-      method: 'VISA',
-      kind: 'CARD',
-      labelAr: 'بطاقة Visa',
-      labelEn: 'Visa card',
-      allowsDemoCheckout: true,
-      sortOrder: 70,
-    },
-    {
-      method: 'CASH',
-      kind: 'CASH',
-      labelAr: 'نقداً في نقطة جمع',
-      labelEn: 'Cash at a collection point',
-      sortOrder: 80,
-    },
-  ];
-  await prisma.paymentMethodConfig.createMany({ data: methods });
+  await prisma.paymentMethodConfig.createMany({ data: PAYMENT_METHODS });
 
-  // ── 5 حالات طبية ──
+  // ── Anonymised beneficiaries with fixed public codes. Generated codes never contain 0 or 1, so
+  //    these B-0xxx codes cannot collide with codes created later in the app. Names are fictional
+  //    and private (never shown publicly). ──
+  const mkBeneficiary = (
+    publicCode: string,
+    kind: 'PATIENT' | 'ORPHAN' | 'FAMILY',
+    area: string,
+    extra: Partial<Prisma.BeneficiaryCreateInput> = {},
+  ) =>
+    prisma.beneficiary.create({
+      data: {
+        publicCode,
+        kind,
+        area,
+        fullName: `مستفيد ${publicCode} (مثال)`,
+        localCouncil: 'المجلس المحلي - السلمية',
+        ...extra,
+      },
+    });
+  const range = (prefix: string, from: number, count: number) =>
+    Array.from({ length: count }, (_, i) => `B-${prefix}${String(from + i).padStart(2, '0')}`);
+
+  const sheikhBadrOrphans = [];
+  for (const code of range('03', 1, 4))
+    sheikhBadrOrphans.push(await mkBeneficiary(code, 'ORPHAN', 'حي الشيخ بدر'));
+  const jammasaOrphans = [];
+  for (const code of range('03', 11, 6))
+    jammasaOrphans.push(await mkBeneficiary(code, 'ORPHAN', 'حي الجماسة'));
+  // Demo step 1: 12 orphans registered but not yet linked to any campaign.
+  for (const code of range('04', 12, 12)) await mkBeneficiary(code, 'ORPHAN', 'السلمية');
+  const baathFamily = await mkBeneficiary('B-0201', 'FAMILY', 'حي البعث');
+  const rainFamilies = [
+    await mkBeneficiary('B-0202', 'FAMILY', 'حي الوراقة'),
+    await mkBeneficiary('B-0203', 'FAMILY', 'حي الوراقة'),
+  ];
+
+  // ── Medical cases (all anonymous on public pages). Three are published as MEDICAL_AID campaigns;
+  //    the incubator case is registered and waits for the case officer (demo step 2); the last one
+  //    is overdue (SLA). ──
   interface SeedCase {
+    code: string;
+    trackingNo: string;
     name: string;
     phone: string;
     nid: string;
@@ -344,18 +429,24 @@ async function main() {
     description: string;
     amount: number;
     priority: Priority;
-    hospitalId: string;
-    doctor: string;
     anonymous: boolean;
-    titleAr: string;
-    titleEn: string;
-    summaryAr: string;
-    summaryEn: string;
     otherPrograms?: string[];
-    publish: boolean;
+    slaDays: number;
+    published?: {
+      slug: string;
+      coverKey: string;
+      titleAr: string;
+      titleEn: string;
+      summaryAr: string;
+      summaryEn: string;
+      publishedMonthsAgo: number;
+      status: 'ACTIVE' | 'FUNDED';
+    };
   }
   const cases: SeedCase[] = [
     {
+      code: 'B-0101',
+      trackingNo: 'MF-2026-DEMO1',
       name: 'م. ع.',
       phone: '+963933100201',
       nid: '04010100201',
@@ -364,38 +455,39 @@ async function main() {
         'رب أسرة يحتاج عملية قلب مفتوح عاجلة. التقرير من المشفى الوطني، والتكلفة المعتمدة 15 مليون.',
       amount: 15_000_000,
       priority: 'VERY_URGENT',
-      hospitalId: national.id,
-      doctor: 'د. سامر (مثال)',
       anonymous: true,
-      titleAr: 'عملية قلب مفتوح عاجلة لرب أسرة',
-      titleEn: 'Urgent open-heart surgery for a father',
-      summaryAr:
-        'رب أسرة من السلمية يحتاج عملية قلب مفتوح خلال أسبوعين. الحالة مدققة من هيئة الإنعاش والطبيب المعتمد، والصرف مباشرة للمشفى الوطني.',
-      summaryEn:
-        'A father from Salamiyah needs open-heart surgery within two weeks. Vetted by the welfare board; funds go directly to the National Hospital.',
-      publish: true,
+      slaDays: 7,
+      published: {
+        slug: 'heart-surgery-father',
+        coverKey: 'medical-1',
+        titleAr: 'عملية قلب مفتوح عاجلة لرب أسرة',
+        titleEn: 'Urgent open-heart surgery for a father',
+        summaryAr:
+          'رب أسرة من السلمية يحتاج عملية قلب مفتوح خلال أسبوعين. الحالة مدققة من هيئة الإنعاش والطبيب المعتمد، والصرف مباشرة للمشفى الوطني.',
+        summaryEn:
+          'A father from Salamiyah needs open-heart surgery within two weeks. Vetted by the welfare board; funds go directly to the National Hospital.',
+        publishedMonthsAgo: 3,
+        status: 'ACTIVE',
+      },
     },
     {
+      code: 'B-0102',
+      trackingNo: 'MF-2026-DEMO2',
       name: 'ر. ح.',
       phone: '+963933100202',
       nid: '04010100202',
       category: 'INCUBATOR',
-      description: 'مولود خديج يحتاج حاضنة لمدة 3 أسابيع.',
+      description:
+        'مولود خديج يحتاج حاضنة لمدة 3 أسابيع في المشفى الوطني. التكلفة المقدرة 4.5 مليون والأسرة غير قادرة على تغطيتها.',
       amount: 4_500_000,
       priority: 'URGENT',
-      hospitalId: national.id,
-      doctor: 'د. ريم (مثال)',
       anonymous: true,
-      titleAr: 'حاضنة لمولود خديج',
-      titleEn: 'Incubator care for a premature newborn',
-      summaryAr:
-        'مولود خديج يحتاج حاضنة لمدة ثلاثة أسابيع. الأسرة غير قادرة على تغطية التكلفة.',
-      summaryEn:
-        'A premature newborn needs three weeks of incubator care. The family cannot cover the cost.',
       otherPrograms: ['الرعاية الاجتماعية'],
-      publish: true,
+      slaDays: 5,
     },
     {
+      code: 'B-0103',
+      trackingNo: 'MF-2026-DEMO3',
       name: 'أبو سمير',
       phone: '+963933100203',
       nid: '04010100203',
@@ -403,18 +495,24 @@ async function main() {
       description: 'أدوية مزمنة لمدة 6 أشهر.',
       amount: 2_400_000,
       priority: 'NORMAL',
-      hospitalId: national.id,
-      doctor: 'د. سامر (مثال)',
       anonymous: true,
-      titleAr: 'أدوية مزمنة لمريض مسن لستة أشهر',
-      titleEn: 'Six months of chronic medication for an elderly patient',
-      summaryAr:
-        'مريض مسن من السلمية يحتاج أدوية مزمنة شهرية لستة أشهر، والصرف للمشفى المعتمد.',
-      summaryEn:
-        'An elderly patient in Salamiyah needs monthly chronic medication for six months; paid to the approved hospital.',
-      publish: true,
+      slaDays: 7,
+      published: {
+        slug: 'chronic-medication-elder',
+        coverKey: 'medical-2',
+        titleAr: 'أدوية مزمنة لمريض مسن لستة أشهر',
+        titleEn: 'Six months of chronic medication for an elderly patient',
+        summaryAr:
+          'مريض مسن من السلمية يحتاج أدوية مزمنة شهرية لستة أشهر، والصرف للمشفى المعتمد.',
+        summaryEn:
+          'An elderly patient in Salamiyah needs monthly chronic medication for six months; paid to the approved hospital.',
+        publishedMonthsAgo: 5,
+        status: 'FUNDED',
+      },
     },
     {
+      code: 'B-0104',
+      trackingNo: 'MF-2026-DEMO4',
       name: 'أم خالد',
       phone: '+963933100204',
       nid: '04010100204',
@@ -422,16 +520,22 @@ async function main() {
       description: 'جرعات علاج كيميائي وتحاليل لمدة 3 أشهر.',
       amount: 8_000_000,
       priority: 'URGENT',
-      hospitalId: national.id,
-      doctor: 'د. ريم (مثال)',
       anonymous: true,
-      titleAr: 'جرعات علاج كيميائي لأم من السلمية',
-      titleEn: 'Chemotherapy doses for a mother in Salamiyah',
-      summaryAr: 'أم من السلمية تحتاج جرعات علاج كيميائي وتحاليل لثلاثة أشهر.',
-      summaryEn: 'A mother in Salamiyah needs three months of chemotherapy and tests.',
-      publish: true,
+      slaDays: 7,
+      published: {
+        slug: 'chemotherapy-mother',
+        coverKey: 'medical-1',
+        titleAr: 'جرعات علاج كيميائي لأم من السلمية',
+        titleEn: 'Chemotherapy doses for a mother in Salamiyah',
+        summaryAr: 'أم من السلمية تحتاج جرعات علاج كيميائي وتحاليل لثلاثة أشهر.',
+        summaryEn: 'A mother in Salamiyah needs three months of chemotherapy and tests.',
+        publishedMonthsAgo: 2,
+        status: 'ACTIVE',
+      },
     },
     {
+      code: 'B-0105',
+      trackingNo: 'MF-2026-DEMO5',
       name: 'س. ن.',
       phone: '+963933100205',
       nid: '04010100205',
@@ -439,60 +543,48 @@ async function main() {
       description: 'كسر في الحوض يحتاج عملية تثبيت. بانتظار تقييم هيئة الإنعاش.',
       amount: 6_000_000,
       priority: 'URGENT',
-      hospitalId: national.id,
-      doctor: '',
       anonymous: false,
-      titleAr: '',
-      titleEn: '',
-      summaryAr: '',
-      summaryEn: '',
-      publish: false,
+      slaDays: -2, // overdue
     },
   ];
 
-  const campaigns: { id: string; slug: string; caseId: string | null }[] = [];
-  let i = 0;
-  for (const c of cases) {
-    i += 1;
+  const medical = new Map<string, Campaign>();
+  for (const [i, c] of cases.entries()) {
     const report = await placeholderImage('cases', [
       'MEDICAL REPORT',
-      `Case #${i}`,
+      `Case #${i + 1}`,
       `Category: ${c.category}`,
     ]);
-    const [publicCode] = await allocateBeneficiaryCodes(prisma, 1);
-    const beneficiary = await prisma.beneficiary.create({
-      data: {
-        publicCode,
-        kind: 'PATIENT',
-        area: 'السلمية',
-        fullName: c.name,
-        phone: c.phone,
-        localCouncil: 'المجلس المحلي - السلمية',
-        otherPrograms: c.otherPrograms ?? [],
-        ...nationalId(c.nid),
-      },
+    const beneficiary = await mkBeneficiary(c.code, 'PATIENT', 'السلمية', {
+      fullName: c.name,
+      phone: c.phone,
+      otherPrograms: c.otherPrograms ?? [],
+      ...nationalId(c.nid),
     });
+    const p = c.published;
+    const submittedAt = p ? at(p.publishedMonthsAgo, 1) : at(0, 1);
     const created = await prisma.case.create({
       data: {
-        trackingNo: `MF-2026-DEMO${i}`,
+        trackingNo: c.trackingNo,
         beneficiaryId: beneficiary.id,
         category: c.category,
         description: c.description,
         requestedAmount: c.amount,
         submittedById: staff.id,
-        slaDueAt: new Date(Date.now() + (c.publish ? 7 : -2) * 86_400_000), // الحالة 5 متأخرة (SLA)
-        ...(c.publish
+        createdAt: submittedAt,
+        slaDueAt: new Date(NOW.getTime() + c.slaDays * 86_400_000),
+        ...(p
           ? {
               status: 'PUBLISHED',
               priority: c.priority,
               route: 'CROWDFUNDING',
-              hospitalId: c.hospitalId,
-              doctorName: c.doctor,
+              hospitalId: national.id,
+              doctorName: i % 2 === 0 ? 'د. سامر (مثال)' : 'د. ريم (مثال)',
               approvedAmount: c.amount,
               isAnonymous: c.anonymous,
-              redactedSummary: c.summaryAr,
+              redactedSummary: p.summaryAr,
               reviewedById: caseOfficer.id,
-              reviewedAt: new Date(),
+              reviewedAt: at(p.publishedMonthsAgo, 1, 14),
             }
           : { status: 'SUBMITTED', isAnonymous: c.anonymous }),
         documents: {
@@ -505,67 +597,95 @@ async function main() {
         },
       },
     });
-    if (c.publish) {
-      const campaign = await prisma.campaign.create({
-        data: {
-          slug: `${c.category.toLowerCase()}-demo${i}`,
-          categoryId: medicalAid.id,
-          caseId: created.id,
-          coverKey: i % 2 === 0 ? 'medical-2' : 'medical-1',
-          // The patient is linked anonymised, as case publish does.
-          beneficiaries: { create: [{ beneficiaryId: beneficiary.id }] },
-          titleAr: c.titleAr,
-          titleEn: c.titleEn,
-          summaryAr: c.summaryAr,
-          summaryEn: c.summaryEn,
-          priority: c.priority,
-          targetAmount: c.amount,
-          hospitalId: c.hospitalId,
-          status: 'ACTIVE',
-          publishedAt: new Date(Date.now() - i * 3_600_000),
-          createdById: caseOfficer.id,
+    if (!p) continue;
+    const campaign = await prisma.campaign.create({
+      data: {
+        slug: p.slug,
+        categoryId: medicalAid.id,
+        caseId: created.id,
+        coverKey: p.coverKey,
+        area: 'السلمية',
+        // The patient is linked anonymised, as case publish does.
+        beneficiaries: {
+          create: [{ beneficiaryId: beneficiary.id, startedAt: at(p.publishedMonthsAgo, 2) }],
         },
-      });
-      campaigns.push({ id: campaign.id, slug: campaign.slug, caseId: created.id });
-    }
+        titleAr: p.titleAr,
+        titleEn: p.titleEn,
+        summaryAr: p.summaryAr,
+        summaryEn: p.summaryEn,
+        priority: c.priority,
+        targetAmount: c.amount,
+        hospitalId: national.id,
+        status: p.status,
+        publishedAt: at(p.publishedMonthsAgo, 2),
+        createdAt: at(p.publishedMonthsAgo, 2),
+        createdById: caseOfficer.id,
+      },
+    });
+    medical.set(p.slug, campaign);
   }
+  const heart = medical.get('heart-surgery-father');
+  const medication = medical.get('chronic-medication-elder');
+  const chemo = medical.get('chemotherapy-mother');
+  if (!heart || !medication || !chemo) throw new Error('seed medical campaigns missing');
 
-  // ── Minimal non-medical campaigns (one per new category; the full demo seed is P16) ──
-  const anonymised = async (kind: 'ORPHAN' | 'FAMILY', area: string, count: number) => {
-    const codes = await allocateBeneficiaryCodes(prisma, count);
-    return Promise.all(
-      codes.map((publicCode, n) =>
-        prisma.beneficiary.create({
-          data: { publicCode, kind, area, fullName: `مستفيد تجريبي ${n + 1} (مثال)` },
-        }),
-      ),
-    );
-  };
-  const orphans = await anonymised('ORPHAN', 'حي الشيخ بدر', 4);
-  const ongoing = await prisma.campaign.create({
+  // ── Orphan sponsorship and home renovation campaigns (created by the ADMIN) ──
+  const sheikhBadr = await prisma.campaign.create({
     data: {
-      slug: 'orphans-2027',
+      slug: 'orphans-sheikh-badr',
       categoryId: orphanSponsorship.id,
       isOngoing: true,
-      titleAr: 'كفالة أيتام حي الشيخ بدر لعام 2027',
-      titleEn: 'Sponsoring orphans in Sheikh Badr for 2027',
-      summaryAr: 'كفالة شهرية لأربعة أيتام في حي الشيخ بدر تُصرف لأسرهم كل شهر طوال العام.',
+      titleAr: 'كفالة أيتام حي الشيخ بدر',
+      titleEn: 'Sponsoring orphans in Sheikh Badr',
+      summaryAr:
+        'كفالة شهرية مستمرة لأربعة أيتام في حي الشيخ بدر، تُصرف لأسرهم في نهاية كل شهر.',
       summaryEn:
-        'Monthly sponsorship for four orphans in Sheikh Badr, paid to their families every month.',
+        'Ongoing monthly sponsorship for four orphans in Sheikh Badr, paid to their families at the end of every month.',
       priority: 'NORMAL',
       targetAmount: 9_600_000,
       coverKey: 'orphans-1',
       area: 'حي الشيخ بدر',
       status: 'ACTIVE',
-      publishedAt: new Date(Date.now() - 10 * 86_400_000),
+      publishedAt: at(5, 1),
+      createdAt: at(5, 1),
       createdById: admin.id,
       beneficiaries: {
-        create: orphans.map((b) => ({ beneficiaryId: b.id, monthlyAmount: 200_000 })),
+        create: sheikhBadrOrphans.map((b) => ({
+          beneficiaryId: b.id,
+          monthlyAmount: 200_000,
+          startedAt: at(5, 1),
+        })),
       },
     },
   });
-  const [family] = await anonymised('FAMILY', 'حي البعث', 1);
-  await prisma.campaign.create({
+  const jammasa = await prisma.campaign.create({
+    data: {
+      slug: 'orphans-aljammasa',
+      categoryId: orphanSponsorship.id,
+      titleAr: 'كفالة 6 أيتام في حي الجماسة لعام كامل',
+      titleEn: 'A full year of sponsorship for 6 orphans in Al-Jammasa',
+      summaryAr:
+        'كفالة ستة أيتام في حي الجماسة لمدة اثني عشر شهراً بمبلغ شهري ثابت لكل يتيم. اكتمل التمويل والصرف مستمر شهرياً.',
+      summaryEn:
+        'Twelve months of sponsorship for six orphans in Al-Jammasa at a fixed monthly amount each. Fully funded; paid monthly.',
+      priority: 'NORMAL',
+      targetAmount: 10_800_000,
+      coverKey: 'orphans-2',
+      area: 'حي الجماسة',
+      status: 'FUNDED',
+      publishedAt: at(5, 1),
+      createdAt: at(5, 1),
+      createdById: admin.id,
+      beneficiaries: {
+        create: jammasaOrphans.map((b) => ({
+          beneficiaryId: b.id,
+          monthlyAmount: 150_000,
+          startedAt: at(5, 1),
+        })),
+      },
+    },
+  });
+  const roof = await prisma.campaign.create({
     data: {
       slug: 'roof-repair-albaath',
       categoryId: homeRenovation.id,
@@ -580,10 +700,11 @@ async function main() {
       coverKey: 'home-1',
       area: 'حي البعث',
       status: 'ACTIVE',
-      publishedAt: new Date(Date.now() - 3 * 86_400_000),
+      publishedAt: at(2, 1),
+      createdAt: at(2, 1),
       createdById: admin.id,
-      beneficiaries: { create: [{ beneficiaryId: family.id }] },
-      // One per-campaign receiving account override (FAKE), shown on this campaign only.
+      beneficiaries: { create: [{ beneficiaryId: baathFamily.id, startedAt: at(2, 1) }] },
+      // The one per-campaign receiving account override (FAKE), shown on this campaign only.
       paymentAccounts: {
         create: [
           {
@@ -596,192 +717,510 @@ async function main() {
       },
     },
   });
+  const rain = await prisma.campaign.create({
+    data: {
+      slug: 'rain-damaged-homes',
+      categoryId: homeRenovation.id,
+      titleAr: 'ترميم منازل متضررة من الأمطار',
+      titleEn: 'Repairing homes damaged by the rains',
+      summaryAr:
+        'ترميم منزلين لأسرتين في حي الوراقة تضررا من أمطار الربيع: جدران وأرضيات وعزل. اكتمل التمويل والصرف مع الفواتير.',
+      summaryEn:
+        'Repairing two family homes in Al-Warraqa damaged by the spring rains: walls, floors and insulation. Fully funded and spent, with invoices.',
+      priority: 'NORMAL',
+      targetAmount: 6_000_000,
+      coverKey: 'home-2',
+      area: 'حي الوراقة',
+      // «تم الإنجاز»: fully spent at target, so it no longer accepts pledges.
+      status: 'COMPLETED',
+      acceptsPledges: false,
+      publishedAt: at(5, 1),
+      createdAt: at(5, 1),
+      createdById: admin.id,
+      beneficiaries: {
+        create: rainFamilies.map((b) => ({ beneficiaryId: b.id, startedAt: at(5, 1) })),
+      },
+    },
+  });
 
-  // ── تعهدات بكل الحالات ──
-  const [heart, incubator, medication] = campaigns;
-  if (!heart || !incubator || !medication) throw new Error('seed campaigns missing');
+  // ── Donations ──
+  let refNo = 0;
+  const nextRef = () => `P-SD${String(++refNo).padStart(4, '0')}`;
+  const donorFields = (u: User) => ({
+    donorId: u.id,
+    donorName: u.fullName,
+    donorPhone: u.phone,
+  });
 
-  async function verifiedPledge(opts: {
-    campaignId: string;
+  type Via =
+    | { kind: 'transfer'; method: PaymentMethod; donor: User }
+    | { kind: 'point'; point: CollectionPoint; donor: User }
+    | { kind: 'council'; name: string; phone: string };
+  interface Verified {
+    campaign: Campaign;
     amount: number;
-    channel: 'PLATFORM' | 'COUNCIL' | 'COLLECTOR';
-    donorId?: string;
-    donorName?: string;
-    donorPhone?: string;
+    on: Date;
+    via: Via;
     anonymous?: boolean;
-    /** Verified this many months ago, so the transparency chart has a history. */
-    monthsAgo?: number;
-  }) {
-    const now = new Date();
-    const verifiedAt = new Date(
-      Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth() - (opts.monthsAgo ?? 0),
-        Math.min(now.getUTCDate(), 15),
-        10,
-      ),
-    );
-    const receiptNo = opts.channel === 'COLLECTOR' ? null : await nextReceiptNo();
-    const p = await prisma.pledge.create({
+  }
+  const T = (method: PaymentMethod, d: User): Via => ({ kind: 'transfer', method, donor: d });
+  const P = (point: CollectionPoint, d: User): Via => ({ kind: 'point', point, donor: d });
+  const C = (name: string, phone: string): Via => ({ kind: 'council', name, phone });
+  const V = (campaign: Campaign, amount: number, on: Date, via: Via, anonymous = false) => ({
+    campaign,
+    amount,
+    on,
+    via,
+    anonymous,
+  });
+
+  // Verified money over the last 6 months on every channel: transfers and wallets (Pledge &
+  // Verify), donor cash at a collection point, and in-person cash at the council.
+  const verified: Verified[] = [
+    // Sheikh Badr orphans: 5,200,000
+    V(sheikhBadr, 1_500_000, at(5, 3), C('سليم ح. (مثال)', '+963955000111'), true),
+    V(sheikhBadr, 1_000_000, at(4, 3), T('BEMO_TRANSFER', donor)),
+    V(sheikhBadr, 800_000, at(3, 3), T('SHAM_CASH', diaspora)),
+    V(sheikhBadr, 700_000, at(2, 3), P(pointNorth, karim)),
+    V(sheikhBadr, 600_000, at(1, 3), T('BANK_TRANSFER', diaspora)),
+    V(sheikhBadr, 600_000, at(0, 2), C('هالة م. (مثال)', '+963955000222')),
+    // Al-Jammasa orphans: 10,800,000 (FUNDED)
+    V(jammasa, 4_000_000, at(5, 4), C('مغتربو السلمية (مثال)', '+963955000333'), true),
+    V(jammasa, 2_500_000, at(4, 4), T('BEMO_TRANSFER', diaspora)),
+    V(jammasa, 1_800_000, at(3, 4), C('سليم ح. (مثال)', '+963955000111')),
+    V(jammasa, 1_500_000, at(2, 4), T('MTN_CASH', rami)),
+    V(jammasa, 1_000_000, at(1, 4), P(pointOffice, suad)),
+    // Roof repair Al-Baath: 5,000,000
+    V(roof, 2_000_000, at(2, 5), T('BEMO_TRANSFER', nour)),
+    V(roof, 1_500_000, at(1, 5), C('هالة م. (مثال)', '+963955000222')),
+    V(roof, 500_000, at(1, 6), P(pointNorth, waseem)),
+    V(roof, 1_000_000, at(0, 2), T('SYRIATEL_CASH', donor)),
+    // Rain-damaged homes: 6,000,000 (COMPLETED)
+    V(rain, 2_500_000, at(5, 5), C('مغتربو السلمية (مثال)', '+963955000333'), true),
+    V(rain, 1_000_000, at(5, 6), T('BEMO_TRANSFER', donor)),
+    V(rain, 1_500_000, at(4, 5), P(pointWest, karim)),
+    V(rain, 1_000_000, at(4, 6), T('SHAM_CASH', diaspora)),
+    // Heart surgery: 7,000,000
+    V(heart, 2_000_000, at(3, 6), T('BEMO_TRANSFER', donor)),
+    V(heart, 3_500_000, at(2, 6), C('سليم ح. (مثال)', '+963955000111'), true),
+    V(heart, 1_000_000, at(1, 7), P(pointNorth, karim)),
+    V(heart, 500_000, at(0, 2), T('BANK_TRANSFER', diaspora)),
+    // Chronic medication: 2,400,000 (FUNDED)
+    V(medication, 1_400_000, at(4, 7), T('BANK_TRANSFER', diaspora)),
+    V(medication, 1_000_000, at(3, 7), C('هالة م. (مثال)', '+963955000222')),
+    // Chemotherapy: 3,200,000
+    V(chemo, 1_500_000, at(2, 7), C('هالة م. (مثال)', '+963955000222')),
+    V(chemo, 1_000_000, at(1, 8), T('MTN_CASH', rami)),
+    V(chemo, 700_000, at(0, 2), P(pointWest, suad)),
+  ];
+
+  /** The channel-specific pledge fields shared by verified and pending pledges. */
+  const channelFields = (via: Via) => {
+    if (via.kind === 'transfer')
+      return { channel: 'PLATFORM' as const, method: via.method, ...donorFields(via.donor) };
+    if (via.kind === 'point')
+      return {
+        channel: 'PLATFORM' as const,
+        method: 'CASH' as const,
+        collectionPointId: via.point.id,
+        recordedById: collectorOf(via.point).id,
+        ...donorFields(via.donor),
+      };
+    return {
+      channel: 'COUNCIL' as const,
+      method: 'CASH' as const,
+      donorName: via.name,
+      donorPhone: via.phone,
+      recordedById: staff.id,
+    };
+  };
+
+  /** A transfer receipt image uploaded by the donor (Pledge & Verify). */
+  async function transferReceipt(pledgeId: string, amount: number, by: User, on: Date) {
+    const img = await placeholderImage('receipts', [
+      'TRANSFER RECEIPT',
+      `Amount: ${amount.toLocaleString('en-US')} SYP`,
+      `Ref: TRX-${pledgeId.slice(0, 6).toUpperCase()}`,
+    ]);
+    return prisma.receipt.create({
       data: {
-        referenceNo: `P-SEED${randomUUID().slice(0, 5).toUpperCase()}`,
-        campaignId: opts.campaignId,
-        donorId: opts.donorId,
-        donorName: opts.donorName,
-        donorPhone: opts.donorPhone,
-        isAnonymousDisplay: opts.anonymous ?? false,
-        amount: opts.amount,
+        pledgeId,
+        transferRef: `TRX-${pledgeId.slice(0, 6).toUpperCase()}`,
+        uploadedById: by.id,
+        createdAt: on,
+        ...img,
+      },
+    });
+  }
+
+  // Oldest first, so official receipt numbers follow the verification dates.
+  verified.sort((a, b) => a.on.getTime() - b.on.getTime());
+  for (const v of verified) {
+    const createdAt = new Date(v.on.getTime() - 86_400_000);
+    const pledge = await prisma.pledge.create({
+      data: {
+        referenceNo: nextRef(),
+        campaignId: v.campaign.id,
+        isAnonymousDisplay: v.anonymous ?? false,
+        amount: v.amount,
         currency: 'SYP',
-        channel: opts.channel,
-        method: opts.channel === 'PLATFORM' ? 'BEMO_TRANSFER' : 'CASH',
         status: 'VERIFIED',
-        verifiedAt,
-        createdAt: verifiedAt,
-        officialReceiptNo: receiptNo,
-        recordedById:
-          opts.channel === 'PLATFORM'
-            ? undefined
-            : opts.channel === 'COLLECTOR'
-              ? collector.id
-              : staff.id,
-        collectionPointId: opts.channel === 'COLLECTOR' ? pointNorth.id : undefined,
-        verifications: {
-          create: { status: 'APPROVED', reviewerId: finance.id, decidedAt: verifiedAt },
-        },
+        verifiedAt: v.on,
+        createdAt,
+        officialReceiptNo: await nextReceiptNo(v.on),
+        ...channelFields(v.via),
+      },
+    });
+    const receipt =
+      v.via.kind === 'transfer'
+        ? await transferReceipt(pledge.id, v.amount, v.via.donor, createdAt)
+        : null;
+    await prisma.verification.create({
+      data: {
+        pledgeId: pledge.id,
+        receiptId: receipt?.id,
+        status: 'APPROVED',
+        reviewerId: finance.id,
+        createdAt,
+        decidedAt: v.on,
       },
     });
     await prisma.campaign.update({
-      where: { id: opts.campaignId },
-      data: { verifiedAmount: { increment: opts.amount } },
+      where: { id: v.campaign.id },
+      data: { verifiedAmount: { increment: v.amount } },
     });
-    return p;
   }
 
-  // متحقق منها
-  await verifiedPledge({
-    campaignId: heart.id,
-    amount: 2_000_000,
-    channel: 'PLATFORM',
-    donorId: donor.id,
-    donorName: donor.fullName,
-    donorPhone: donor.phone,
-    monthsAgo: 4,
-  });
-  await verifiedPledge({
-    campaignId: heart.id,
-    amount: 3_500_000,
-    monthsAgo: 3,
-    channel: 'COUNCIL',
-    donorName: 'سليم ح. (مثال)',
-    donorPhone: '+963955000111',
-    anonymous: true,
-  });
-  await verifiedPledge({
-    campaignId: incubator.id,
-    amount: 1_500_000,
-    channel: 'COUNCIL',
-    donorName: 'هالة م. (مثال)',
-    donorPhone: '+963955000222',
-    monthsAgo: 2,
-  });
-  await verifiedPledge({
-    campaignId: medication.id,
-    amount: 2_400_000,
-    channel: 'PLATFORM',
-    donorId: diaspora.id,
-    donorName: diaspora.fullName,
-    donorPhone: diaspora.phone,
-    monthsAgo: 1,
-  });
-  await prisma.campaign.update({ where: { id: medication.id }, data: { status: 'FUNDED' } });
-  await verifiedPledge({ campaignId: ongoing.id, amount: 3_000_000, channel: 'COLLECTOR' });
+  // ── Pledges in every other status ──
+  const recent = (hoursAgo: number) => new Date(NOW.getTime() - hoursAgo * 3_600_000);
 
-  // بانتظار التحقق: إيصال مرفوع من المغترب
-  const receiptImg = await placeholderImage('receipts', [
-    'BANK BEMO — TRANSFER',
-    'Amount: 1,000,000 SYP',
-    'Ref: TRX-559201',
-  ]);
-  const pendingReceiptPledge = await prisma.pledge.create({
+  // Finance queue (PENDING): a transfer with its receipt, donor cash confirmed by a collector,
+  // and council cash recorded by staff.
+  const uploaded = await prisma.pledge.create({
     data: {
-      referenceNo: 'P-SEEDRCPT',
+      referenceNo: nextRef(),
       campaignId: heart.id,
-      donorId: diaspora.id,
-      donorName: diaspora.fullName,
-      donorPhone: diaspora.phone,
       amount: 1_000_000,
       currency: 'SYP',
-      channel: 'PLATFORM',
-      method: 'BEMO_TRANSFER',
       status: 'RECEIPT_UPLOADED',
+      createdAt: recent(30),
+      ...channelFields(T('BEMO_TRANSFER', diaspora)),
     },
   });
-  const receipt = await prisma.receipt.create({
-    data: {
-      pledgeId: pendingReceiptPledge.id,
-      transferRef: 'TRX-559201',
-      uploadedById: diaspora.id,
-      ...receiptImg,
-    },
-  });
+  const uploadedReceipt = await transferReceipt(uploaded.id, 1_000_000, diaspora, recent(28));
   await prisma.verification.create({
-    data: { pledgeId: pendingReceiptPledge.id, receiptId: receipt.id, status: 'PENDING' },
-  });
-
-  // بانتظار التحقق: حصيلة صندوق نقطة جمع (بلا أسماء)
-  await prisma.pledge.create({
     data: {
-      referenceNo: 'P-SEEDBOX1',
-      campaignId: heart.id,
-      isAnonymousDisplay: true,
-      amount: 750_000,
-      currency: 'SYP',
-      channel: 'COLLECTOR',
-      method: 'CASH',
-      status: 'COLLECTED',
-      collectionPointId: pointNorth.id,
-      recordedById: collector.id,
-      verifications: { create: { status: 'PENDING' } },
+      pledgeId: uploaded.id,
+      receiptId: uploadedReceipt.id,
+      status: 'PENDING',
+      createdAt: recent(28),
     },
   });
+  for (const pending of [
+    { campaign: chemo, amount: 300_000, via: P(pointWest, suad), hoursAgo: 20 },
+    {
+      campaign: roof,
+      amount: 250_000,
+      via: C('أبو جميل (مثال)', '+963955000444'),
+      hoursAgo: 6,
+    },
+  ]) {
+    await prisma.pledge.create({
+      data: {
+        referenceNo: nextRef(),
+        campaignId: pending.campaign.id,
+        amount: pending.amount,
+        currency: 'SYP',
+        status: 'COLLECTED',
+        createdAt: recent(pending.hoursAgo + 24),
+        ...channelFields(pending.via),
+        verifications: { create: { status: 'PENDING', createdAt: recent(pending.hoursAgo) } },
+      },
+    });
+  }
 
-  // تعهد بانتظار رفع الإيصال
+  // Collector queue (PLEDGED cash waiting at a point). The first one is demo step 5; the OFFICE
+  // one belongs to the other collector and is not visible to 0900000005.
+  for (const cash of [
+    { campaign: heart, amount: 200_000, point: pointNorth, d: donor, hoursAgo: 3 },
+    { campaign: sheikhBadr, amount: 150_000, point: pointWest, d: nour, hoursAgo: 26 },
+    { campaign: jammasa, amount: 100_000, point: pointOffice, d: rami, hoursAgo: 8 },
+  ]) {
+    await prisma.pledge.create({
+      data: {
+        referenceNo: nextRef(),
+        campaignId: cash.campaign.id,
+        amount: cash.amount,
+        currency: 'SYP',
+        status: 'PLEDGED',
+        channel: 'PLATFORM',
+        method: 'CASH',
+        collectionPointId: cash.point.id,
+        createdAt: recent(cash.hoursAgo),
+        ...donorFields(cash.d),
+      },
+    });
+  }
+
+  // A transfer pledge still waiting for its receipt.
   await prisma.pledge.create({
     data: {
-      referenceNo: 'P-SEEDWAIT',
-      campaignId: incubator.id,
-      donorId: donor.id,
-      donorName: donor.fullName,
-      donorPhone: donor.phone,
+      referenceNo: nextRef(),
+      campaignId: chemo.id,
       amount: 500_000,
       currency: 'SYP',
-      channel: 'PLATFORM',
-      method: 'BEMO_TRANSFER',
       status: 'PLEDGED',
+      createdAt: recent(48),
+      ...channelFields(T('BEMO_TRANSFER', donor)),
     },
   });
 
-  await prisma.campaignUpdate.create({
+  // Rejected by finance (the receipt does not match), and one cancelled by the donor.
+  const rejected = await prisma.pledge.create({
     data: {
-      campaignId: heart.id,
-      authorId: caseOfficer.id,
-      bodyAr: 'تم تحديد موعد العملية مبدئياً. شكراً لكل من ساهم.',
-      bodyEn: 'The surgery has been tentatively scheduled. Thank you to all contributors.',
+      referenceNo: nextRef(),
+      campaignId: roof.id,
+      amount: 600_000,
+      currency: 'SYP',
+      status: 'REJECTED',
+      createdAt: at(1, 9),
+      ...channelFields(T('BANK_TRANSFER', waseem)),
+    },
+  });
+  const rejectedReceipt = await transferReceipt(rejected.id, 60_000, waseem, at(1, 9));
+  await prisma.verification.create({
+    data: {
+      pledgeId: rejected.id,
+      receiptId: rejectedReceipt.id,
+      status: 'REJECTED',
+      reason: 'المبلغ في الإيصال لا يطابق التعهد',
+      reviewerId: finance.id,
+      createdAt: at(1, 9),
+      decidedAt: at(1, 10),
+    },
+  });
+  await prisma.pledge.create({
+    data: {
+      referenceNo: nextRef(),
+      campaignId: sheikhBadr.id,
+      amount: 100_000,
+      currency: 'SYP',
+      status: 'CANCELLED',
+      channel: 'PLATFORM',
+      method: 'CASH',
+      collectionPointId: pointNorth.id,
+      createdAt: at(1, 12),
+      ...donorFields(donor),
     },
   });
 
-  const counts = {
+  // Simulated payments («Demo»): shown separately, never verified money.
+  for (const demo of [
+    { campaign: sheikhBadr, amount: 250_000, method: 'SYRIATEL_CASH' as const, d: donor },
+    { campaign: roof, amount: 300_000, method: 'VISA' as const, d: diaspora },
+    { campaign: heart, amount: 400_000, method: 'SHAM_CASH' as const, d: donor },
+    { campaign: jammasa, amount: 200_000, method: 'PAYPAL' as const, d: diaspora },
+    { campaign: chemo, amount: 150_000, method: 'MTN_CASH' as const, d: nour },
+  ]) {
+    const ref = nextRef();
+    await prisma.pledge.create({
+      data: {
+        referenceNo: ref,
+        campaignId: demo.campaign.id,
+        amount: demo.amount,
+        currency: 'SYP',
+        status: 'DEMO_CONFIRMED',
+        isDemo: true,
+        channel: 'PLATFORM',
+        method: demo.method,
+        officialReceiptNo: `DEMO-${ref}`,
+        createdAt: at(1, 15),
+        ...donorFields(demo.d),
+      },
+    });
+  }
+
+  // ── Expenditures with public-safe proofs ──
+  async function proof(lines: string[], on: Date) {
+    const img = await placeholderImage('expenditures', lines);
+    return prisma.document.create({
+      data: {
+        kind: 'EXPENDITURE_PROOF',
+        originalName: 'proof.jpg',
+        uploadedById: finance.id,
+        createdAt: on,
+        ...img,
+      },
+    });
+  }
+  async function spend(opts: {
+    campaign: Campaign;
+    payeeType: PayeeType;
+    payeeLabel: string;
+    amount: number;
+    on: Date;
+    description: string;
+    descriptionEn: string;
+    proofLines: string[];
+  }) {
+    const doc = await proof(opts.proofLines, opts.on);
+    await prisma.expenditure.create({
+      data: {
+        campaignId: opts.campaign.id,
+        payeeType: opts.payeeType,
+        payeeLabel: opts.payeeLabel,
+        hospitalId: opts.payeeType === 'HOSPITAL' ? national.id : null,
+        amount: opts.amount,
+        currency: 'SYP',
+        description: opts.description,
+        descriptionEn: opts.descriptionEn,
+        paidAt: opts.on,
+        proofDocumentId: doc.id,
+        proofPublic: true,
+        recordedById: finance.id,
+        createdAt: opts.on,
+      },
+    });
+    await prisma.campaign.update({
+      where: { id: opts.campaign.id },
+      data: { spentAmount: { increment: opts.amount } },
+    });
+  }
+
+  // Monthly orphan sponsorship: every month up to last month is paid; this month is not (step 7).
+  async function sponsorshipRuns(
+    campaign: Campaign,
+    orphans: { id: string; publicCode: string }[],
+    monthly: number,
+  ) {
+    for (let m = 5; m >= 1; m--) {
+      const paidAt = at(m, 25);
+      const doc = await proof(
+        ['SPONSORSHIP TRANSFER', `Period: ${period(m)}`, `${orphans.length} orphans`],
+        paidAt,
+      );
+      await prisma.expenditure.createMany({
+        data: orphans.map((o) => ({
+          campaignId: campaign.id,
+          payeeType: 'BENEFICIARY_FAMILY' as const,
+          payeeLabel: o.publicCode,
+          beneficiaryId: o.id,
+          amount: monthly,
+          currency: 'SYP' as const,
+          description: `كفالة شهر ${period(m)}`,
+          descriptionEn: `Sponsorship for ${period(m)}`,
+          paidAt,
+          periodMonth: period(m),
+          proofDocumentId: doc.id,
+          proofPublic: true,
+          recordedById: finance.id,
+          createdAt: paidAt,
+        })),
+      });
+      await prisma.campaign.update({
+        where: { id: campaign.id },
+        data: { spentAmount: { increment: monthly * orphans.length } },
+      });
+    }
+  }
+  await sponsorshipRuns(sheikhBadr, sheikhBadrOrphans, 200_000);
+  await sponsorshipRuns(jammasa, jammasaOrphans, 150_000);
+
+  await spend({
+    campaign: rain,
+    payeeType: 'SUPPLIER',
+    payeeLabel: 'مستودع مواد البناء (مثال)',
+    amount: 2_500_000,
+    on: at(4, 20),
+    description: 'مواد بناء وبلاط وعزل لمنزلين',
+    descriptionEn: 'Building materials, tiles and insulation for two homes',
+    proofLines: ['INVOICE', 'Building materials and tiles', 'Amount: 2,500,000 SYP'],
+  });
+  await spend({
+    campaign: rain,
+    payeeType: 'CONTRACTOR',
+    payeeLabel: 'ورشة ترميم (مثال)',
+    amount: 3_500_000,
+    on: at(3, 20),
+    description: 'أعمال ترميم الجدران والأرضيات في المنزلين',
+    descriptionEn: 'Wall and floor repair works in both homes',
+    proofLines: ['CONTRACTOR INVOICE', 'Repair works, 2 homes', 'Amount: 3,500,000 SYP'],
+  });
+  await spend({
+    campaign: roof,
+    payeeType: 'SUPPLIER',
+    payeeLabel: 'مورد مواد العزل (مثال)',
+    amount: 1_800_000,
+    on: at(1, 20),
+    description: 'مواد عزل وإسمنت لسقف المنزل',
+    descriptionEn: 'Insulation and cement for the roof',
+    proofLines: ['INVOICE', 'Roof insulation and cement', 'Amount: 1,800,000 SYP'],
+  });
+  for (const m of [3, 2, 1]) {
+    await spend({
+      campaign: medication,
+      payeeType: 'HOSPITAL',
+      payeeLabel: national.nameAr,
+      amount: 400_000,
+      on: at(m, 22),
+      description: `أدوية شهر ${period(m)}`,
+      descriptionEn: `Medication for ${period(m)}`,
+      proofLines: ['HOSPITAL INVOICE', `Medication ${period(m)}`, 'Amount: 400,000 SYP'],
+    });
+  }
+  await spend({
+    campaign: chemo,
+    payeeType: 'HOSPITAL',
+    payeeLabel: national.nameAr,
+    amount: 800_000,
+    on: at(1, 22),
+    description: 'الجرعة الأولى والتحاليل',
+    descriptionEn: 'First dose and tests',
+    proofLines: ['HOSPITAL INVOICE', 'Chemotherapy dose 1 + tests', 'Amount: 800,000 SYP'],
+  });
+
+  await prisma.campaignUpdate.createMany({
+    data: [
+      {
+        campaignId: heart.id,
+        authorId: caseOfficer.id,
+        bodyAr: 'تم تحديد موعد العملية مبدئياً. شكراً لكل من ساهم.',
+        bodyEn: 'The surgery has been tentatively scheduled. Thank you to all contributors.',
+        createdAt: at(0, 2, 12),
+      },
+      {
+        campaignId: rain.id,
+        authorId: admin.id,
+        bodyAr:
+          'تم الانتهاء من ترميم المنزلين وعادت الأسرتان إليهما. الفواتير منشورة في سجل الصرف.',
+        bodyEn:
+          'Both homes are repaired and the families are back. The invoices are in the spending log.',
+        createdAt: at(3, 21),
+      },
+    ],
+  });
+
+  // ── Consistency checks: the seed must satisfy the same rules as the app ──
+  const all = await prisma.campaign.findMany();
+  for (const c of all) {
+    if (c.spentAmount.greaterThan(c.verifiedAmount))
+      throw new Error(`seed: ${c.slug} spends more than it verified`);
+    if (c.status === 'FUNDED' && c.verifiedAmount.lessThan(c.targetAmount))
+      throw new Error(`seed: ${c.slug} is FUNDED below target`);
+    if (c.status === 'COMPLETED' && c.spentAmount.lessThan(c.targetAmount))
+      throw new Error(`seed: ${c.slug} is COMPLETED below target`);
+  }
+
+  const statuses = await prisma.pledge.groupBy({ by: ['status'], _count: { _all: true } });
+  console.log('Seed done:', {
     users: await prisma.user.count(),
-    cases: await prisma.case.count(),
-    anonymousCases: await prisma.case.count({
-      where: { isAnonymous: true, status: 'PUBLISHED' },
-    }),
-    campaigns: await prisma.campaign.count(),
-    pledges: await prisma.pledge.count(),
+    campaigns: all.length,
+    beneficiaries: await prisma.beneficiary.count(),
+    expenditures: await prisma.expenditure.count(),
+    pledges: Object.fromEntries(statuses.map((s) => [s.status, s._count._all])),
     pendingVerifications: await prisma.verification.count({ where: { status: 'PENDING' } }),
-  };
-  console.log('Seed done:', counts);
-  console.log(`Hourani hospital id (for the 15 → 25 million demo): ${hourani.id}`);
+  });
+  console.log(`Hourani hospital id (for the 15 → 25 million extra): ${hourani.id}`);
   console.log('Demo logins (fictional; password = SEED_PASSWORD in prisma/seed.ts):');
   for (const u of [admin, caseOfficer, finance, staff, collector, donor, diaspora]) {
     console.log(`  ${u.role.padEnd(16)} ${u.phone}`);

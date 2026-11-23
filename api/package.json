@@ -18,6 +18,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "seed": "ts-node prisma/seed.ts",
+    "demo:reset": "ts-node prisma/demo-reset.ts",
     "test": "jest",
     "test:watch": "jest --watch"
   },

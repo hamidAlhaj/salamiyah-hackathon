@@ -642,3 +642,18 @@ and can run in parallel branches (merge P17 before P19 if both touch the Sidebar
 5. **(P05) Campaign categories are data**, not an enum: `CampaignCategory` table with behaviour flags
    (`requiresMedicalCase`, `lockedPayeeHospital`, `supportsMonthlySponsorship`); rules read flags, never codes; categories
    API in P06, ADMIN categories screen in P08 (demo: "admin adds a new category live").
+
+---
+
+## Decision updates (P16, 2026-11-23)
+
+1. **E2E tool:** `e2e/` is a fourth, test-only npm project pinning `@playwright/test` 1.64.1 (README "Additions beyond
+   b4f"). `npx playwright@x test` without a local install cannot resolve `@playwright/test` from the test files. It runs on
+   the installed Google Chrome (`channel: "chrome"`), so no browser download. Step 3 of the scenario (DONOR A in Expo
+   Go) is exercised through the web donate page (same API path); the native app itself is checked on a phone.
+2. **LAN demo cookie:** `SESSION_COOKIE_SECURE` (web) overrides the production default of the session cookie's `Secure`
+   flag; `"false"` only for the plain-HTTP LAN demo.
+3. **Demo seed:** fixed codes (`B-0xxx`, never produced by the generator since it has no 0/1), fixed pledge references
+   `P-SD0001…`, receipts numbered by verification date; dates are whole months before "now". `npm run demo:reset`
+   = safety check → `migrate reset --force --skip-seed` → empty `api/uploads/` → seed.
+

@@ -52,6 +52,8 @@ rules live here and in `docs/_analysis/01-reference-b4f.md`.
 
 ## Repository
 - `api/` NestJS · `web/` Next.js · `mobile/` Expo. Three separate npm projects, each with its own package-lock.json.
+- `e2e/` (test tool only, P16): Playwright smoke + demo scenario, own package.json pinning `@playwright/test`; runs
+  against running servers on the installed Chrome. Not an app project: never import it from api/web/mobile.
 - No shared packages. Enums/types are copied into `api/src/common/shared`, `web/src/shared`, `mobile/src/shared`;
   change all three plus `schema.prisma` together (the api enum-sync test must pass). Campaign categories are data, not a
   shared enum.
@@ -152,7 +154,9 @@ collection points only). FINANCE_VERIFIER also records expenditures.
 
 ## Commands
 - DB (once): `psql -U postgres -h localhost -p 5432 -v app_password="..." -f api/prisma/dev-db-setup.sql`
-- api: `npm run start:dev` · `npm run lint` · `npm test` · `npm run build` · `npx prisma migrate dev` · `npm run seed`
+- api: `npm run start:dev` · `npm run lint` · `npm test` · `npm run build` · `npx prisma migrate dev` · `npm run seed` ·
+  `npm run demo:reset` (migrate reset + deterministic demo seed, local DB only)
+- e2e: `npm ci` · `npx playwright test` (after `demo:reset`, with api + web running; reset again afterwards). Demo: `DEMO.md`
 - web: `npm run dev` · `npm run lint` · `npm test` · `npm run build`
 - mobile: `npx expo start` · `npx tsc --noEmit` · `npx expo lint` · `npx expo install --check`
 - Done = lint + tests + build green in every touched project, and the affected screens checked in a browser/phone.

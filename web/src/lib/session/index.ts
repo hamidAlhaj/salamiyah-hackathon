@@ -1,6 +1,7 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { sessionCookieSecure } from './cookie-secure';
 
 // The Nest JWT lives only in this HttpOnly cookie. It never reaches browser JavaScript.
 const SESSION_COOKIE = 'session';
@@ -17,7 +18,8 @@ export async function setSessionToken(token: string): Promise<void> {
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    // SESSION_COOKIE_SECURE overrides the production default ("false" for the plain-HTTP LAN demo).
+    secure: sessionCookieSecure(process.env.SESSION_COOKIE_SECURE, process.env.NODE_ENV),
     sameSite: 'lax',
     maxAge: SESSION_MAX_AGE_SECONDS,
     path: '/',
