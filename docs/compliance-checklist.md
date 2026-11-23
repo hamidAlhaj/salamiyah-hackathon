@@ -1,0 +1,114 @@
+# Compliance checklist — B4F final submission guide (9 pages)
+
+Source: «B4F Hackathon — متطلبات توثيق وتسليم المشروع النهائي» (official student guide, 9 pages). Deadline: **Tuesday
+24 November 2026, 16:00 (Damascus)**. State on branch `docs-submission`, 2026-11-23.
+
+Status: **done** = in the repo with evidence · **TODO-team** = teammates must do it (code is being edited by them, or it
+needs their accounts) · **needs human** = a decision, a name or an account only a person can give.
+
+## Page 1 — General rule
+
+| Requirement | Evidence | Status |
+|---|---|---|
+| Backend + Frontend + Mobile, all three, in **one** repository | `api/` (NestJS), `web/` (Next.js), `mobile/` (Expo) in `hamidAlhaj/salamiyah-hackathon` | done |
+
+## Page 2 — Project Brief (Word, one page each)
+
+| Requirement | Evidence | Status |
+|---|---|---|
+| `اسم-الفريق_ملخص-المشروع.docx`, max 1 page | `docs/submission/اسم-الفريق_ملخص-المشروع.docx` — Word reports **1 page** (PDF check in `docs/submission/pdf/`) | done (placeholder name) |
+| `TeamName_ProjectBrief_EN.docx`, 1 page, same information | `docs/submission/TeamName_ProjectBrief_EN.docx` — **1 page** | done (placeholder name) |
+| Project name and summary · problem and solution · audience and main features · technologies (NestJS, Next.js, React Native) | both briefs, sections 1–4 | done |
+| Team members: name, role, main contribution | table with the five members; role and contribution are `TODO` | **needs human** |
+| GitHub username of every member | `TODO` in the table | **needs human** |
+| English spelling of the members' names | transliterated in the EN brief (Hamid Al-Din Al-Hajj, Rami Al-Shaar, Badr Al-Harfi, Youssef Youssef, Nawar Hassan) — confirm | **needs human** |
+| Repository link and demo link | repo URL filled; demo URL `TODO` (live LAN demo) | needs human (demo URL) |
+| Team name in the file names | `TeamName` / `اسم-الفريق` placeholders; rebuild with `node docs/submission/tools/build-docx.cjs --team-en <Name> --team-ar <الاسم>` | **needs human** |
+| Contributions written in the brief must match the Git history | Git shows one author for all commits (see `docs/review/project-review.md` §2.8 on `review-2026-11-23`) | **TODO-team** (honest roles + real commits from each account) |
+
+## Page 3 — Analysis & Design study (Word, 4–5 pages preferred, max 10)
+
+| Requirement | Evidence | Status |
+|---|---|---|
+| `اسم-الفريق_الدراسة-التحليلية-والتصميمية.docx` | `docs/submission/…` — **5 pages** (incl. diagrams; ERD on its own landscape page) | done (placeholder name) |
+| `TeamName_AnalysisDesign_EN.docx` | `docs/submission/TeamName_AnalysisDesign_EN.docx` — **5 pages** | done (placeholder name) |
+| System Overview (problem, goal, audience, scope, out of scope) | section 1 | done |
+| Actors / User Roles | section 2 (6 roles + public visitor) | done |
+| Functional Requirements | section 3 (FR1–FR14) | done |
+| Non-Functional Requirements | section 4 (security, privacy, performance, usability, reliability, responsiveness, maintainability) | done |
+| ≥ 3 use cases with scenarios + use case diagram | section 5 (UC1–UC3) + `docs/diagrams/use-cases.png` | done |
+| Architecture diagram (Next.js, NestJS, React Native, DB, external services) | section 6 + `docs/diagrams/architecture.png` | done |
+| ERD with entities, relations, PKs, FKs | section 7 + `docs/diagrams/erd.png` (21 models) | done |
+| Security & Authentication (auth, roles, hashing, endpoint protection, validation) | section 8 | done |
+| Optional: Business Rules · Main Data Flow | section 9 (rules); data flow in `docs/diagrams/donation-sequence.png` and the System Map | done |
+
+## Page 4 — Repository structure and contributions
+
+| Requirement | Evidence | Status |
+|---|---|---|
+| `README.md`, `backend/`, `frontend/`, `mobile/`, `docs/`, `.gitignore` | folders are `api/` and `web/`, not `backend/` / `frontend/` | **TODO-team (teammates are editing code)** — rename with `git mv` or state the mapping in README |
+| Each member uses their own GitHub account; appears as a contributor; `git config user.email` linked to it | one author (`hamidAlhaj`) for every commit so far | **TODO-team** |
+| No one pushes the whole team's code under their name; avoid squash merges | — | **TODO-team** (each member's remaining work from their own account, PR + merge commit) |
+| Repository public, or the reviewer added as collaborator | the GitHub API returns 404 without login ⇒ private | **needs human** (owner) |
+
+## Page 5 — README content
+
+| Requirement | Evidence | Status |
+|---|---|---|
+| Overview · Project Structure · Installation · Backend/Frontend/Mobile setup & run · Database migration & seed · Demo accounts | `README.md` §§ intro, 1–8 | done |
+| Team Members (name, role, contribution, GitHub) matching the brief and Git | missing | **TODO-team (teammates are editing code)** |
+| Main Features · Tech Stack · Prerequisites · Environment Variables (as named sections) | partly present under other headings | **TODO-team (teammates are editing code)** |
+| Backend API Overview (method + path by domain) | missing — `docs/postman/README.md` has the domain table to copy | **TODO-team (teammates are editing code)** |
+| Swagger Documentation · Postman Collection sections | missing — link `/api/docs` and `docs/postman/` | **TODO-team (teammates are editing code)** |
+| Demo URL · Mobile APK / Expo link · Known Limitations | missing | **TODO-team** + needs human (APK needs an Expo account) |
+
+## Page 6 — Run instructions
+
+| Requirement | Evidence | Status |
+|---|---|---|
+| Backend: install, `start:dev`, real migration + seed commands | `README.md` §3–4 (`npx prisma migrate dev`, `npm run seed`, `npm run demo:reset`) | done (paths say `api/`, guide says `backend/`) |
+| Frontend: install, `dev` | `README.md` §5 | done |
+| Mobile: install, `npx expo start` | `README.md` §6 | done |
+| APK or Expo link for reviewers | none (`eas.json` absent) | **TODO-team** / **needs human** (Expo account for `eas build -p android --profile preview`) |
+
+## Page 7 — Environment files and demo accounts
+
+| Requirement | Evidence | Status |
+|---|---|---|
+| `backend/.env.example`, `frontend/.env.example`, `mobile/.env.example` | `api/.env.example`, `web/.env.example`, `mobile/.env.example` — all variables, placeholders only | done (folder names, see page 4) |
+| No real values or secrets; `NEXT_PUBLIC_` / `EXPO_PUBLIC_` prefixes | no secrets; web has no browser-side variables by design (server-only API URL); mobile uses `EXPO_PUBLIC_*` | done |
+| No DB passwords, JWT secrets, keys in Git | `.env` ignored; only `.env.example` tracked; collection has no token | done |
+| Demo accounts with real demo passwords in README | `README.md` §8 (7 fictional accounts, `Majlis@2026`), also `DEMO.md` and `docs/postman/README.md` | done |
+| Demo accounts created by a seed script | `api/prisma/seed` + `npm run demo:reset` | done |
+
+## Page 8 — API documentation
+
+| Requirement | Evidence | Status |
+|---|---|---|
+| README "Backend API Overview" grouped by domain | missing in README | **TODO-team (teammates are editing code)** |
+| Swagger with `@nestjs/swagger` at `/api/docs` | `api/src/main.ts` → `/api/docs` (UI answers 200); 101 endpoints, all tagged | done |
+| Swagger documents DTOs, auth, bodies, responses, main errors | bodies + auth complete; **376 gaps** (85 responses without schema, 400/401/403/404 undocumented) — `docs/swagger-audit.md` lists file:line and the decorator for each | **TODO-team (teammates are editing code)** |
+| Postman Collection v2.1 | `docs/postman/salamiyah-hackathon.postman_collection.json` (schema v2.1.0) | done |
+| `{{baseUrl}}` / `{{token}}` variables, no hardcoded values | collection variables; Bearer `{{token}}` at collection level; login saves the token | done |
+| All backend endpoints | 101 / 101 (`docs/postman/tools/compare-endpoints.cjs`) | done |
+| Request examples, bodies, authentication | bodies from the DTO schemas; 36/36 main-flow requests pass (`run-collection.cjs`) | done |
+| Folders match the README API overview | 17 domain folders, listed in `docs/postman/README.md` (README section still to add) | done (README side TODO-team) |
+| No secrets or real tokens | checked: no JWT, no real phone numbers | done |
+| Suggested path `docs/postman/<project-name>.postman_collection.json` | `docs/postman/salamiyah-hackathon.postman_collection.json` | done |
+
+## Page 9 — Final submission list
+
+| Item | Evidence | Status |
+|---|---|---|
+| 1–2 Project Brief AR + EN | `docs/submission/` | done (team name, roles, usernames: needs human) |
+| 3–4 Analysis & Design AR + EN | `docs/submission/` | done (team name: needs human) |
+| 5 GitHub repository link | https://github.com/hamidAlhaj/salamiyah-hackathon (private now) | needs human (visibility) |
+| 6 Demo URL if available | none (LAN demo) | needs human |
+| 7 Short demo video (optional) | none | TODO-team (optional) |
+| Repo: README, three folders, Swagger, Postman, three `.env.example`, demo accounts, seed, APK/Expo link, clear Git history for every member | see rows above | partly done |
+
+## Extra material in this branch (not required by the guide)
+
+- `docs/diagrams/` — architecture, ERD, use cases, donation sequence, donation states, five System Map figures (SVG + PNG).
+- `docs/system-map/` — System Construction Map in the style of the B4F Board map, EN + AR (Markdown + 9-page PDFs).
+- `docs/swagger-audit.md` — the Swagger fix list for a teammate.

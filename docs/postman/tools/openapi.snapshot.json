@@ -1,0 +1,4526 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "summary": "فحص أن الـAPI يعمل",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/audit": {
+      "get": {
+        "operationId": "AuditController_list",
+        "summary": "سجل التدقيق لكيان محدد (ADMIN)",
+        "parameters": [
+          {
+            "name": "entityType",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "Case",
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "audit"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/audit/campaigns/{id}": {
+      "get": {
+        "operationId": "AuditController_campaignHistory",
+        "summary": "سجل الحملة: تعديلات، حالة، صرف، تعهدات وحالتها الطبية (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "audit"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/audit/cases/{id}": {
+      "get": {
+        "operationId": "AuditController_caseHistory",
+        "summary": "سجل الحالة الطبية وحملتها بعد النشر (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "audit"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "summary": "My notifications (newest 50)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationsController_unreadCount",
+        "summary": "How many of my notifications are unread (bell / badge)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/notifications/read-all": {
+      "post": {
+        "operationId": "NotificationsController_readAll",
+        "summary": "Mark all my notifications as read",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "post": {
+        "operationId": "NotificationsController_read",
+        "summary": "Mark one of my notifications as read",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/outbox": {
+      "get": {
+        "operationId": "OutboxController_list",
+        "summary": "Outbox messages with their wa.me link, filterable by kind and status",
+        "parameters": [
+          {
+            "name": "template",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "donation.demo",
+                "donation.pledged",
+                "donation.received",
+                "donation.cash",
+                "donation.collected",
+                "receipt.issued",
+                "receipt.rejected",
+                "campaign.urgent"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "QUEUED",
+                "OPENED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 30,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "outbox"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/outbox/next": {
+      "get": {
+        "operationId": "OutboxController_next",
+        "summary": "\"Next\" mode: the oldest queued message",
+        "parameters": [
+          {
+            "name": "template",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "donation.demo",
+                "donation.pledged",
+                "donation.received",
+                "donation.cash",
+                "donation.collected",
+                "receipt.issued",
+                "receipt.rejected",
+                "campaign.urgent"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "outbox"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/outbox/{id}/opened": {
+      "post": {
+        "operationId": "OutboxController_opened",
+        "summary": "The wa.me link was opened: QUEUED → OPENED",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "outbox"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "summary": "Register a new donor (DONOR)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "phone_taken"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "summary": "Log in with phone and password",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_credentials"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/google/enabled": {
+      "get": {
+        "operationId": "AuthController_googleEnabled",
+        "summary": "Whether Sign in with Google is configured (the web hides the button)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleSignInConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/google": {
+      "get": {
+        "operationId": "AuthController_googleStart",
+        "summary": "Redirect (302) to the Google consent screen",
+        "parameters": [
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "description": "CSRF state from the web (32–128 URL-safe chars)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Location: accounts.google.com"
+          },
+          "400": {
+            "description": "google_state_required"
+          },
+          "404": {
+            "description": "google_sign_in_disabled"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "operationId": "AuthController_googleCallback",
+        "summary": "Exchange Google's one-time code for the app session",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "description": "Google's authorization code",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "google_sign_in_failed / invalid_credentials"
+          },
+          "403": {
+            "description": "google_staff_account"
+          },
+          "404": {
+            "description": "google_sign_in_disabled"
+          },
+          "409": {
+            "description": "google_account_mismatch"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "AuthMeController_me",
+        "summary": "Current user",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/me/phone": {
+      "patch": {
+        "operationId": "AuthMeController_updatePhone",
+        "summary": "DONOR: add or change my phone (required before donating)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePhoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "role_not_allowed"
+          },
+          "409": {
+            "description": "phone_taken"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/categories": {
+      "get": {
+        "operationId": "PublicCategoriesController_list",
+        "summary": "Active campaign categories, ordered",
+        "parameters": [
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "categories"
+        ]
+      },
+      "post": {
+        "operationId": "CategoriesController_create",
+        "summary": "Create a generic category (ADMIN; no behaviour flags)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "categories"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/categories/all": {
+      "get": {
+        "operationId": "CategoriesController_listAll",
+        "summary": "All categories incl. inactive, with flags and campaign counts (ADMIN)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "categories"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/categories/{id}": {
+      "patch": {
+        "operationId": "CategoriesController_update",
+        "summary": "Edit names/icon/order or activate/deactivate (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "categories"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "CategoriesController_remove",
+        "summary": "Delete an unused non-system category (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "categories"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns": {
+      "get": {
+        "operationId": "PublicCampaignsController_list",
+        "summary": "Public campaigns of every category (filter by category code/status)",
+        "parameters": [
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Category code (display filter)",
+            "schema": {
+              "example": "ORPHAN_SPONSORSHIP",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ACTIVE",
+                "FUNDED",
+                "COMPLETED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "VERY_URGENT",
+                "URGENT",
+                "NORMAL"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "post": {
+        "operationId": "CampaignsController_create",
+        "summary": "Create a campaign in a category (ADMIN; medical-case categories come from the case pipeline)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{slug}": {
+      "get": {
+        "operationId": "PublicCampaignsController_get",
+        "summary": "تفاصيل حملة عامة (بلا بيانات شخصية)",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "campaign_not_found"
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{id}/ledger": {
+      "get": {
+        "operationId": "PublicCampaignsController_ledger",
+        "summary": "Campaign account: verified, pending, demo, spent, remaining = verified − spent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "campaign_not_found"
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{id}/transparency": {
+      "get": {
+        "operationId": "PublicCampaignsController_transparency",
+        "summary": "Ledger + public-safe spending list (FR-23)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/staff/all": {
+      "get": {
+        "operationId": "CampaignsController_listForStaff",
+        "summary": "كل الحملات للوحات الموظفين (كل الأدوار عدا DONOR)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/staff/{id}": {
+      "get": {
+        "operationId": "CampaignsController_getForStaff",
+        "summary": "One campaign for its management page with all updates (ADMIN, CASE_OFFICER)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "campaign_not_found"
+          }
+        },
+        "tags": [
+          "campaigns"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}": {
+      "patch": {
+        "operationId": "CampaignsController_update",
+        "summary": "Edit titles, anonymised summaries, cover illustration, area and priority (ADMIN, CASE_OFFICER)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/status": {
+      "patch": {
+        "operationId": "CampaignsController_updateStatus",
+        "summary": "تغيير حالة الحملة / إيقاف التعهدات (ADMIN, CASE_OFFICER)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCampaignStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/updates": {
+      "post": {
+        "operationId": "CampaignsController_addUpdate",
+        "summary": "نشر تحديث للحملة (STAFF, CASE_OFFICER, ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCampaignUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/beneficiaries": {
+      "get": {
+        "operationId": "PublicCampaignBeneficiariesController_list",
+        "summary": "Anonymised beneficiaries of a public campaign (no identities)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "beneficiaries"
+        ]
+      },
+      "post": {
+        "operationId": "BeneficiariesController_link",
+        "summary": "Link a beneficiary to a campaign, optional monthly amount (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkBeneficiaryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "beneficiaries"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/beneficiaries": {
+      "get": {
+        "operationId": "BeneficiariesController_list",
+        "summary": "Search beneficiaries (ADMIN, STAFF; includes private names)",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Code (B-XXXX), name or area",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "beneficiaries"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "BeneficiariesController_create",
+        "summary": "Register an anonymised beneficiary → B-XXXX (ADMIN, STAFF)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBeneficiaryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "beneficiaries"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/beneficiaries/{id}": {
+      "patch": {
+        "operationId": "BeneficiariesController_update",
+        "summary": "Correct a beneficiary record; the code never changes (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBeneficiaryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "beneficiaries"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/beneficiaries/{id}/suspend": {
+      "post": {
+        "operationId": "BeneficiariesController_suspend",
+        "summary": "Administrative suspension with a reason (ADMIN, audited): intake refuses silently, nothing public changes",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BeneficiaryReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "beneficiaries"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/beneficiaries/{id}/reactivate": {
+      "post": {
+        "operationId": "BeneficiariesController_reactivate",
+        "summary": "Lift the suspension with a reason (ADMIN, audited)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BeneficiaryReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "beneficiaries"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/beneficiaries/{id}/notes": {
+      "post": {
+        "operationId": "BeneficiariesController_addNote",
+        "summary": "Add a note or a violation to the internal log (ADMIN, never public)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBeneficiaryNoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "beneficiaries"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/beneficiaries/{beneficiaryId}": {
+      "patch": {
+        "operationId": "BeneficiariesController_updateLink",
+        "summary": "Change the monthly amount of a link or end the link (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "beneficiaryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBeneficiaryLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "beneficiaries"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/payment-methods": {
+      "get": {
+        "operationId": "PublicPaymentMethodsController_list",
+        "summary": "Active payment methods with default receiving accounts",
+        "parameters": [
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/campaigns/{id}/payment-accounts": {
+      "get": {
+        "operationId": "PublicPaymentMethodsController_forCampaign",
+        "summary": "Receiving accounts for this campaign (defaults + overrides)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/payment-methods/config": {
+      "get": {
+        "operationId": "PaymentMethodConfigController_list",
+        "summary": "Every payment method config, inactive too (ADMIN)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "payment-methods"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/payment-methods/config/{method}": {
+      "patch": {
+        "operationId": "PaymentMethodConfigController_update",
+        "summary": "Edit a method’s default receiving details (ADMIN)",
+        "parameters": [
+          {
+            "name": "method",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "BEMO_TRANSFER",
+                "BANK_TRANSFER",
+                "SHAM_CASH",
+                "SYRIATEL_CASH",
+                "MTN_CASH",
+                "PAYPAL",
+                "VISA",
+                "CASH"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentMethodConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "payment-methods"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/payment-accounts/overrides": {
+      "get": {
+        "operationId": "CampaignPaymentAccountsController_overrides",
+        "summary": "This campaign’s own accounts, any status (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "payment-methods"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/payment-accounts/{method}": {
+      "put": {
+        "operationId": "CampaignPaymentAccountsController_set",
+        "summary": "Set this campaign’s account for a method (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "method",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "BEMO_TRANSFER",
+                "BANK_TRANSFER",
+                "SHAM_CASH",
+                "SYRIATEL_CASH",
+                "MTN_CASH",
+                "PAYPAL",
+                "VISA",
+                "CASH"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCampaignAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "payment-methods"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "CampaignPaymentAccountsController_remove",
+        "summary": "Back to the default account for a method (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "method",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "BEMO_TRANSFER",
+                "BANK_TRANSFER",
+                "SHAM_CASH",
+                "SYRIATEL_CASH",
+                "MTN_CASH",
+                "PAYPAL",
+                "VISA",
+                "CASH"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "payment-methods"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cases/track": {
+      "get": {
+        "operationId": "PublicCasesController_track",
+        "summary": "تتبع الطلب برقم التتبع + آخر 4 أرقام من الهاتف (FR-12)",
+        "parameters": [
+          {
+            "name": "no",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "MF-2026-7K3QX",
+              "type": "string"
+            }
+          },
+          {
+            "name": "phoneLast4",
+            "required": true,
+            "in": "query",
+            "description": "آخر 4 أرقام من هاتف المستفيد",
+            "schema": {
+              "example": "3456",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ]
+      }
+    },
+    "/cases": {
+      "post": {
+        "operationId": "CasesController_create",
+        "summary": "تسجيل طلب حالة طبية + التقرير الطبي (FR-06)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "CasesController_list",
+        "summary": "قائمة الحالات (فلترة بالحالة/الأولوية/المتأخرة)",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "SUBMITTED",
+                "UNDER_REVIEW",
+                "NEEDS_INFO",
+                "APPROVED",
+                "REJECTED",
+                "PUBLISHED",
+                "CLOSED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "VERY_URGENT",
+                "URGENT",
+                "NORMAL"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "overdue",
+            "required": false,
+            "in": "query",
+            "description": "المتأخرة فقط (تجاوزت SLA)",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cases/{id}": {
+      "get": {
+        "operationId": "CasesController_get",
+        "summary": "تفاصيل الحالة + تاريخ المستفيد",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cases/{id}/review": {
+      "post": {
+        "operationId": "CasesController_review",
+        "summary": "اعتماد / رفض / طلب معلومات (FR-07)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cases/{id}/hospital-amount": {
+      "patch": {
+        "operationId": "CasesController_changeHospitalOrAmount",
+        "summary": "تغيير المشفى/المبلغ — يعيد الحالة للمراجعة ويوقف التعهدات (FR-09)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeHospitalAmountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cases/{id}/publish": {
+      "post": {
+        "operationId": "CasesController_publish",
+        "summary": "نشر الحالة كحملة عامة (FR-08)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishCaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/documents/{id}/file": {
+      "get": {
+        "operationId": "CasesController_documentFile",
+        "summary": "تنزيل وثيقة خاصة (للموظفين فقط)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/official-receipts/{no}": {
+      "get": {
+        "operationId": "OfficialReceiptsController_officialReceipt",
+        "summary": "الإيصال الرسمي برقمه (FR-16)",
+        "parameters": [
+          {
+            "name": "no",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ]
+      }
+    },
+    "/pledges": {
+      "post": {
+        "operationId": "PledgesController_create",
+        "summary": "تعهد من المنصة ← تعليمات التحويل (DONOR, FR-13)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePledgeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/demo": {
+      "post": {
+        "operationId": "PledgesController_createDemo",
+        "summary": "محاكاة دفع فوري — وضع العرض فقط (DONOR, FR-20)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoPledgeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/cash": {
+      "post": {
+        "operationId": "PledgesController_createCash",
+        "summary": "Cash at an active collection point: a reference to show the Mukhi (DONOR)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CashPledgeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/council": {
+      "post": {
+        "operationId": "PledgesController_createCouncil",
+        "summary": "تبرع حضوري في المجلس (STAFF, FINANCE_VERIFIER, FR-18)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouncilPledgeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/collector": {
+      "post": {
+        "operationId": "PledgesController_createCollector",
+        "summary": "تسجيل حصيلة نقطة جمع (COLLECTOR, FR-19)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectorPledgeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/mine": {
+      "get": {
+        "operationId": "PledgesController_mine",
+        "summary": "«تبرعاتي» (DONOR, FR-17)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/recorded": {
+      "get": {
+        "operationId": "PledgesController_recorded",
+        "summary": "ما سجّلته بنفسي (STAFF, COLLECTOR, FINANCE_VERIFIER)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/{id}": {
+      "get": {
+        "operationId": "PledgesController_get",
+        "summary": "تفاصيل تعهد (المالك أو المالية)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/{id}/receipts": {
+      "post": {
+        "operationId": "PledgesController_uploadReceipt",
+        "summary": "رفع إيصال التحويل ← قيد التحقق (DONOR, STAFF, FR-14)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadReceiptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/pledges/{id}/cancel": {
+      "post": {
+        "operationId": "PledgesController_cancel",
+        "summary": "إلغاء تعهد قبل التحقق (DONOR)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/receipts/{id}/file": {
+      "get": {
+        "operationId": "PledgesController_receiptFile",
+        "summary": "صورة الإيصال المرفوع (المالك أو المالية)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pledges"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/collector/points": {
+      "get": {
+        "operationId": "CollectorController_points",
+        "summary": "My collection points with their waiting cash pledges count",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "collector"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/collector/pledges": {
+      "get": {
+        "operationId": "CollectorController_pending",
+        "summary": "Cash pledges waiting to be handed over at my points",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "collector"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/collector/pledges/by-reference/{referenceNo}": {
+      "get": {
+        "operationId": "CollectorController_byReference",
+        "summary": "Find a cash pledge at my points by the reference the donor shows",
+        "parameters": [
+          {
+            "name": "referenceNo",
+            "required": true,
+            "in": "path",
+            "description": "The pledge reference the donor shows",
+            "schema": {
+              "example": "P-8T6NZ7",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "collector"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/collector/pledges/{id}/confirm": {
+      "post": {
+        "operationId": "CollectorController_confirm",
+        "summary": "Confirm cash received (PLEDGED → COLLECTED + finance verification PENDING)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "collector"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/collector/history": {
+      "get": {
+        "operationId": "CollectorController_history",
+        "summary": "What I handed over: confirmed pledges and recorded box totals",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "collector"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/verifications": {
+      "get": {
+        "operationId": "VerificationsController_list",
+        "summary": "قائمة التحقق المالي (الأقدم أولاً)",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "PENDING",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "verifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/verifications/{id}/approve": {
+      "post": {
+        "operationId": "VerificationsController_approve",
+        "summary": "اعتماد: التعهد VERIFIED + رصيد الحملة + إيصال رسمي (transaction)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "verifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/verifications/{id}/reject": {
+      "post": {
+        "operationId": "VerificationsController_reject",
+        "summary": "رفض مع سبب إلزامي (يُبلَّغ المتبرع)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectVerificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "verifications"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/spending": {
+      "get": {
+        "operationId": "PublicExpendituresController_timeline",
+        "summary": "Public spending timeline (beneficiary codes only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "expenditures"
+        ]
+      }
+    },
+    "/expenditures/{id}/proof": {
+      "get": {
+        "operationId": "PublicExpendituresController_proof",
+        "summary": "A published proof file (404 when not published)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "expenditures"
+        ]
+      }
+    },
+    "/expenditures": {
+      "post": {
+        "operationId": "ExpendituresController_create",
+        "summary": "Record spending with proof (FINANCE_VERIFIER, amount ≤ remaining)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExpenditureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "expenditures"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/expenditures/monthly": {
+      "post": {
+        "operationId": "ExpendituresController_monthly",
+        "summary": "Pay one month of sponsorship to every sponsored beneficiary (FINANCE_VERIFIER)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/MonthlyRunDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "expenditures"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/spending-context": {
+      "get": {
+        "operationId": "ExpendituresController_context",
+        "summary": "Flags, hospital, balance and beneficiaries for the spending page",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "expenditures"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/campaigns/{id}/expenditures": {
+      "get": {
+        "operationId": "ExpendituresController_list",
+        "summary": "Spending of a campaign (FINANCE_VERIFIER, ADMIN, CASE_OFFICER)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "expenditures"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/stats/transparency": {
+      "get": {
+        "operationId": "StatsController_transparency",
+        "parameters": [
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Platform totals, breakdowns, monthly series, recent activity"
+          }
+        },
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/stats/transparency.csv": {
+      "get": {
+        "operationId": "StatsController_transparencyCsv",
+        "parameters": [
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "enum": [
+                "ar",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/collection-points/active": {
+      "get": {
+        "operationId": "PublicCollectionPointsController_active",
+        "summary": "Active collection points for cash donations (public)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "collection-points"
+        ]
+      }
+    },
+    "/hospitals": {
+      "get": {
+        "operationId": "LookupsController_hospitals",
+        "summary": "Active approved hospitals (any signed-in user)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "lookups"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "LookupsController_createHospital",
+        "summary": "Add a hospital (ADMIN)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHospitalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "lookups"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/hospitals/all": {
+      "get": {
+        "operationId": "LookupsController_allHospitals",
+        "summary": "All hospitals, inactive too, with usage counts (ADMIN)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "lookups"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/hospitals/{id}": {
+      "patch": {
+        "operationId": "LookupsController_updateHospital",
+        "summary": "Edit or (de)activate a hospital (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHospitalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "lookups"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/collection-points": {
+      "get": {
+        "operationId": "LookupsController_collectionPoints",
+        "summary": "All collection points (ADMIN, FINANCE_VERIFIER, STAFF)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "lookups"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "LookupsController_createCollectionPoint",
+        "summary": "Add a collection point (ADMIN)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectionPointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "lookups"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/collection-points/mine": {
+      "get": {
+        "operationId": "LookupsController_myCollectionPoints",
+        "summary": "Only my assigned collection points (COLLECTOR)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "lookups"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/collection-points/{id}": {
+      "patch": {
+        "operationId": "LookupsController_updateCollectionPoint",
+        "summary": "Edit or (de)activate a collection point (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCollectionPointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "lookups"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "UsersController_list",
+        "summary": "List accounts, optionally by role (ADMIN)",
+        "parameters": [
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "DONOR",
+                "CASE_OFFICER",
+                "FINANCE_VERIFIER",
+                "STAFF",
+                "ADMIN",
+                "COLLECTOR"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "UsersController_create",
+        "summary": "Create an account with any role (ADMIN)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/users/{id}": {
+      "patch": {
+        "operationId": "UsersController_update",
+        "summary": "Change name, role, active flag or collector points (ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/imports/preview": {
+      "post": {
+        "operationId": "ImportsController_preview",
+        "summary": "1) رفع الملف ← العناوين + أول 20 صف + mapping مقترح",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportFileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "imports"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/imports/{id}/validate": {
+      "post": {
+        "operationId": "ImportsController_validate",
+        "summary": "2) تطبيق المطابقة ← dry run (صالح/أخطاء/تكرار)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MappingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "imports"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/imports/{id}/commit": {
+      "post": {
+        "operationId": "ImportsController_commit",
+        "summary": "3) الحفظ في transaction (التكرارات تُتخطى)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "imports"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/imports/{id}/errors.csv": {
+      "get": {
+        "operationId": "ImportsController_errors",
+        "summary": "الصفوف المرفوضة مع السبب",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "imports"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Majlis Fund API",
+    "description": "Salamiyah medical crowdfunding — Pledge & Verify (hackathon PoC)",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "أحمد الخطيب"
+          },
+          "phone": {
+            "type": "string",
+            "example": "0944123456",
+            "description": "يُطبَّع إلى +963…"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en"
+            ],
+            "default": "ar"
+          },
+          "whatsappOptIn": {
+            "type": "boolean",
+            "default": false,
+            "description": "Consent to WhatsApp messages: receipts and new-campaign alerts (sent from the council phone)"
+          }
+        },
+        "required": [
+          "fullName",
+          "phone",
+          "password"
+        ]
+      },
+      "MeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "null only for a Google sign-in donor who has not added a phone yet"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "DONOR",
+              "CASE_OFFICER",
+              "FINANCE_VERIFIER",
+              "STAFF",
+              "ADMIN",
+              "COLLECTOR"
+            ]
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en"
+            ]
+          },
+          "donorCode": {
+            "type": "string",
+            "nullable": true,
+            "example": "D-K7M2QX"
+          },
+          "whatsappOptIn": {
+            "type": "boolean"
+          },
+          "googleLinked": {
+            "type": "boolean",
+            "description": "The account is linked to a Google sign-in"
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "phone",
+          "role",
+          "locale",
+          "donorCode",
+          "whatsappOptIn",
+          "googleLinked"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Bearer access token (8h)"
+          },
+          "user": {
+            "$ref": "#/components/schemas/MeResponse"
+          }
+        },
+        "required": [
+          "accessToken",
+          "user"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "0944123456"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone",
+          "password"
+        ]
+      },
+      "GoogleSignInConfigDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_CALLBACK_URL are set"
+          },
+          "callbackOrigin": {
+            "type": "string",
+            "nullable": true,
+            "example": "http://localhost:3000"
+          }
+        },
+        "required": [
+          "enabled",
+          "callbackOrigin"
+        ]
+      },
+      "UpdatePhoneDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "0944123456",
+            "description": "يُطبَّع إلى +963…"
+          },
+          "whatsappOptIn": {
+            "type": "boolean",
+            "description": "Consent to WhatsApp messages: receipts and new-campaign alerts (sent from the council phone)"
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "FOOD_BASKETS",
+            "description": "Unique, immutable: upper-case letters, digits and _"
+          },
+          "nameAr": {
+            "type": "string",
+            "example": "سلال غذائية"
+          },
+          "nameEn": {
+            "type": "string",
+            "example": "Food baskets"
+          },
+          "descriptionAr": {
+            "type": "string"
+          },
+          "descriptionEn": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "enum": [
+              "heart-pulse",
+              "child",
+              "home",
+              "hands",
+              "book",
+              "basket",
+              "water",
+              "sun",
+              "users",
+              "star"
+            ]
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 100
+          },
+          "beneficiaryKind": {
+            "type": "string",
+            "enum": [
+              "PATIENT",
+              "ORPHAN",
+              "FAMILY",
+              "OTHER"
+            ],
+            "description": "Which beneficiaries its campaigns link (omit: any kind)"
+          }
+        },
+        "required": [
+          "code",
+          "nameAr",
+          "nameEn",
+          "icon"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "nameAr": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "descriptionAr": {
+            "type": "string",
+            "nullable": true
+          },
+          "descriptionEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "enum": [
+              "heart-pulse",
+              "child",
+              "home",
+              "hands",
+              "book",
+              "basket",
+              "water",
+              "sun",
+              "users",
+              "star"
+            ]
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Activate or deactivate (system categories too)"
+          }
+        }
+      },
+      "CreateCampaignDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "description": "CampaignCategory id (an active category without requiresMedicalCase)"
+          },
+          "titleAr": {
+            "type": "string",
+            "example": "دعم جرعات ونقل مرضى السرطان"
+          },
+          "titleEn": {
+            "type": "string"
+          },
+          "summaryAr": {
+            "type": "string"
+          },
+          "summaryEn": {
+            "type": "string"
+          },
+          "targetAmount": {
+            "type": "string",
+            "example": "50000000"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "SYP",
+              "USD"
+            ],
+            "default": "SYP"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "VERY_URGENT",
+              "URGENT",
+              "NORMAL"
+            ],
+            "default": "NORMAL"
+          },
+          "coverKey": {
+            "type": "string",
+            "enum": [
+              "medical-1",
+              "medical-2",
+              "orphans-1",
+              "orphans-2",
+              "home-1",
+              "home-2",
+              "community-1",
+              "general-1"
+            ],
+            "description": "Bundled illustration (never a photo)"
+          },
+          "area": {
+            "type": "string",
+            "example": "حي الشيخ بدر",
+            "description": "A neighbourhood at most"
+          },
+          "isOngoing": {
+            "type": "boolean",
+            "default": false,
+            "description": "Open-ended programme (e.g. yearly sponsorship)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DRAFT"
+            ],
+            "default": "ACTIVE",
+            "description": "ACTIVE publishes now"
+          }
+        },
+        "required": [
+          "categoryId",
+          "titleAr",
+          "summaryAr",
+          "targetAmount",
+          "currency",
+          "priority"
+        ]
+      },
+      "UpdateCampaignDto": {
+        "type": "object",
+        "properties": {
+          "titleAr": {
+            "type": "string"
+          },
+          "titleEn": {
+            "type": "string",
+            "description": "An empty string clears it"
+          },
+          "summaryAr": {
+            "type": "string",
+            "description": "Anonymised summary (no names)"
+          },
+          "summaryEn": {
+            "type": "string",
+            "description": "An empty string clears it"
+          },
+          "coverKey": {
+            "type": "string",
+            "enum": [
+              "medical-1",
+              "medical-2",
+              "orphans-1",
+              "orphans-2",
+              "home-1",
+              "home-2",
+              "community-1",
+              "general-1"
+            ],
+            "description": "Bundled illustration (never a photo)"
+          },
+          "area": {
+            "type": "string",
+            "description": "A neighbourhood at most; an empty string clears it"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "VERY_URGENT",
+              "URGENT",
+              "NORMAL"
+            ]
+          }
+        }
+      },
+      "UpdateCampaignStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "FUNDED",
+              "COMPLETED",
+              "CLOSED"
+            ]
+          },
+          "acceptsPledges": {
+            "type": "boolean",
+            "description": "إيقاف/استئناف قبول التعهدات"
+          }
+        }
+      },
+      "CreateCampaignUpdateDto": {
+        "type": "object",
+        "properties": {
+          "bodyAr": {
+            "type": "string",
+            "example": "تمت العملية بنجاح، شكراً لكل المتبرعين."
+          },
+          "bodyEn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bodyAr"
+        ]
+      },
+      "CreateBeneficiaryDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PATIENT",
+              "ORPHAN",
+              "FAMILY",
+              "OTHER"
+            ]
+          },
+          "fullName": {
+            "type": "string",
+            "example": "أحمد م.",
+            "description": "Private: never shown publicly"
+          },
+          "phone": {
+            "type": "string",
+            "example": "0944123456",
+            "description": "Private"
+          },
+          "area": {
+            "type": "string",
+            "example": "حي الشيخ بدر",
+            "description": "Public: a neighbourhood at most"
+          }
+        },
+        "required": [
+          "kind",
+          "fullName"
+        ]
+      },
+      "UpdateBeneficiaryDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PATIENT",
+              "ORPHAN",
+              "FAMILY",
+              "OTHER"
+            ]
+          },
+          "fullName": {
+            "type": "string",
+            "description": "Private: never shown publicly"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Private"
+          },
+          "area": {
+            "type": "string",
+            "description": "Public: a neighbourhood at most; an empty string clears it"
+          }
+        }
+      },
+      "BeneficiaryReasonDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Registered twice under two campaigns; review with the welfare board.",
+            "description": "Internal reason (ADMIN only, never public, never shown at intake)"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "CreateBeneficiaryNoteDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "NOTE",
+              "VIOLATION"
+            ]
+          },
+          "body": {
+            "type": "string",
+            "example": "Asked for the same help at two offices in one month."
+          }
+        },
+        "required": [
+          "kind",
+          "body"
+        ]
+      },
+      "UpdateBeneficiaryLinkDto": {
+        "type": "object",
+        "properties": {
+          "monthlyAmount": {
+            "type": "string",
+            "example": "200000"
+          },
+          "end": {
+            "type": "boolean",
+            "description": "true ends the link (kept in history, no longer public)"
+          }
+        }
+      },
+      "LinkBeneficiaryDto": {
+        "type": "object",
+        "properties": {
+          "beneficiaryId": {
+            "type": "string"
+          },
+          "monthlyAmount": {
+            "type": "string",
+            "example": "200000",
+            "description": "Monthly amount; only for categories that support monthly sponsorship"
+          }
+        },
+        "required": [
+          "beneficiaryId"
+        ]
+      },
+      "UpdatePaymentMethodConfigDto": {
+        "type": "object",
+        "properties": {
+          "labelAr": {
+            "type": "string",
+            "example": "سيريتل كاش"
+          },
+          "labelEn": {
+            "type": "string",
+            "example": "Syriatel Cash"
+          },
+          "accountName": {
+            "type": "string",
+            "description": "Arabic holder name"
+          },
+          "accountNameEn": {
+            "type": "string",
+            "description": "English holder name"
+          },
+          "accountNumber": {
+            "type": "string",
+            "example": "0930 000 001 (FAKE)"
+          },
+          "instructionsAr": {
+            "type": "string"
+          },
+          "instructionsEn": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000
+          }
+        }
+      },
+      "SetCampaignAccountDto": {
+        "type": "object",
+        "properties": {
+          "accountName": {
+            "type": "string",
+            "example": "صندوق ترميم حي البعث (مثال)"
+          },
+          "accountNumber": {
+            "type": "string",
+            "example": "0930 000 099 (FAKE)"
+          },
+          "note": {
+            "type": "string",
+            "example": "للتبرعات الخاصة بهذه الحملة فقط"
+          }
+        },
+        "required": [
+          "accountName",
+          "accountNumber"
+        ]
+      },
+      "CreateCaseDto": {
+        "type": "object",
+        "properties": {
+          "beneficiaryName": {
+            "type": "string",
+            "example": "محمد ع."
+          },
+          "beneficiaryPhone": {
+            "type": "string",
+            "example": "0933123456"
+          },
+          "nationalId": {
+            "type": "string",
+            "example": "04010123456",
+            "description": "يُخزَّن كـhash فقط"
+          },
+          "localCouncil": {
+            "type": "string",
+            "example": "المجلس المحلي - الحي الشمالي"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "SURGERY",
+              "MEDICATION",
+              "INCUBATOR",
+              "ONCOLOGY",
+              "TRANSPORT",
+              "OTHER"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "وصف داخلي كامل (لا يظهر للعامة)"
+          },
+          "requestedAmount": {
+            "type": "string",
+            "example": "15000000"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "SYP",
+              "USD"
+            ],
+            "default": "SYP"
+          },
+          "medicalReport": {
+            "type": "string",
+            "format": "binary",
+            "description": "التقرير الطبي (JPEG/PNG/PDF ≤ 5MB)"
+          }
+        },
+        "required": [
+          "beneficiaryName",
+          "beneficiaryPhone",
+          "nationalId",
+          "localCouncil",
+          "category",
+          "description",
+          "requestedAmount",
+          "medicalReport"
+        ]
+      },
+      "ReviewCaseDto": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "reject",
+              "needs_info"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "VERY_URGENT",
+              "URGENT",
+              "NORMAL"
+            ]
+          },
+          "route": {
+            "type": "string",
+            "enum": [
+              "CROWDFUNDING",
+              "AGA_KHAN_REFERRAL",
+              "MONTHLY_BUDGET"
+            ]
+          },
+          "hospitalId": {
+            "type": "string"
+          },
+          "doctorName": {
+            "type": "string",
+            "example": "د. سامر"
+          },
+          "approvedAmount": {
+            "type": "string",
+            "example": "15000000"
+          },
+          "reason": {
+            "type": "string",
+            "description": "إلزامي للرفض وطلب المعلومات"
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "ChangeHospitalAmountDto": {
+        "type": "object",
+        "properties": {
+          "hospitalId": {
+            "type": "string"
+          },
+          "approvedAmount": {
+            "type": "string",
+            "example": "25000000"
+          },
+          "reason": {
+            "type": "string",
+            "example": "المريض طلب التحويل لمشفى خاص"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "PublishCaseDto": {
+        "type": "object",
+        "properties": {
+          "titleAr": {
+            "type": "string",
+            "example": "عملية قلب عاجلة لرب أسرة"
+          },
+          "titleEn": {
+            "type": "string"
+          },
+          "redactedSummary": {
+            "type": "string",
+            "description": "الملخص العام بعد إخفاء البيانات الحساسة (إلزامي)"
+          },
+          "summaryEn": {
+            "type": "string"
+          },
+          "isAnonymous": {
+            "type": "boolean",
+            "default": true
+          },
+          "coverKey": {
+            "type": "string",
+            "enum": [
+              "medical-1",
+              "medical-2",
+              "orphans-1",
+              "orphans-2",
+              "home-1",
+              "home-2",
+              "community-1",
+              "general-1"
+            ],
+            "description": "Bundled illustration (never a photo)"
+          },
+          "area": {
+            "type": "string",
+            "example": "السلمية",
+            "description": "A neighbourhood at most"
+          }
+        },
+        "required": [
+          "titleAr",
+          "redactedSummary"
+        ]
+      },
+      "CreatePledgeDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "500000"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "BEMO_TRANSFER",
+              "BANK_TRANSFER",
+              "SHAM_CASH",
+              "SYRIATEL_CASH",
+              "MTN_CASH"
+            ],
+            "default": "BEMO_TRANSFER"
+          },
+          "isAnonymousDisplay": {
+            "type": "boolean",
+            "default": false,
+            "description": "العرض العام كـ«فاعل خير»؛ الإيصال الرسمي يبقى باسمه"
+          }
+        },
+        "required": [
+          "campaignId",
+          "amount",
+          "method"
+        ]
+      },
+      "DemoPledgeDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "100000"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "BEMO_TRANSFER",
+              "BANK_TRANSFER",
+              "SHAM_CASH",
+              "SYRIATEL_CASH",
+              "MTN_CASH",
+              "PAYPAL",
+              "VISA"
+            ]
+          },
+          "isAnonymousDisplay": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "campaignId",
+          "amount",
+          "method"
+        ]
+      },
+      "CashPledgeDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "250000"
+          },
+          "collectionPointId": {
+            "type": "string",
+            "description": "An active collection point (GET /collection-points/active)"
+          },
+          "isAnonymousDisplay": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "campaignId",
+          "amount",
+          "collectionPointId"
+        ]
+      },
+      "CouncilPledgeDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "1000000"
+          },
+          "donorName": {
+            "type": "string",
+            "example": "سليم ح."
+          },
+          "donorPhone": {
+            "type": "string",
+            "example": "0955123456"
+          },
+          "isAnonymousDisplay": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "campaignId",
+          "amount",
+          "donorName",
+          "donorPhone"
+        ]
+      },
+      "CollectorPledgeDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "collectionPointId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "2350000"
+          },
+          "donorName": {
+            "type": "string"
+          },
+          "donorPhone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "campaignId",
+          "collectionPointId",
+          "amount"
+        ]
+      },
+      "UploadReceiptDto": {
+        "type": "object",
+        "properties": {
+          "transferRef": {
+            "type": "string",
+            "example": "TRX-559201",
+            "description": "رقم مرجع التحويل من البنك"
+          },
+          "receipt": {
+            "type": "string",
+            "format": "binary",
+            "description": "صورة/PDF الإيصال (≤ 5MB)"
+          }
+        },
+        "required": [
+          "receipt"
+        ]
+      },
+      "RejectVerificationDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "المبلغ في الإيصال لا يطابق التعهد"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "CreateExpenditureDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "payeeType": {
+            "type": "string",
+            "enum": [
+              "HOSPITAL",
+              "CONTRACTOR",
+              "SUPPLIER",
+              "BENEFICIARY_FAMILY",
+              "OTHER"
+            ]
+          },
+          "payeeLabel": {
+            "type": "string",
+            "example": "مقاول ترميم (مثال)",
+            "description": "Public-safe payee text, never a private person’s name. Ignored for a locked hospital (its approved name is used)."
+          },
+          "beneficiaryId": {
+            "type": "string",
+            "description": "For BENEFICIARY_FAMILY: a beneficiary linked to the campaign"
+          },
+          "amount": {
+            "type": "string",
+            "example": "15000000"
+          },
+          "paidAt": {
+            "type": "string",
+            "example": "2026-11-20"
+          },
+          "description": {
+            "type": "string",
+            "example": "دفعة أولى لأعمال الترميم"
+          },
+          "descriptionEn": {
+            "type": "string",
+            "example": "First payment for the renovation works"
+          },
+          "proofPublic": {
+            "type": "boolean",
+            "default": false,
+            "description": "Reviewed as safe to publish: the proof is shown on the public timeline"
+          },
+          "proof": {
+            "type": "string",
+            "format": "binary",
+            "description": "Invoice or photo (proof)"
+          }
+        },
+        "required": [
+          "campaignId",
+          "payeeType",
+          "amount",
+          "paidAt",
+          "description",
+          "proof"
+        ]
+      },
+      "MonthlyRunDto": {
+        "type": "object",
+        "properties": {
+          "periodMonth": {
+            "type": "string",
+            "example": "2026-11",
+            "description": "The sponsorship month (YYYY-MM)"
+          },
+          "paidAt": {
+            "type": "string",
+            "example": "2026-11-25"
+          },
+          "proofPublic": {
+            "type": "boolean",
+            "default": false
+          },
+          "proof": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "periodMonth"
+        ]
+      },
+      "CreateHospitalDto": {
+        "type": "object",
+        "properties": {
+          "nameAr": {
+            "type": "string",
+            "example": "المشفى الوطني بالسلمية"
+          },
+          "nameEn": {
+            "type": "string",
+            "example": "Salamiyah National Hospital"
+          },
+          "city": {
+            "type": "string",
+            "example": "السلمية"
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "nameAr",
+          "city"
+        ]
+      },
+      "UpdateHospitalDto": {
+        "type": "object",
+        "properties": {
+          "nameAr": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateCollectionPointDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "نقطة جمع الحي الشمالي"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "MOSQUE",
+              "CENTER",
+              "OFFICE",
+              "SHOP",
+              "OTHER"
+            ],
+            "default": "OTHER"
+          },
+          "contactName": {
+            "type": "string",
+            "description": "Contact person at the collection point (optional)"
+          },
+          "area": {
+            "type": "string",
+            "example": "الحي الشمالي"
+          }
+        },
+        "required": [
+          "name",
+          "area"
+        ]
+      },
+      "UpdateCollectionPointDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "MOSQUE",
+              "CENTER",
+              "OFFICE",
+              "SHOP",
+              "OTHER"
+            ]
+          },
+          "contactName": {
+            "type": "string",
+            "description": "Contact person; an empty string clears it"
+          },
+          "area": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "example": "0944000111"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "DONOR",
+              "CASE_OFFICER",
+              "FINANCE_VERIFIER",
+              "STAFF",
+              "ADMIN",
+              "COLLECTOR"
+            ]
+          },
+          "collectionPointIds": {
+            "description": "COLLECTOR only: the collection points they serve",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "fullName",
+          "phone",
+          "password",
+          "role"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "DONOR",
+              "CASE_OFFICER",
+              "FINANCE_VERIFIER",
+              "STAFF",
+              "ADMIN",
+              "COLLECTOR"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "collectionPointIds": {
+            "description": "COLLECTOR only: replaces the assigned collection points",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ImportFileDto": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "description": "ملف .xlsx أو .csv (≤ 10MB، ≤ 5000 صف)"
+          }
+        },
+        "required": [
+          "file"
+        ]
+      },
+      "MappingDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "الاسم الكامل"
+          },
+          "phone": {
+            "type": "string",
+            "example": "الموبايل"
+          },
+          "nationalId": {
+            "type": "string",
+            "example": "الرقم الوطني"
+          },
+          "localCouncil": {
+            "type": "string",
+            "example": "المجلس"
+          },
+          "otherPrograms": {
+            "type": "string",
+            "example": "البرامج"
+          }
+        },
+        "required": [
+          "fullName"
+        ]
+      }
+    }
+  }
+}
