@@ -1,6 +1,21 @@
 # Overnight report
 
-<!-- summary table -->
+Unattended run of 2026-11-23: P16 → P17 → P18 → P19 → P21 → P22 → P20 (SAFE). Every prompt was merged; none is WIP.
+Every number below was re-checked after each prompt (`git log`, `main` = `origin/main`, no `.env`/uploads tracked,
+ports 3000/4000/8081 free).
+
+| Prompt | Status | Branch | Commit (feature / report) | api tests | web tests | mobile checks | e2e | needs me? |
+|---|---|---|---|---|---|---|---|---|
+| P16 Demo seed + LAN fix | merged | `p16-demo-seed` | `f3bef9c` / `16ad077` | 252 ✓ | 36 ✓ | tsc · expo lint · doctor ✓ | 23/23 | yes: 2-phone test, firewall 3000, VPN off |
+| P17 Admin setup screens | merged | `p17-admin-setup` | `f5fea5a` / `1ba9d5f` | 292 ✓ | 40 ✓ | ✓ | 27 + 1 skipped | no |
+| P18 Campaign lifecycle | merged | `p18-campaign-lifecycle` | `8ad9a67` / `531e82e` | 333 ✓ | 41 ✓ | ✓ | 31 + 1 skipped | no |
+| P19 Trust polish | merged | `p19-trust-polish` | `08f1180` / `bbc0219` | 353 ✓ | 47 ✓ | ✓ | 37 + 1 skipped | yes: WhatsApp preview needs public HTTPS; antivirus exclusion for e2e idle |
+| P21 Light mode | merged | `p21-light-mode` | `a88eabd` / `7a4d8ef` | 353 ✓ | 47 ✓ | ✓ | 37 + 1 skipped | yes: look at it on a phone/projector |
+| P22 Google sign-in | merged | `p22-google-signin` | `960d8f6` / `2bf81ee` | 392 ✓ | 53 ✓ | ✓ | 40 + 1 skipped | yes: create the Google OAuth client and fill `api/.env` |
+| P20 Final checks (SAFE) | done (no branch, checks only) | `main` | `95640e9` README / `e1d702d` | 392 ✓ (fresh clone) | 53 ✓ (fresh clone) | ✓ (fresh clone) | 40 + 1 skipped | yes: real-device walk, then run the deletion list |
+
+The one skipped e2e test is the LAN login. It needs `E2E_LAN_URL` set to the PC's LAN address.
+Branch names are as pushed; `git branch -a` lists them all (21 local branches, all on origin at the same commits).
 
 ## P16
 
@@ -762,3 +777,82 @@ deleted (`demo-ready` stays on `f3bef9c`), no force-push, no branch deleted.
 - Keep `hackathon-backup-2026-11-23-2.zip` private (real `.env` files).
 - §4's backup command in `05-execution-plan.md` loses Arabic names on Windows; use the `--options hdrcharset=UTF-8`
   version above for any future backup.
+
+---
+
+## Overall state (end of run)
+
+- **Tags:**
+  - `demo-ready` is on `f3bef9c` (P16) and pushed.
+  - `v1.0-hackathon` is an annotated tag on `e1d702d` (P20 report commit) and pushed.
+  - The commit that adds this summary comes after the tag. It changes only this report.
+- **`main` = `origin/main`:**
+  - Contains P01–P22.
+  - All 21 local branches are on origin at the same commits.
+  - No branch was deleted. Nothing was force-pushed.
+  - No `.env` and no uploads are tracked.
+- **Latest checks, from a fresh GitHub clone in P20:**
+  - api: 392 tests.
+  - web: 53 tests.
+  - mobile: tsc, expo lint and expo-doctor 20/20.
+  - e2e: 40 passed, 1 skipped (LAN login).
+- **Backup:**
+  - Use `C:\Users\Dragon\Desktop\hackathon-backup-2026-11-23-2.zip` (89,571,829 bytes, 3,136 entries, verified).
+  - The first zip, `hackathon-backup-2026-11-23.zip`, lost the Arabic names. Delete it.
+  - The backup holds real `.env` files, so keep it private.
+- **Nothing outside the repo was deleted:** only the P20 temp clone and its temp extraction folder. All old folders and both root PDFs are still in `Desktop\hackathon\`.
+- **Servers:**
+  - All stopped. Ports 3000/4000/8081 are free.
+  - The DB was reset with `demo:reset` from the real repo.
+  - Some `@playwright/mcp` node processes started around 03:00 by a browser-tool session were left running. They are harmless; close them or reboot.
+
+## What is left
+
+1. **§4 gate item 2:** walk the 7-step demo once on two real phones (DEMO.md). This also covers the items no machine could check:
+   - Expo Go on a phone;
+   - the PWA install prompt;
+   - the donor code in the native app;
+   - the LAN login (`E2E_LAN_URL`).
+2. **Run the deletion list**, only after item 1 (exact commands with verify-first checks are in the P20 section above):
+   1. confirm the backup zip and delete the broken first zip;
+   2. the two root PDFs;
+   3. `hackathon\_analysis\`;
+   4. `منصة التمويل الجماعي في السلمية\`;
+   5. `sanad-crowdfunding\`, after the branch check;
+   6. `b4f-board-final\`.
+3. **Google sign-in** (P22):
+   - Create the OAuth client per README §5a.
+   - Fill `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_CALLBACK_URL` in `api/.env`, then restart the API.
+   - Test with a Gmail test user.
+   - Google won't redirect to a plain-HTTP LAN IP, so phones need an HTTPS hostname.
+   - Google donors have no password, so they can't use the mobile app.
+4. **Flaky `next build`:** run the one-line `SendButton` manifest check from the P20 section after every web build, or open `/dashboard/outbox` once. The lasting fix (import `SendButton` only from client code) is a small follow-up.
+5. **Demo configuration:**
+   - `DEMO_WHATSAPP_NUMBERS` in `api/.env` is empty, so the seed uses fictional alert numbers. Fill it for the live demo and never commit it.
+   - Keep the 120 req/min per-IP API limit in mind: every web device on the LAN shares the PC's IP.
+6. **Machine housekeeping:**
+   - Exclude `%TEMP%\playwright_chromiumdev_profile-*` from antivirus real-time scanning. That causes the ~12-minute idle at the end of every e2e run.
+   - Remove the 25 leftover profile folders (command in P20).
+   - Remove the stray `C:\Users\Dragon\package-lock.json` (it triggers a harmless Next workspace-root warning).
+   - P19 added github.com to `~/.ssh/known_hosts`.
+   - Pushes over ~2 MB time out on this connection.
+7. **Small follow-ups, not blocking:**
+   - The mobile app still has the old light palette (`mobile/src/ui/theme.ts`, outside P21's scope).
+   - Fix the §4 backup command in `05-execution-plan.md` to add `--options hdrcharset=UTF-8`.
+   - The P18 `mobile-paused-390` screenshot shows only the top of the screen.
+   - WhatsApp link preview of the OG card needs a public HTTPS URL to check.
+
+## First 3 things to do in the morning
+
+1. **Prove the demo on real devices (gate 2):**
+   1. Follow DEMO.md "قائمة التحقق قبل العرض": VPN off, firewall open for 3000/4000/8081.
+   2. Run `npm run demo:reset` in `api/`, then start the API **after** the reset.
+   3. Build and start web, then run the `SendButton` manifest check. It must print `True`.
+   4. Walk the 7 steps with Expo Go on phone 1 and the phone browser on phone 2.
+2. **Secure the backup and clean up:**
+   - Copy `hackathon-backup-2026-11-23-2.zip` to a private drive.
+   - Then run the P20 deletion list in order, one block at a time. Each delete has a verify line first.
+3. **Decide on Google sign-in for the demo.** If yes:
+   - Create the OAuth client (README §5a) and fill the three `GOOGLE_*` keys in `api/.env`.
+   - Restart the API and sign in once at `http://localhost:3000/login`.
+   - Otherwise leave it off: the button stays hidden and nothing else changes.
