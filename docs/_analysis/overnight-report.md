@@ -562,3 +562,203 @@ node processes started at ~03:00 by another session.
 - LAN and phones: Google cannot redirect to `http://<LAN-IP>`; using Google from phones needs an HTTPS host name.
 - A Google donor has no password, so they cannot use the mobile app (phone + password only) unless a "set password"
   feature is added later.
+
+## P20 — Final checks and backup (SAFE)
+
+**Status:** all Std checks green from a fresh GitHub clone; e2e **40 passed, 1 skipped** (after one web rebuild, see
+"Flaky `next build`"); backup zip created and verified; README fixes `95640e9`; tag `v1.0-hackathon` on this report's
+commit, pushed. Gate item 2 (real devices) is still open.
+Run as the SAFE version: **nothing outside the temporary clone was deleted**. The deletion list and the exact commands are
+below, for the team to run by hand.
+
+### Fresh-clone checks
+Cloned `https://github.com/hamidAlhaj/salamiyah-hackathon.git` (main `2bf81ee`, 970 files, network clone in ~60 s, no
+retry or local fallback needed) into `%TEMP%\majlis-p20-clone-iqltjw`. Copied only the untracked `api/.env` and
+`web/.env` from the working repo (contents never printed; `mobile/.env` = `copy .env.example .env` as README says).
+`npm ci` ✓ in api, web, mobile and e2e (4 in parallel; no lockfile change).
+- api: lint ✓ (no `--fix` changes, clone tree clean) · **392** tests in 31 suites ✓ (58 s) · build ✓ ·
+  `prisma validate` ✓ · `prisma migrate status`: 6 migrations, "Database schema is up to date" (local `majlis_fund`)
+- web: lint ✓ · prettier ✓ (`../api/node_modules/.bin/prettier --check "src/**/*.{ts,tsx,css}"` with `web/.prettierrc`;
+  web has no Prettier of its own, as in b4f) · **53** tests in 13 files ✓ · build ✓
+- mobile: `tsc --noEmit` ✓ · `expo lint` ✓ · `expo install --check` ✓ (typescript excluded by design) · `expo-doctor` 20/20 ✓
+- e2e (from the clone, against the clone's `node dist/main` on :4000 started after `demo:reset`, and `next start` of
+  the clone's build on :3000): first run stopped after step 2 failed (flaky build, below). After a rebuild, a
+  fresh `demo:reset` and an API restart: **40 passed, 1 skipped** (LAN login, `E2E_LAN_URL` unset) in 13.5 min (the
+  tests take about a minute; the rest is Playwright's known idle while it deletes the Chrome profiles).
+- The real repo's working tree was not touched by the e2e run (`git status` before/after: clean, apart from this prompt's own README edit; no screenshots, `E2E_SCREENSHOTS` unset).
+- **Flaky `next build` (found here, not fixed):** the clone's first web build (exit 0, "Compiled successfully", run
+  while the api tests and mobile checks were also running) left one client component out of every
+  `*_client-reference-manifest.js`: `src/app/(app)/dashboard/outbox/SendButton.tsx` (43 client modules instead of 44).
+  `/dashboard/outbox` then answered with the error page ("Could not find the module … SendButton.tsx#SendButton in the
+  React Client Manifest") and e2e step 2 failed (outbox list 0 instead of 3). A rebuild of the same sources produced
+  the full manifest (44) and everything passed. SendButton is imported by both a Server Component (`page.tsx`) and a
+  Client Component (`NextMode.tsx`), which is the likely trigger. No code change tonight (checks-only prompt). The real
+  repo's current `web/.next` (13:06) is complete. See "Needs human" for the one-line check after every demo build.
+- Environment note (not a repo issue): `next build` warns that it picked `C:\Users\Dragon\package-lock.json` as the
+  workspace root because a stray lockfile sits in the user profile. Harmless; it also applies to the real repo. Remove
+  that file if nothing in the home folder needs it.
+
+### README fixes (newcomer walk-through)
+Commit `95640e9` — `docs(readme): fresh-clone walkthrough fixes (repo URL, cd from root, API after demo:reset, status)`:
+- §2 `git clone <repo-url>` → the real URL.
+- §5 / §6 / §7 / §9 / "Checks before every push": every `cd` now says where it starts. Before, a newcomer still in
+  `api/` after §4 typed `cd web` and failed; §9 and the checks chained `cd api …` then `cd web`/`cd e2e` in one shell.
+- §9: start (or restart) the API **after** `demo:reset`; the overdue-case check runs 5 s after start and then every
+  10 minutes, so an API started before the reset fails the SLA-alert test (the P22 first-run failure).
+- Status line (P16 → `v1.0-hackathon`, P01–P22), docs list (reports 01–06, overnight report, screenshots).
+- Everything else worked as written (env keys in `.env.example` match what the code reads; DB script, `migrate`,
+  `demo:reset`, `start:prod`, `next start`).
+
+### Backup zip
+- **Use `C:\Users\Dragon\Desktop\hackathon-backup-2026-11-23-2.zip`** — 89,571,829 bytes (85.4 MB), **3,136 entries**
+  (2,374 files = exactly the files on disk outside `node_modules/.next/dist/.turbo`; 0 entries from those folders).
+- The plan's command (`tar.exe -a -c -f … --exclude=…`) produced `hackathon-backup-2026-11-23.zip` (89,553,853 bytes)
+  but **lost every Arabic name**: Windows `tar.exe` wrote the names in the ANSI code page (Windows-1252), so the SAL
+  folder and both root PDFs became `?????` (328 entries; contents intact, names not restorable, and `?` cannot be
+  extracted on Windows). The `-2` zip adds `--options hdrcharset=UTF-8`; it was not overwritten, only superseded:
+  ```powershell
+  tar.exe -a -c -f "$HOME\Desktop\hackathon-backup-2026-11-23-2.zip" --options hdrcharset=UTF-8 --exclude=node_modules --exclude=.next --exclude=dist --exclude=.turbo .
+  ```
+- Verified: `tar.exe -tf` lists 3,136 entries; .NET `ZipFile` opens it with 328 Arabic names and 0 `?`; key paths present
+  for every top-level item (`salamiyah-hackathon/.git/HEAD`, `README.md`, `api/prisma/schema.prisma`, `web/package.json`,
+  `mobile/app.json`, `e2e/playwright.config.ts`, `sanad-crowdfunding/.git/HEAD`, `b4f-board-final/.git/HEAD`,
+  `_analysis/05-execution-plan.md`, the SAL folder (324 entries = 230 files, same as on disk), both root PDFs).
+  Extracted the PoC PDF, `schema.prisma`, SANAD and b4f READMEs and `api/.env` (.NET) plus the SAL README (`tar -x`) to a
+  temp folder: all SHA-256 equal to the originals; temp folder deleted.
+- The zip was made before this report's commits (they are on GitHub anyway).
+- **It contains real `.env` files** (6: SAL `apps/api/.env`, SANAD `api/.env` and `web/.env`, NEW `api/.env`,
+  `web/.env`, `mobile/.env`) and SANAD's/SAL's uploads. Keep it private; never upload or share it.
+
+### §4 gate
+| # | Gate | Status |
+|---|---|---|
+| 1 | Std checks green | ✓ from a fresh clone (above): api, web, mobile, prisma; e2e 40 + 1 skipped after one rebuild |
+| 2 | 7-step demo walked on real devices | **Pending (human)**: not possible unattended. Playwright covers it in a browser |
+| 3 | NEW pushed | ✓ `git fetch --prune`: `main` = `origin/main`; all 21 local branches (`docs-scope-change`, `p02`–`p19`, `p21`, `p22`) exist on origin at the same commit; tag `demo-ready` on origin; no stash. Origin also has `Badr's-branch` (not local; untouched) |
+| 4 | Backup outside `hackathon/` | ✓ `hackathon-backup-2026-11-23-2.zip` (verified) |
+
+### Read-only checks for the deletion list
+- **Root PDFs:** both byte-identical to `docs/input/` (SHA-256): PoC `BB7E8900…E3D34F` (255,640 B); full spec `F77887DC…027528`
+  (329,950 B; the copy in `docs/input/` dropped the " (1)").
+- **`hackathon/_analysis/`:** 6 files. 01, 02, 02b, 03, 04 byte-identical to `docs/_analysis/`. `05-execution-plan.md`
+  differs only because NEW kept editing it: the old file is an exact prefix of NEW's first commit `1f842f2` (which only
+  appended "Decision updates (P01)"), so nothing is lost.
+- **SANAD:** `main` clean, no stash, no tags; `git ls-remote` (read-only) shows all 12 local branches (`main`,
+  `phase-1`…`phase-11`) on `github.com/hamidAlhaj/sanad-crowdfunding` at the same commits. Nothing fetched or pushed.
+- **b4f:** clean, one branch, `main` = `origin/main` (`8eb592e`, `github.com/b4f-cohort8-salamiyah/b4f-board-final`).
+  Its rule files are `README.md`, `api/README.md`, `web/README.md`, `.eslintrc.*`, `.prettierrc` (no CLAUDE.md). The four
+  config files are identical to NEW's (apart from CRLF). The architecture rules, versions, commands, seed safety and
+  session design are in `01-reference-b4f.md` (§1–§5, the 20 rules verbatim) and condensed in `CLAUDE.md`. Gaps, all
+  minor and all kept in `01`: `CLAUDE.md` does not repeat the `LoggingInterceptor` rule (never log bodies/tokens), bcrypt
+  10 rounds, or "same 401 for unknown phone and wrong password" (the code follows them). Nothing needs copying first.
+
+### Deletion list (for the team, in the morning) — run in PowerShell, one block at a time
+Each step has a "verify first" line; delete only if it prints the expected result. Nothing here has been run.
+
+**0. Backup verified**
+```powershell
+Get-Item -LiteralPath "C:\Users\Dragon\Desktop\hackathon-backup-2026-11-23-2.zip" | Select-Object Name, Length
+```
+```powershell
+(tar.exe -tf "C:\Users\Dragon\Desktop\hackathon-backup-2026-11-23-2.zip" | Measure-Object).Count
+```
+Expect 89571829 bytes and 3136. Optionally copy the zip to a private USB drive first. Then remove the broken first zip
+(Arabic names lost):
+```powershell
+Remove-Item -LiteralPath "C:\Users\Dragon\Desktop\hackathon-backup-2026-11-23.zip" -Force
+```
+
+**1. Root PDFs** (verify: each line must print `True`)
+```powershell
+(Get-FileHash -LiteralPath "C:\Users\Dragon\Desktop\hackathon\مقترح مشروع منصة التمويل الجماعي الطبي ونموذج الهاكاثون (PoC).pdf").Hash -eq (Get-FileHash -LiteralPath "C:\Users\Dragon\Desktop\hackathon\salamiyah-hackathon\docs\input\مقترح مشروع منصة التمويل الجماعي الطبي ونموذج الهاكاثون (PoC).pdf").Hash
+```
+```powershell
+(Get-FileHash -LiteralPath "C:\Users\Dragon\Desktop\hackathon\الوثيقة الشاملة لهندسة المنظومة والتحول الرقمي - المجلس الوطني الإسماعيلي في السلمية (1).pdf").Hash -eq (Get-FileHash -LiteralPath "C:\Users\Dragon\Desktop\hackathon\salamiyah-hackathon\docs\input\الوثيقة الشاملة لهندسة المنظومة والتحول الرقمي - المجلس الوطني الإسماعيلي في السلمية.pdf").Hash
+```
+```powershell
+Remove-Item -LiteralPath "C:\Users\Dragon\Desktop\hackathon\مقترح مشروع منصة التمويل الجماعي الطبي ونموذج الهاكاثون (PoC).pdf" -Force
+```
+```powershell
+Remove-Item -LiteralPath "C:\Users\Dragon\Desktop\hackathon\الوثيقة الشاملة لهندسة المنظومة والتحول الرقمي - المجلس الوطني الإسماعيلي في السلمية (1).pdf" -Force
+```
+
+**2. `hackathon/_analysis/`** (verify: `True` for 01, 02, 02b, 03, 04; `False` only for `05-execution-plan.md`, see above)
+```powershell
+Get-ChildItem -LiteralPath "C:\Users\Dragon\Desktop\hackathon\_analysis" -File | ForEach-Object { "{0} {1}" -f $_.Name, ((Get-FileHash -LiteralPath $_.FullName).Hash -eq (Get-FileHash -LiteralPath "C:\Users\Dragon\Desktop\hackathon\salamiyah-hackathon\docs\_analysis\$($_.Name)").Hash) }
+```
+```powershell
+Remove-Item -LiteralPath "C:\Users\Dragon\Desktop\hackathon\_analysis" -Recurse -Force
+```
+
+**3. SAL `منصة التمويل الجماعي في السلمية/`** (1.3 GB with its pnpm `node_modules`; its `.env` and uploads go with it and
+stay only in the zip; verify: prints 324)
+```powershell
+Add-Type -AssemblyName System.IO.Compression.FileSystem; $z = [IO.Compression.ZipFile]::OpenRead("C:\Users\Dragon\Desktop\hackathon-backup-2026-11-23-2.zip"); ($z.Entries | Where-Object { $_.FullName.StartsWith("./منصة التمويل الجماعي في السلمية/") }).Count; $z.Dispose()
+```
+```powershell
+Remove-Item -LiteralPath "C:\Users\Dragon\Desktop\hackathon\منصة التمويل الجماعي في السلمية" -Recurse -Force
+```
+
+**4. SANAD `sanad-crowdfunding/`** (verify: the first prints nothing; the second prints 12 lines, all `same`)
+```powershell
+git -C "C:\Users\Dragon\Desktop\hackathon\sanad-crowdfunding" status --short
+```
+```powershell
+$r = (git -C "C:\Users\Dragon\Desktop\hackathon\sanad-crowdfunding" ls-remote --heads origin) -replace "\t", " "; git -C "C:\Users\Dragon\Desktop\hackathon\sanad-crowdfunding" for-each-ref --format="%(objectname) refs/heads/%(refname:short)" refs/heads | ForEach-Object { if ($r -match [regex]::Escape($_)) { "same    $_" } else { "MISSING $_" } }
+```
+Optionally archive the GitHub repo afterwards (§4). Then:
+```powershell
+Remove-Item -LiteralPath "C:\Users\Dragon\Desktop\hackathon\sanad-crowdfunding" -Recurse -Force
+```
+
+**5. b4f `b4f-board-final/`** (P01 decision 5; verify: the first prints nothing, the second prints `True`)
+```powershell
+git -C "C:\Users\Dragon\Desktop\hackathon\b4f-board-final" status --short
+```
+```powershell
+(git -C "C:\Users\Dragon\Desktop\hackathon\b4f-board-final" rev-parse main) -eq ((git -C "C:\Users\Dragon\Desktop\hackathon\b4f-board-final" ls-remote origin refs/heads/main) -split "\s+")[0]
+```
+```powershell
+Remove-Item -LiteralPath "C:\Users\Dragon\Desktop\hackathon\b4f-board-final" -Recurse -Force
+```
+
+If a `Remove-Item` stops on a long or locked path inside `node_modules`, close editors/terminals in that folder and run
+`cmd /c rd /s /q "\\?\<the same full path>"`. Afterwards `Get-ChildItem -LiteralPath "C:\Users\Dragon\Desktop\hackathon"`
+should show only `salamiyah-hackathon`.
+
+**Optional cleanup:** 25 leftover `%TEMP%\playwright_chromiumdev_profile-*` folders from e2e runs (Chrome
+profiles Playwright did not finish deleting):
+```powershell
+Get-ChildItem -Path "$env:TEMP" -Directory -Filter "playwright_chromiumdev_profile-*" | Remove-Item -Recurse -Force
+```
+
+### Tag
+Annotated tag `v1.0-hackathon` on `main` HEAD (this report's commit), pushed to origin. Why it is green: every Std
+check passed from the fresh clone, and the e2e suite passed in full against a correct build; the one failure came from a
+build that left a module out (an environmental flake, documented above, with a check for demo day). Backup verified.
+Gate 2 (real devices) is a human step and does not block the tag; it does block the deletions. No tag was moved or
+deleted (`demo-ready` stays on `f3bef9c`), no force-push, no branch deleted.
+
+### Servers / cleanup
+- Stopped by PID: first run api :4000 `11020` (`node dist/main`), web :3000 `18616` (`next start`), and the stuck first
+  Playwright run `21728`/`12984`/`11840`; second run api `21604`, web `5708`. Ports 3000/4000/8081 verified free. Expo
+  was not started. Untouched: the `@playwright/mcp` node processes from ~03:00 (another session).
+- DB: `demo:reset` from the clone after the e2e, then **again from the real repo's `api/`**, because the clone's reset
+  wrote the seed's 37 proof/receipt files into the clone's `api/uploads/` (now deleted); the second reset makes the DB
+  match the real `api/uploads/` again (37 files).
+- Temp clone `%TEMP%\majlis-p20-clone-iqltjw` deleted completely (first try, no locked files, no leftovers); the zip
+  check folder was deleted too. Nothing else was deleted.
+
+### Needs human
+- Walk the 7-step demo once on two real phones (Expo Go + phone browser + collector page), DEMO.md checklist: gate 2.
+- After **every** `npm run build` in `web/` (including `scripts/demo-start.ps1`), check the build before the demo; it
+  must print `True`, otherwise run `npm run build` again:
+  ```powershell
+  Select-String -LiteralPath "C:\Users\Dragon\Desktop\hackathon\salamiyah-hackathon\web\.next\server\app\(app)\dashboard\outbox\page_client-reference-manifest.js" -Pattern "SendButton" -SimpleMatch -Quiet
+  ```
+  Or simply open `/dashboard/outbox` as the case officer once. A lasting fix (e.g. importing `SendButton` only from
+  client code) is a small follow-up for the team.
+- Run the deletion list above, in order, after gate 2.
+- Keep `hackathon-backup-2026-11-23-2.zip` private (real `.env` files).
+- §4's backup command in `05-execution-plan.md` loses Arabic names on Windows; use the `--options hdrcharset=UTF-8`
+  version above for any future backup.
