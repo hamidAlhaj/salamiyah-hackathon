@@ -20,8 +20,8 @@ Salamiyah*. It is a working system, not a mock-up:
 
 | Part | Technology | Folder |
 |---|---|---|
-| Backend | NestJS 10 · Prisma 5.22 · PostgreSQL | `api/` |
-| Frontend | Next.js 15 (App Router) · Tailwind 3 · next-intl | `web/` |
+| Backend | NestJS 10 · Prisma 5.22 · PostgreSQL | `backend/` |
+| Frontend | Next.js 15 (App Router) · Tailwind 3 · next-intl | `frontend/` |
 | Mobile | React Native · Expo SDK 58 · expo-router | `mobile/` |
 | Engineering tools | Swagger `/api/docs` · Postman v2.1 · Jest · Vitest · Playwright · Git | `docs/`, `e2e/` |
 
@@ -87,7 +87,7 @@ had to exist before the screens that show them.
 
 ![Backend map](../diagrams/map-backend.png)
 
-- **Controller** = where HTTP enters the feature. One module per domain (`api/src/<domain>/`), public endpoints in
+- **Controller** = where HTTP enters the feature. One module per domain (`backend/src/<domain>/`), public endpoints in
   controllers without the guard, protected ones with `@UseGuards(JwtAuthGuard)` + `@ApiBearerAuth()` on the class.
 - **DTO** = checks what came in. `class-validator` + `@ApiProperty` on every field; the global `ValidationPipe`
   rejects unknown fields (`whitelist`, `forbidNonWhitelisted`); ids pass `ParseUUIDPipe`.

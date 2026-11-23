@@ -1,6 +1,6 @@
 // Builds the submission diagrams as SVG (source of truth) and PNG (for Word/PDF) in docs/diagrams/.
-// Every box, field and route comes from the real code: api/prisma/schema.prisma, api/src controllers and
-// services, web/src/app and mobile/src/app. Labels are English + Arabic.
+// Every box, field and route comes from the real code: backend/prisma/schema.prisma, backend/src controllers and
+// services, frontend/src/app and mobile/src/app. Labels are English + Arabic.
 //
 // No new dependencies: SVG is written by hand (tools/svg.cjs); PNG is rendered by the installed Google Chrome
 // through the Playwright already installed in e2e/ (pass --playwright <dir> to use another install), with the
@@ -32,7 +32,7 @@ diagrams.architecture = () => {
 
   // Next.js server
   b += rect(440, 80, 360, 380, { fill: C.blueBg, stroke: C.blue });
-  b += lines(620, 120, ['Next.js 15 server (web/)', 'خادم Next.js'], { size: 16, weight: 700, fill: C.blue });
+  b += lines(620, 120, ['Next.js 15 server (frontend/)', 'خادم Next.js'], { size: 16, weight: 700, fill: C.blue });
   b += box(465, 160, 310, 60, ['Server Components — reads', 'قراءة من الخادم'], { text: { size: 12.5 } });
   b += box(465, 232, 310, 60, ['Server Actions — writes', 'كتابة عبر Server Actions'], { text: { size: 12.5 } });
   b += box(465, 304, 310, 60, ['HttpOnly "session" cookie (JWT, 8h)', 'الجلسة في cookie محمي'], { text: { size: 12.5 } });
@@ -40,7 +40,7 @@ diagrams.architecture = () => {
 
   // NestJS
   b += rect(880, 80, 400, 640, { fill: C.greenBg, stroke: C.green });
-  b += lines(1080, 120, ['NestJS 10 API (api/) · :4000', 'واجهة NestJS البرمجية'], { size: 16, weight: 700, fill: C.greenDark });
+  b += lines(1080, 120, ['NestJS 10 API (backend/) · :4000', 'واجهة NestJS البرمجية'], { size: 16, weight: 700, fill: C.greenDark });
   const nest = [
     ['Controllers (16) — HTTP in', 'المتحكمات'],
     ['ValidationPipe + DTOs (class-validator)', 'التحقق من المدخلات'],
@@ -139,7 +139,7 @@ diagrams.erd = () => {
   }
   const H = y + 40;
   let b = '';
-  b += text(W / 2, 40, 'Entity-relationship diagram (api/prisma/schema.prisma) · مخطط الكيانات والعلاقات', { size: 24, weight: 700, fill: C.greenDark });
+  b += text(W / 2, 40, 'Entity-relationship diagram (backend/prisma/schema.prisma) · مخطط الكيانات والعلاقات', { size: 24, weight: 700, fill: C.greenDark });
   b += text(W / 2, 64, '21 models · every PK is a UUID (@default(uuid()) @db.Uuid) · money = Decimal(14,2) · 1 — N shown on each relation', { size: 13, fill: C.muted });
 
   const P = (n, side, t = 0.5) => {
@@ -460,7 +460,7 @@ diagrams['map-backend'] = () => {
   });
   b += text(30, 488, 'The guard runs before the DTO pipe at run time; the five pieces above are the roles, not the call order. Errors: { statusCode, message, error, path, timestamp }.', { size: 12, anchor: 'start', fill: C.muted });
   // modules
-  b += text(30, 540, 'The 20 modules in api/src, by domain · الوحدات حسب المجال', { size: 15, weight: 700, anchor: 'start' });
+  b += text(30, 540, 'The 20 modules in backend/src, by domain · الوحدات حسب المجال', { size: 15, weight: 700, anchor: 'start' });
   const groups = [
     ['Identity · الهوية', ['auth', 'users'], C.blue],
     ['Campaigns · الحملات', ['categories', 'campaigns', 'payment-methods', 'beneficiaries', 'cases', 'hospitals (lookups)', 'collection-points'], C.green],
@@ -484,7 +484,7 @@ diagrams['map-frontend'] = () => {
   const W = 1600;
   const H = 770;
   let b = '';
-  b += text(W / 2, 40, 'Frontend map — Next.js 15 App Router (web/src) · خريطة الواجهة', { size: 23, weight: 700, fill: C.greenDark });
+  b += text(W / 2, 40, 'Frontend map — Next.js 15 App Router (frontend/src) · خريطة الواجهة', { size: 23, weight: 700, fill: C.greenDark });
   const col = (x, title, sub, color, items, y0 = 80, w = 360) => {
     const h = 74 + items.length * 34;
     b += rect(x, y0, w, h, { fill: C.white, stroke: color, sw: 1.8 });

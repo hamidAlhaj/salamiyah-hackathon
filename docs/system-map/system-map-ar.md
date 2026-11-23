@@ -19,8 +19,8 @@
 
 | الجزء | التقنية | المجلد |
 |---|---|---|
-| الخلفية (Backend) | NestJS 10 · Prisma 5.22 · PostgreSQL | `api/` |
-| الواجهة (Frontend) | Next.js 15 (App Router) · Tailwind 3 · next-intl | `web/` |
+| الخلفية (Backend) | NestJS 10 · Prisma 5.22 · PostgreSQL | `backend/` |
+| الواجهة (Frontend) | Next.js 15 (App Router) · Tailwind 3 · next-intl | `frontend/` |
 | الموبايل (Mobile) | React Native · Expo SDK 58 · expo-router | `mobile/` |
 | أدوات هندسية | Swagger `/api/docs` · Postman v2.1 · Jest · Vitest · Playwright · Git | `docs/`، `e2e/` |
 
@@ -85,7 +85,7 @@ Swagger وPostman وGit والاختبارات أدوات نستخدمها أث�
 
 ![خريطة الخلفية](../diagrams/map-backend.png)
 
-- **Controller (المتحكم)** = حيث يدخل طلب HTTP. وحدة لكل مجال (`api/src/<domain>/`)، الـendpoints العامة في متحكمات
+- **Controller (المتحكم)** = حيث يدخل طلب HTTP. وحدة لكل مجال (`backend/src/<domain>/`)، الـendpoints العامة في متحكمات
   بلا حارس، والمحمية عليها `@UseGuards(JwtAuthGuard)` و`@ApiBearerAuth()` على مستوى الـclass.
 - **DTO** = يفحص ما وصل. `class-validator` و`@ApiProperty` على كل حقل؛ والـ`ValidationPipe` العام يرفض الحقول غير
   المعروفة؛ والمعرّفات تمر عبر `ParseUUIDPipe`.

@@ -12,7 +12,7 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| Backend + Frontend + Mobile, all three, in **one** repository | `api/` (NestJS), `web/` (Next.js), `mobile/` (Expo) in `hamidAlhaj/salamiyah-hackathon` | done |
+| Backend + Frontend + Mobile, all three, in **one** repository | `backend/` (NestJS), `frontend/` (Next.js), `mobile/` (Expo) in `hamidAlhaj/salamiyah-hackathon` | done |
 
 ## Page 2 — Project Brief (Word, one page each)
 
@@ -48,7 +48,7 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| `README.md`, `backend/`, `frontend/`, `mobile/`, `docs/`, `.gitignore` | folders are `api/` and `web/`, not `backend/` / `frontend/` | **TODO-team (teammates are editing code)** — rename with `git mv` or state the mapping in README |
+| `README.md`, `backend/`, `frontend/`, `mobile/`, `docs/`, `.gitignore` | renamed with history (`git mv`, commit `159edd4` on `main`); every check and the e2e scenario green after the rename | done |
 | Each member uses their own GitHub account; appears as a contributor; `git config user.email` linked to it | one author (`hamidAlhaj`) for every commit so far | **TODO-team** |
 | No one pushes the whole team's code under their name; avoid squash merges | — | **TODO-team** (each member's remaining work from their own account, PR + merge commit) |
 | Repository public, or the reviewer added as collaborator | the GitHub API returns 404 without login ⇒ private | **needs human** (owner) |
@@ -68,7 +68,7 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| Backend: install, `start:dev`, real migration + seed commands | `README.md` §3–4 (`npx prisma migrate dev`, `npm run seed`, `npm run demo:reset`) | done (paths say `api/`, guide says `backend/`) |
+| Backend: install, `start:dev`, real migration + seed commands | `README.md` §3–4 (`npx prisma migrate dev`, `npm run seed`, `npm run demo:reset`) | done  |
 | Frontend: install, `dev` | `README.md` §5 | done |
 | Mobile: install, `npx expo start` | `README.md` §6 | done |
 | APK or Expo link for reviewers | none (`eas.json` absent) | **TODO-team** / **needs human** (Expo account for `eas build -p android --profile preview`) |
@@ -77,18 +77,18 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| `backend/.env.example`, `frontend/.env.example`, `mobile/.env.example` | `api/.env.example`, `web/.env.example`, `mobile/.env.example` — all variables, placeholders only | done (folder names, see page 4) |
+| `backend/.env.example`, `frontend/.env.example`, `mobile/.env.example` | same paths — all variables, placeholders only | done |
 | No real values or secrets; `NEXT_PUBLIC_` / `EXPO_PUBLIC_` prefixes | no secrets; web has no browser-side variables by design (server-only API URL); mobile uses `EXPO_PUBLIC_*` | done |
 | No DB passwords, JWT secrets, keys in Git | `.env` ignored; only `.env.example` tracked; collection has no token | done |
 | Demo accounts with real demo passwords in README | `README.md` §8 (7 fictional accounts, `Majlis@2026`), also `DEMO.md` and `docs/postman/README.md` | done |
-| Demo accounts created by a seed script | `api/prisma/seed` + `npm run demo:reset` | done |
+| Demo accounts created by a seed script | `backend/prisma/seed` + `npm run demo:reset` | done |
 
 ## Page 8 — API documentation
 
 | Requirement | Evidence | Status |
 |---|---|---|
 | README "Backend API Overview" grouped by domain | missing in README | **TODO-team (teammates are editing code)** |
-| Swagger with `@nestjs/swagger` at `/api/docs` | `api/src/main.ts` → `/api/docs` (UI answers 200); 101 endpoints, all tagged | done |
+| Swagger with `@nestjs/swagger` at `/api/docs` | `backend/src/main.ts` → `/api/docs` (UI answers 200); 101 endpoints, all tagged | done |
 | Swagger documents DTOs, auth, bodies, responses, main errors | bodies + auth complete; **376 gaps** (85 responses without schema, 400/401/403/404 undocumented) — `docs/swagger-audit.md` lists file:line and the decorator for each | **TODO-team (teammates are editing code)** |
 | Postman Collection v2.1 | `docs/postman/salamiyah-hackathon.postman_collection.json` (schema v2.1.0) | done |
 | `{{baseUrl}}` / `{{token}}` variables, no hardcoded values | collection variables; Bearer `{{token}}` at collection level; login saves the token | done |

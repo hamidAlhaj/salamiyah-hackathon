@@ -1,4 +1,4 @@
-// Compares the Postman collection with the routes declared in api/src/**/*.controller.ts.
+// Compares the Postman collection with the routes declared in backend/src/**/*.controller.ts.
 // Reads the controller source directly (regex over @Controller / @Get / @Post / @Patch / @Put / @Delete),
 // so it does not depend on Swagger being complete.
 //
@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '../../..');
-const apiSrc = path.join(root, 'api/src');
+const apiSrc = path.join(root, 'backend/src');
 const collectionPath = path.join(root, 'docs/postman/salamiyah-hackathon.postman_collection.json');
 
 function walk(dir) {

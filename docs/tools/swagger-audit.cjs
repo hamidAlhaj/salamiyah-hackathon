@@ -1,6 +1,6 @@
 // Read-only Swagger audit: writes docs/swagger-audit.md from
 //   - the API's OpenAPI document (docs/postman/tools/openapi.snapshot.json, saved from /api/docs-json), and
-//   - the controller sources in api/src (decorators per handler and per class).
+//   - the controller sources in backend/src (decorators per handler and per class).
 // It never edits backend files; it lists, per endpoint, what is documented and the exact decorator to add.
 //
 // Usage (from the repository root): node docs/tools/swagger-audit.cjs
@@ -30,7 +30,7 @@ const toOpenApi = (p) =>
 
 // key "GET /campaigns/{id}" → { file, line, block, classBlock, className }
 const handlers = new Map();
-for (const file of walk(path.join(root, 'api/src'))) {
+for (const file of walk(path.join(root, 'backend/src'))) {
   const lines = fs.readFileSync(file, 'utf8').split('\n');
   const rel = path.relative(root, file).replace(/\\/g, '/');
   let prefix = '';
@@ -174,7 +174,7 @@ md.push('');
 md.push('## Fix plan for a teammate (in this order)');
 md.push('');
 md.push(
-  '1. **One error schema.** Create `api/src/common/dto/error-response.dto.ts` with `ErrorResponseDto { statusCode: number; message: string | string[]; error: string; path: string; timestamp: string }` (each with `@ApiProperty({ example })`), the shape `AllExceptionsFilter` already returns.',
+  '1. **One error schema.** Create `backend/src/common/dto/error-response.dto.ts` with `ErrorResponseDto { statusCode: number; message: string | string[]; error: string; path: string; timestamp: string }` (each with `@ApiProperty({ example })`), the shape `AllExceptionsFilter` already returns.',
 );
 md.push(
   '2. **Class level, once per guarded controller** (next to `@ApiBearerAuth()`): `@ApiUnauthorizedResponse({ type: ErrorResponseDto, description: \'Missing/expired token\' })`. This alone closes every `401` row below.',
@@ -186,7 +186,7 @@ md.push(
   '4. **Response DTOs** for the main reads (campaign card/detail, ledger, pledge, verification, official receipt, transparency stats, notification): small classes with `@ApiProperty`, referenced with `@ApiOkResponse({ type: X })` or `{ type: X, isArray: true }`. Start with the demo path: `GET /campaigns`, `GET /campaigns/{slug}`, `GET /campaigns/{id}/ledger`, `POST /pledges`, `POST /verifications/{id}/approve`, `GET /official-receipts/{no}`, `GET /stats/transparency`.',
 );
 md.push('5. **Files:** `@ApiProduces(...)` on the file/CSV downloads.');
-md.push('6. Run `npm run lint; npm test; npm run build` in `api/`, then `node docs/postman/tools/build-collection.cjs` and this script.');
+md.push('6. Run `npm run lint; npm test; npm run build` in `backend/`, then `node docs/postman/tools/build-collection.cjs` and this script.');
 md.push('');
 md.push('Gaps per controller file:');
 md.push('');

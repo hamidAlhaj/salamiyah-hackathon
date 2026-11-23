@@ -5,7 +5,7 @@
 //
 // Usage (from the repository root, API on :4000 after `cd api; npm run demo:reset`):
 //   node docs/postman/tools/run-collection.cjs [--baseUrl http://localhost:4000]
-// The flow creates pledges and approves one: run `npm run demo:reset` in api/ afterwards.
+// The flow creates pledges and approves one: run `npm run demo:reset` in backend/ afterwards.
 'use strict';
 const fs = require('fs');
 const path = require('path');
