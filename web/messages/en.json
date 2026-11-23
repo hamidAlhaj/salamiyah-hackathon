@@ -345,8 +345,8 @@
     },
     "channelHint": {
       "transfer": "Waiting for the receipt.",
-      "point": "The donor handed it to the collector.",
-      "box": "Recorded by the collector without a donor name.",
+      "point": "The donor handed it to the Mukhi.",
+      "box": "Recorded by the Mukhi without a donor name.",
       "council": "Handed over in cash at the council office."
     },
     "methods": {
@@ -513,7 +513,7 @@
     "CASE_OFFICER": "Case officer",
     "FINANCE_VERIFIER": "Finance verifier",
     "ADMIN": "Administrator",
-    "COLLECTOR": "Collector"
+    "COLLECTOR": "Mukhi"
   },
   "errors": {
     "pageTitle": "This page could not be shown",
@@ -639,7 +639,7 @@
       "transferTitle": "We received your receipt",
       "transferBody": "The finance verifier will match the transfer; you get the official receipt after verification.",
       "cashTitle": "Your reference is ready",
-      "cashBody": "Hand over the cash at “{point}” ({area}) and tell the collector your reference.",
+      "cashBody": "Hand over the cash at “{point}” ({area}) and tell the Mukhi your reference.",
       "reference": "Reference",
       "status": "Status",
       "backToCampaign": "Back to the campaign",
@@ -723,7 +723,7 @@
     "phone_taken": "This number is already registered to another account.",
     "user_not_found": "Account not found.",
     "cannot_change_own_account": "You cannot change your own role or deactivate your own account.",
-    "collection_points_collector_only": "Collection points can only be assigned to collectors.",
+    "collection_points_collector_only": "Collection points can only be assigned to Mukhi accounts.",
     "collection_point_not_found": "Collection point not found.",
     "hospital_not_found": "Hospital not found.",
     "payment_method_not_found": "Payment method not found.",
@@ -1179,7 +1179,7 @@
     },
     "users": {
       "title": "Users",
-      "intro": "Staff and collector accounts: role, active status and the collection points each collector serves.",
+      "intro": "Staff and Mukhi accounts: role, active status and the collection points each Mukhi serves.",
       "add": "Add account",
       "addNote": "The account holder signs in with their phone number and this password.",
       "fullName": "Full name",
@@ -1188,7 +1188,7 @@
       "passwordHint": "At least 8 characters.",
       "role": "Role",
       "points": "Assigned collection points",
-      "pointsHint": "Collectors only: they see the donations at these points and no others.",
+      "pointsHint": "Mukhi accounts only: they see the donations at these points and no others.",
       "noPoints": "No collection points yet. Add one on the Collection points page.",
       "noAssigned": "No point assigned yet",
       "you": "You",
@@ -1204,17 +1204,17 @@
     },
     "points": {
       "title": "Collection points",
-      "intro": "Places where donors hand over cash. Donors see them when they choose cash; each collector sees only their own points.",
+      "intro": "Places where donors hand over cash. Donors see them when they choose cash; each Mukhi sees only their own points.",
       "add": "Add collection point",
       "name": "Point name",
       "type": "Type",
       "area": "Neighbourhood or area",
       "contactName": "Contact person on site",
       "contactHint": "Never shown publicly.",
-      "collectors": "Collectors",
-      "noCollectors": "No collector. Assign this point to one on the Users page.",
+      "collectors": "Mukhi",
+      "noCollectors": "No Mukhi. Assign this point to one on the Users page.",
       "pledges": "{count} donations",
-      "inactiveNote": "Inactive: hidden from donors and from its collectors.",
+      "inactiveNote": "Inactive: hidden from donors and from its Mukhi.",
       "empty": "No collection points yet.",
       "created": "Point “{name}” added."
     },
@@ -1344,7 +1344,7 @@
       "pledge_demo": "Demo payment",
       "pledge_cash": "Cash pledge at a collection point",
       "pledge_cash_collected": "Cash received at the collection point",
-      "pledge_collector": "Cash donation recorded by a collector",
+      "pledge_collector": "Cash donation recorded by the Mukhi at a collection point",
       "pledge_council": "Donation at the council office",
       "pledge_receipt_upload": "Transfer receipt uploaded",
       "pledge_verify": "Verified, official receipt issued",

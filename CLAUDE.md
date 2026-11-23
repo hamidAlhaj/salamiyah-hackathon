@@ -72,7 +72,7 @@ rules live here and in `docs/_analysis/01-reference-b4f.md`.
 
 ## Roles
 DONOR · STAFF (intake) · CASE_OFFICER (review, severity, publish) · FINANCE_VERIFIER (verify, disburse) ·
-ADMIN (setup, create campaigns of any type, publish, suspend/reactivate) · COLLECTOR («مسؤول نقطة جمع», cash at their
+ADMIN (setup, create campaigns of any type, publish, suspend/reactivate) · COLLECTOR (shown as «مكي» / "Mukhi", cash at their
 collection points only). FINANCE_VERIFIER also records expenditures.
 
 ## API rules (b4f pattern)
@@ -138,7 +138,9 @@ collection points only). FINANCE_VERIFIER also records expenditures.
 ## Naming
 - Role `COLLECTOR`; entity `CollectionPoint` with `type: CollectionPointType` (MOSQUE, CENTER, OFFICE, SHOP, OTHER),
   `contactName`. Never name a role, screen, route, variable or entity after "mosque" or «مكي».
-- UI: «مسؤول نقطة جمع» / «نقطة الجمع», "Collector" / "Collection Point".
+- Role display name: «مكي» / "Mukhi" (team decision requested by the organisers). The identifier stays `COLLECTOR`
+  (enum, stored data, routes, guards, permissions); the entity stays `CollectionPoint` = «نقطة الجمع» / "Collection Point".
+  Only the person/role name says Mukhi; collection actions and transaction wording keep "cash at a collection point".
 - Collector-facing wording expresses «براءة ذمة» (clearance), never "suspicious"/"suspended".
 
 ## UI rules

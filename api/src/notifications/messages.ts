@@ -89,11 +89,11 @@ export function donationMessage(
       return ar
         ? {
             title: 'تم تسجيل تبرعك النقدي',
-            body: `سلّم ${amount} في «${point?.name ?? ''}» (${point?.area ?? ''}) واذكر رقم المرجع ${c.referenceNo} لمسؤول نقطة الجمع. الحملة: «${c.campaignTitle}».`,
+            body: `سلّم ${amount} في «${point?.name ?? ''}» (${point?.area ?? ''}) واذكر رقم المرجع ${c.referenceNo} للمكي. الحملة: «${c.campaignTitle}».`,
           }
         : {
             title: 'Cash donation registered',
-            body: `Hand over ${amount} at “${point?.name ?? ''}” (${point?.area ?? ''}) and tell the collector your reference ${c.referenceNo}. Campaign: “${c.campaignTitle}”.`,
+            body: `Hand over ${amount} at “${point?.name ?? ''}” (${point?.area ?? ''}) and tell the Mukhi your reference ${c.referenceNo}. Campaign: “${c.campaignTitle}”.`,
           };
     }
     case 'pledge.cash_collected': {

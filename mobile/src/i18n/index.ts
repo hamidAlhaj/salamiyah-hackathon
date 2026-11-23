@@ -202,7 +202,7 @@ const ar = {
     doneDemo: 'تم الدفع التجريبي',
     doneDemoBody: 'يظهر المبلغ في شريط الحملة كجزء تجريبي منفصل، ولا يدخل في المبالغ الحقيقية.',
     doneCash: 'رقم المرجع جاهز',
-    doneCashBody: 'سلّم المبلغ في «{{point}}» ({{area}}) واذكر رقم المرجع لمسؤول نقطة الجمع.',
+    doneCashBody: 'سلّم المبلغ في «{{point}}» ({{area}}) واذكر رقم المرجع للمكي.',
     backToCampaign: 'العودة إلى الحملة',
   },
   receipt: {
@@ -441,7 +441,7 @@ const en: Messages = {
     doneDemo: 'Demo payment done',
     doneDemoBody: 'The amount shows on the campaign bar as a separate demo part and never counts as real money.',
     doneCash: 'Your reference is ready',
-    doneCashBody: 'Hand over the cash at “{{point}}” ({{area}}) and tell the collector your reference.',
+    doneCashBody: 'Hand over the cash at “{{point}}” ({{area}}) and tell the Mukhi your reference.',
     backToCampaign: 'Back to the campaign',
   },
   receipt: {

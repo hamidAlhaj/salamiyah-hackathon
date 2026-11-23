@@ -26,7 +26,7 @@ const POINT = {
   contact: 'أبو علي (مثال)',
 };
 const COLLECTOR = {
-  name: 'مسؤول نقطة السبيل',
+  name: 'مكي نقطة السبيل',
   phone: '0900000099',
   e164: '+963900000099',
 };
@@ -47,7 +47,7 @@ test('ADMIN adds a collection point (type, area, contact person)', async ({ brow
   const row = page.locator(`[data-testid="point-row"][data-name="${POINT.name}"]`);
   await expect(row).toContainText(POINT.area);
   await expect(row).toContainText('محل');
-  await expect(row).toContainText('لا يوجد مسؤول');
+  await expect(row).toContainText('لا يوجد مكي');
   await shot(page, 'collection-points');
   await context.close();
 });

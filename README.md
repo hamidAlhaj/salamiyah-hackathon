@@ -184,7 +184,7 @@ Remove it after the hackathon: `Remove-NetFirewallRule -DisplayName "Majlis Fund
 For the LAN demo, phones also open the web app on port 3000: see the checklist in [DEMO.md](DEMO.md).
 
 ### 7. Install the collector app (PWA)
-Collectors («مسؤول نقطة جمع») use the web dashboard `/dashboard/collector` on their phone and can add it to the home
+Collectors (role `COLLECTOR`, shown as «مكي» / "Mukhi") use the web dashboard `/dashboard/collector` on their phone and can add it to the home
 screen. The service worker (`web/public/sw.js`, offline page only, never caches donation data) registers in a
 **production build** on a **secure origin** only (from the repository root, instead of `npm run dev`):
 ```powershell
@@ -210,7 +210,7 @@ All seed accounts are fictional and share the password `Majlis@2026` (developmen
 | CASE_OFFICER | `0900000002` |
 | FINANCE_VERIFIER | `0900000003` |
 | STAFF | `0900000004` |
-| COLLECTOR («مسؤول نقطة جمع», CENTER + MOSQUE points) | `0900000005` |
+| COLLECTOR («مكي» / "Mukhi", CENTER + MOSQUE points) | `0900000005` |
 | DONOR (opted in to WhatsApp alerts) | `0900000006` |
 | DONOR (diaspora, English) | `+4915100000007` |
 

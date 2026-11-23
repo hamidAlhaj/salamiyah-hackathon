@@ -267,14 +267,14 @@ async function main() {
   );
   const finance = await mkUser('المدقق المالي', '+963900000003', 'FINANCE_VERIFIER');
   const staff = await mkUser('موظف المجلس المحلي', '+963900000004', 'STAFF');
-  const collector = await mkUser('مسؤول نقاط الجمع', '+963900000005', 'COLLECTOR');
+  const collector = await mkUser('مكي نقاط الجمع', '+963900000005', 'COLLECTOR');
   const donor = await mkUser('متبرع تجريبي', '+963900000006', 'DONOR', {
     whatsappOptIn: true,
   });
   const diaspora = await mkUser('Diaspora Donor', '+4915100000007', 'DONOR', {
     locale: 'en',
   });
-  const officeCollector = await mkUser('مسؤول نقطة المكتب', '+963900000008', 'COLLECTOR');
+  const officeCollector = await mkUser('مكي نقطة المكتب', '+963900000008', 'COLLECTOR');
   // Fictional donors with accounts (Pledge & Verify and cash at a point need a donor account).
   const nour = await mkUser('نور ش. (مثال)', '+963900000011', 'DONOR');
   const rami = await mkUser('رامي ك. (مثال)', '+963900000012', 'DONOR');

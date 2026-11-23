@@ -62,7 +62,7 @@ export class PledgesController {
 
   @Post('pledges/cash')
   @ApiOperation({
-    summary: 'Cash at an active collection point: a reference to show the collector (DONOR)',
+    summary: 'Cash at an active collection point: a reference to show the Mukhi (DONOR)',
   })
   createCash(@Body() dto: CashPledgeDto, @CurrentUser() user: AuthenticatedUser) {
     return this.pledges.createCash(dto, user);
