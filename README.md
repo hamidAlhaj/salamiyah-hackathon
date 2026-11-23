@@ -7,9 +7,10 @@ target amount. Donors browse campaigns and give by transfer, local e-wallet (sim
 cash at a collection point, and get an instant notification confirming receipt. A public transparency view shows the
 total collected, the amounts spent with proof, and the beneficiaries — by anonymous code only, never their identities.
 
-> **Status:** demo-ready (P16): api, web (public pages, staff workspace, collector PWA, transparency dashboard) and the
-> Expo donor app, with a deterministic demo seed, the judges' walkthrough in [DEMO.md](DEMO.md) (Arabic) and a Playwright
-> suite for it in `e2e/`. Later prompts are in `docs/_analysis/05-execution-plan.md` §7.
+> **Status:** hackathon release `v1.0-hackathon` (P01–P22): api, web (public pages, staff workspace, admin setup,
+> collector PWA, transparency dashboard, optional Google sign-in) and the Expo donor app, with a deterministic demo seed,
+> the judges' walkthrough in [DEMO.md](DEMO.md) (Arabic) and a Playwright suite for it in `e2e/`. The build log is
+> `docs/_analysis/overnight-report.md`; the plan is `docs/_analysis/05-execution-plan.md` §7.
 
 ## Repository layout
 
@@ -20,7 +21,7 @@ mobile/   Expo SDK 58 donor app                     (own package.json / package-
 e2e/      Playwright smoke + demo scenario          (own package.json / package-lock.json, dev tool only)
 scripts/  demo-start.ps1 (starts api, web and Expo for the LAN demo)
 DEMO.md   the judges' walkthrough (Arabic): roles, logins, clicks, expected numbers, checklist
-docs/     input/ (source PDFs, brief, idea, meeting) · analysis/ · _analysis/ (reports 01–05) · tools/
+docs/     input/ (source PDFs, brief, idea, meeting) · analysis/ · _analysis/ (reports 01–06, overnight report) · screenshots/ · tools/
 ```
 
 Three separate npm projects (plus the `e2e/` test tool): no workspaces, no shared packages, no Docker. Rules for contributors and Claude Code are in
@@ -46,7 +47,7 @@ Three separate npm projects (plus the `e2e/` test tool): no workspaces, no share
 
 ### 2. Get the code
 ```powershell
-git clone <repo-url>
+git clone https://github.com/hamidAlhaj/salamiyah-hackathon.git
 ```
 ```powershell
 cd salamiyah-hackathon
@@ -91,6 +92,7 @@ API on `http://localhost:4000`, Swagger at `http://localhost:4000/api/docs`.
 and runs the deterministic seed. Run it before every rehearsal and before the demo.
 
 ### 5. Web
+In a second terminal (the API keeps running in the first), from the repository root:
 ```powershell
 cd web
 ```
@@ -154,6 +156,7 @@ API server-side (`GET /auth/google/callback`, `passport-google-oauth20`). The AP
   the API ever returns it.
 
 ### 6. Mobile (donor app)
+In a third terminal, from the repository root:
 ```powershell
 cd mobile
 ```
@@ -183,7 +186,7 @@ For the LAN demo, phones also open the web app on port 3000: see the checklist i
 ### 7. Install the collector app (PWA)
 Collectors («مسؤول نقطة جمع») use the web dashboard `/dashboard/collector` on their phone and can add it to the home
 screen. The service worker (`web/public/sw.js`, offline page only, never caches donation data) registers in a
-**production build** on a **secure origin** only:
+**production build** on a **secure origin** only (from the repository root, instead of `npm run dev`):
 ```powershell
 cd web; npm run build; npm start
 ```
@@ -219,9 +222,12 @@ LAN demo (read it first; it is documented step by step).
 `e2e/` is a fourth, test-only npm project with one pinned dev dependency (`@playwright/test`, see "Additions beyond
 b4f"). It is separate so the three app projects stay unchanged, and it runs on the installed Google Chrome
 (`channel: "chrome"`), so no browser download is needed. `npx playwright@<version> test` alone cannot work: test files
-import `@playwright/test`, which must resolve from a local `node_modules`.
+import `@playwright/test`, which must resolve from a local `node_modules`. From the repository root, reset the data
+first, then **start (or restart) the API after the reset**: the API checks for overdue cases 5 s after it starts and then only
+every 10 minutes (`SLA_CHECK_MINUTES`), so an API started before the reset misses the seeded overdue case and the
+SLA-alert test fails.
 ```powershell
-cd api; npm run demo:reset
+cd api; npm run demo:reset; cd ..
 ```
 ```powershell
 cd e2e; npm ci; npx playwright test
@@ -234,11 +240,12 @@ LAN login), `E2E_ALERT_DONORS` (1 + the count of `DEMO_WHATSAPP_NUMBERS`, defaul
 `docs/screenshots/p16/`).
 
 ## Checks before every push
+Each line starts from the repository root.
 ```powershell
-cd api; npm run lint; npm test; npm run build
+cd api; npm run lint; npm test; npm run build; cd ..
 ```
 ```powershell
-cd web; npm run lint; npm test; npm run build
+cd web; npm run lint; npm test; npm run build; cd ..
 ```
 ```powershell
 cd mobile; npx tsc --noEmit; npx expo lint; npx expo install --check; npx expo-doctor
@@ -283,4 +290,5 @@ Libraries used here that the b4f reference does not have. Each one is pinned to 
 - `docs/input/`: council PoC proposal (**primary requirement source**), full system specification, team brief (ar/en),
   original idea, meeting recording.
 - `docs/analysis/`: meeting transcript and summary, earlier requirements/architecture drafts (historical).
-- `docs/_analysis/`: reports 01–05. `05-execution-plan.md` is the build plan; its "Decision updates" section is binding.
+- `docs/_analysis/`: reports 01–06 and `overnight-report.md` (what each prompt built and checked). `05-execution-plan.md`
+  is the build plan; its "Decision updates" sections are binding.
