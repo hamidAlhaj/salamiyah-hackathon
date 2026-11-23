@@ -202,7 +202,7 @@ const ar = {
     doneDemo: 'تم الدفع التجريبي',
     doneDemoBody: 'يظهر المبلغ في شريط الحملة كجزء تجريبي منفصل، ولا يدخل في المبالغ الحقيقية.',
     doneCash: 'رقم المرجع جاهز',
-    doneCashBody: 'سلّم المبلغ في «{{point}}» ({{area}}) واذكر رقم المرجع لمسؤول نقطة الجمع.',
+    doneCashBody: 'سلّم المبلغ في «{{point}}» ({{area}}) واذكر رقم المرجع للمكي.',
     backToCampaign: 'العودة إلى الحملة',
   },
   receipt: {
@@ -236,6 +236,7 @@ const ar = {
     payment_method_unavailable: 'طريقة الدفع هذه غير متاحة حالياً.',
     collection_point_unavailable: 'نقطة الجمع هذه غير متاحة.',
     receipt_not_applicable: 'لا يحتاج هذا التبرع إلى إيصال.',
+    phone_required: 'أضف رقم هاتفك أولاً من «ملفي» على موقع مجلس فند، ليصلك تأكيد التبرع والإيصال على واتساب.',
   },
 };
 
@@ -440,7 +441,7 @@ const en: Messages = {
     doneDemo: 'Demo payment done',
     doneDemoBody: 'The amount shows on the campaign bar as a separate demo part and never counts as real money.',
     doneCash: 'Your reference is ready',
-    doneCashBody: 'Hand over the cash at “{{point}}” ({{area}}) and tell the collector your reference.',
+    doneCashBody: 'Hand over the cash at “{{point}}” ({{area}}) and tell the Mukhi your reference.',
     backToCampaign: 'Back to the campaign',
   },
   receipt: {
@@ -474,6 +475,8 @@ const en: Messages = {
     payment_method_unavailable: 'This payment method is not available right now.',
     collection_point_unavailable: 'This collection point is not available.',
     receipt_not_applicable: 'This donation does not need a receipt.',
+    phone_required:
+      'Add your phone number first in "My profile" on the Majlis Fund website, so the confirmation and receipt reach you on WhatsApp.',
   },
 };
 

@@ -67,8 +67,8 @@ export class PledgesService {
    */
   async create(dto: CreatePledgeDto, actor: AuthenticatedUser): Promise<CreatePledgeResult> {
     this.access.requireRole(actor, ['DONOR']);
+    const donor = await this.donorWithPhone(actor);
     await this.methodConfig(dto.method, 'receipt');
-    const donor = await this.prisma.user.findUniqueOrThrow({ where: { id: actor.id } });
     await this.assertCampaignOpen(dto.campaignId);
     const pledge = await this.prisma.$transaction(async (tx) => {
       const p = await tx.pledge.create({
@@ -114,8 +114,8 @@ export class PledgesService {
     this.access.requireRole(actor, ['DONOR']);
     if (this.config.get<string>('DEMO_MODE') !== 'true')
       throw new ForbiddenException('demo_mode_disabled');
+    const donor = await this.donorWithPhone(actor);
     await this.methodConfig(dto.method, 'demo');
-    const donor = await this.prisma.user.findUniqueOrThrow({ where: { id: actor.id } });
     await this.assertCampaignOpen(dto.campaignId);
     const pledge = await this.prisma.$transaction(async (tx) => {
       const ref = newPledgeRef();
@@ -160,13 +160,13 @@ export class PledgesService {
    */
   async createCash(dto: CashPledgeDto, actor: AuthenticatedUser): Promise<PledgeView> {
     this.access.requireRole(actor, ['DONOR']);
+    const donor = await this.donorWithPhone(actor);
     const point = await this.prisma.collectionPoint.findFirst({
       where: { id: dto.collectionPointId, isActive: true },
       select: { id: true },
     });
     if (!point) throw new NotFoundException('collection_point_unavailable');
     await this.methodConfig('CASH', 'cash');
-    const donor = await this.prisma.user.findUniqueOrThrow({ where: { id: actor.id } });
     await this.assertCampaignOpen(dto.campaignId);
     const pledge = await this.prisma.$transaction(async (tx) => {
       const p = await tx.pledge.create({
@@ -525,6 +525,16 @@ export class PledgesService {
   }
 
   /** The method must be active and allowed for this donation path (409 otherwise). */
+  /**
+   * Every donor donation path needs the donor's phone (WhatsApp receipt and alerts). Only a Google
+   * sign-in donor can lack one; they add it on their profile first.
+   */
+  private async donorWithPhone(actor: AuthenticatedUser) {
+    const donor = await this.prisma.user.findUniqueOrThrow({ where: { id: actor.id } });
+    if (!donor.phone) throw new ForbiddenException('phone_required');
+    return donor;
+  }
+
   private async methodConfig(method: PaymentMethod, use: MethodUse) {
     const c = await this.prisma.paymentMethodConfig.findUnique({ where: { method } });
     const allowed =

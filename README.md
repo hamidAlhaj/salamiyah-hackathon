@@ -7,9 +7,10 @@ target amount. Donors browse campaigns and give by transfer, local e-wallet (sim
 cash at a collection point, and get an instant notification confirming receipt. A public transparency view shows the
 total collected, the amounts spent with proof, and the beneficiaries — by anonymous code only, never their identities.
 
-> **Status:** demo-ready (P16): api, web (public pages, staff workspace, collector PWA, transparency dashboard) and the
-> Expo donor app, with a deterministic demo seed, the judges' walkthrough in [DEMO.md](DEMO.md) (Arabic) and a Playwright
-> suite for it in `e2e/`. Later prompts are in `docs/_analysis/05-execution-plan.md` §7.
+> **Status:** hackathon release `v1.0-hackathon` (P01–P22): api, web (public pages, staff workspace, admin setup,
+> collector PWA, transparency dashboard, optional Google sign-in) and the Expo donor app, with a deterministic demo seed,
+> the judges' walkthrough in [DEMO.md](DEMO.md) (Arabic) and a Playwright suite for it in `e2e/`. The build log is
+> `docs/_analysis/overnight-report.md`; the plan is `docs/_analysis/05-execution-plan.md` §7.
 
 ## Repository layout
 
@@ -20,7 +21,7 @@ mobile/   Expo SDK 58 donor app                     (own package.json / package-
 e2e/      Playwright smoke + demo scenario          (own package.json / package-lock.json, dev tool only)
 scripts/  demo-start.ps1 (starts api, web and Expo for the LAN demo)
 DEMO.md   the judges' walkthrough (Arabic): roles, logins, clicks, expected numbers, checklist
-docs/     input/ (source PDFs, brief, idea, meeting) · analysis/ · _analysis/ (reports 01–05) · tools/
+docs/     input/ (source PDFs, brief, idea, meeting) · analysis/ · _analysis/ (reports 01–06, overnight report) · screenshots/ · tools/
 ```
 
 Three separate npm projects (plus the `e2e/` test tool): no workspaces, no shared packages, no Docker. Rules for contributors and Claude Code are in
@@ -46,7 +47,7 @@ Three separate npm projects (plus the `e2e/` test tool): no workspaces, no share
 
 ### 2. Get the code
 ```powershell
-git clone <repo-url>
+git clone https://github.com/hamidAlhaj/salamiyah-hackathon.git
 ```
 ```powershell
 cd salamiyah-hackathon
@@ -91,6 +92,7 @@ API on `http://localhost:4000`, Swagger at `http://localhost:4000/api/docs`.
 and runs the deterministic seed. Run it before every rehearsal and before the demo.
 
 ### 5. Web
+In a second terminal (the API keeps running in the first), from the repository root:
 ```powershell
 cd web
 ```
@@ -109,7 +111,52 @@ Open `http://localhost:3000`. Collector pages are mobile-first and installable f
 off in development. For the **LAN demo** (a production build served over plain HTTP at `http://<LAN-IP>:3000`) set it
 to `"false"`, otherwise phones drop the cookie and login fails. Never set it to `"false"` behind HTTPS.
 
+### 5a. Sign in with Google (optional, off by default)
+Phone + password stays the main login (staff, collectors, older donors) and is unchanged. "Continue with Google"
+appears under the login form **only** when `api/.env` has all three of `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+and `GOOGLE_CALLBACK_URL`; otherwise the button is hidden and the Google API routes answer 404
+`google_sign_in_disabled`. No keys are committed; you create the OAuth client yourself:
+
+1. Open <https://console.cloud.google.com/>, create (or pick) a project, e.g. "Majlis Fund demo".
+2. **Google Auth Platform → Branding / Audience** (older consoles: *APIs & Services → OAuth consent screen*):
+   user type **External**, app name «مجلس فند» / Majlis Fund, your support and developer email. Scopes: only
+   `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile` (non-sensitive). Leave the publishing status on
+   **Testing** and add every Gmail address that will try it as a **test user** (only they can sign in while testing).
+3. **Clients → Create client** (older: *Credentials → Create credentials → OAuth client ID*), application type
+   **Web application**:
+   - Authorized JavaScript origins: `http://localhost:3000`
+   - Authorized redirect URIs: `http://localhost:3000/auth/google/callback`
+   (The redirect goes to the **web** app, not to the API on :4000.)
+4. Copy the client ID and secret into `api/.env` (never into git, never into `web/.env`):
+   ```
+   GOOGLE_CLIENT_ID="<client id>.apps.googleusercontent.com"
+   GOOGLE_CLIENT_SECRET="<client secret>"
+   GOOGLE_CALLBACK_URL="http://localhost:3000/auth/google/callback"
+   ```
+   Restart the API. `http://localhost:4000/auth/google/enabled` must now say `"enabled": true`, and the login page
+   at `http://localhost:3000/login` shows the button.
+5. **LAN / phones:** Google only accepts plain-`http` redirect URIs on `localhost`, never on a raw IP address, so
+   `http://192.168.x.x:3000/...` cannot be registered (the console rejects it). On the LAN demo the button is
+   therefore hidden automatically on any host other than the callback's (phones keep phone + password). To use
+   Google from other devices you need an HTTPS host name (a real domain or an HTTPS tunnel): add
+   `https://<host>` as an origin and `https://<host>/auth/google/callback` as a redirect URI, and set
+   `GOOGLE_CALLBACK_URL` to that URL.
+
+How it works: `/auth/google/start` (web) stores a random CSRF `state` in an HttpOnly cookie and sends the browser to
+Google; Google returns to `/auth/google/callback` (web), which checks the state and hands Google's one-time code to the
+API server-side (`GET /auth/google/callback`, `passport-google-oauth20`). The API returns the same 8h session as
+`POST /auth/login`; the token goes only into the HttpOnly `session` cookie, never into a URL. Rules:
+- A new Google account becomes a **DONOR** without phone or password. Before donating it must add a phone on
+  «ملفي» / *My profile* (`/dashboard/profile`, same phone rules as registration, unique): every donate endpoint
+  refuses with `403 phone_required` until then, because receipts and alerts go out on WhatsApp.
+- A Google account is matched by its Google id. If none is linked yet and Google reports a **verified** email that
+  belongs to an existing **DONOR**, that donor is linked once (audited). Staff, collector and admin accounts are
+  never linked or entered through Google (`google_staff_account`); they keep phone + password.
+- The mobile app keeps phone + password only (no native Google sign-in) and shows the `phone_required` message if
+  the API ever returns it.
+
 ### 6. Mobile (donor app)
+In a third terminal, from the repository root:
 ```powershell
 cd mobile
 ```
@@ -137,9 +184,9 @@ Remove it after the hackathon: `Remove-NetFirewallRule -DisplayName "Majlis Fund
 For the LAN demo, phones also open the web app on port 3000: see the checklist in [DEMO.md](DEMO.md).
 
 ### 7. Install the collector app (PWA)
-Collectors («مسؤول نقطة جمع») use the web dashboard `/dashboard/collector` on their phone and can add it to the home
+Collectors (role `COLLECTOR`, shown as «مكي» / "Mukhi") use the web dashboard `/dashboard/collector` on their phone and can add it to the home
 screen. The service worker (`web/public/sw.js`, offline page only, never caches donation data) registers in a
-**production build** on a **secure origin** only:
+**production build** on a **secure origin** only (from the repository root, instead of `npm run dev`):
 ```powershell
 cd web; npm run build; npm start
 ```
@@ -163,7 +210,7 @@ All seed accounts are fictional and share the password `Majlis@2026` (developmen
 | CASE_OFFICER | `0900000002` |
 | FINANCE_VERIFIER | `0900000003` |
 | STAFF | `0900000004` |
-| COLLECTOR («مسؤول نقطة جمع», CENTER + MOSQUE points) | `0900000005` |
+| COLLECTOR («مكي» / "Mukhi", CENTER + MOSQUE points) | `0900000005` |
 | DONOR (opted in to WhatsApp alerts) | `0900000006` |
 | DONOR (diaspora, English) | `+4915100000007` |
 
@@ -175,9 +222,12 @@ LAN demo (read it first; it is documented step by step).
 `e2e/` is a fourth, test-only npm project with one pinned dev dependency (`@playwright/test`, see "Additions beyond
 b4f"). It is separate so the three app projects stay unchanged, and it runs on the installed Google Chrome
 (`channel: "chrome"`), so no browser download is needed. `npx playwright@<version> test` alone cannot work: test files
-import `@playwright/test`, which must resolve from a local `node_modules`.
+import `@playwright/test`, which must resolve from a local `node_modules`. From the repository root, reset the data
+first, then **start (or restart) the API after the reset**: the API checks for overdue cases 5 s after it starts and then only
+every 10 minutes (`SLA_CHECK_MINUTES`), so an API started before the reset misses the seeded overdue case and the
+SLA-alert test fails.
 ```powershell
-cd api; npm run demo:reset
+cd api; npm run demo:reset; cd ..
 ```
 ```powershell
 cd e2e; npm ci; npx playwright test
@@ -190,11 +240,12 @@ LAN login), `E2E_ALERT_DONORS` (1 + the count of `DEMO_WHATSAPP_NUMBERS`, defaul
 `docs/screenshots/p16/`).
 
 ## Checks before every push
+Each line starts from the repository root.
 ```powershell
-cd api; npm run lint; npm test; npm run build
+cd api; npm run lint; npm test; npm run build; cd ..
 ```
 ```powershell
-cd web; npm run lint; npm test; npm run build
+cd web; npm run lint; npm test; npm run build; cd ..
 ```
 ```powershell
 cd mobile; npx tsc --noEmit; npx expo lint; npx expo install --check; npx expo-doctor
@@ -233,9 +284,11 @@ Libraries used here that the b4f reference does not have. Each one is pinned to 
 | `@expo-google-fonts/ibm-plex-sans-arabic`, `@expo-google-fonts/noto-kufi-arabic` | mobile | The web fonts (IBM Plex Sans Arabic body, Noto Kufi Arabic headings) bundled for expo-font | 0.4.2 / 0.4.3 | P09 |
 | `qrcode`, `@types/qrcode` (dev) | api | QR code (server-side SVG) on official receipts, encoding the public receipt URL | 1.5.4 / 1.5.6 | P13 |
 | `@playwright/test` (dev) | e2e | Smoke tests and the demo scenario in a separate test-only project; runs on the installed Chrome | 1.64.1 | P16 |
+| `passport-google-oauth20`, `@types/passport-google-oauth20` (dev) | api | Optional "Sign in with Google" (OAuth 2.0 strategy for the installed `passport` 0.7.0 / `@nestjs/passport` 10.0.3); off unless the three `GOOGLE_*` keys are set | 2.0.0 / 2.0.17 | P22 |
 
 ## Docs
 - `docs/input/`: council PoC proposal (**primary requirement source**), full system specification, team brief (ar/en),
   original idea, meeting recording.
 - `docs/analysis/`: meeting transcript and summary, earlier requirements/architecture drafts (historical).
-- `docs/_analysis/`: reports 01–05. `05-execution-plan.md` is the build plan; its "Decision updates" section is binding.
+- `docs/_analysis/`: reports 01–06 and `overnight-report.md` (what each prompt built and checked). `05-execution-plan.md`
+  is the build plan; its "Decision updates" sections are binding.

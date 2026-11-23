@@ -91,7 +91,7 @@ export default async function UsersPage({
                     return (
                       <li
                         key={u.id}
-                        data-phone={u.phone}
+                        data-phone={u.phone ?? undefined}
                         data-testid="user-row"
                         className={`p-4 ${u.isActive ? '' : 'bg-surface-muted/60'}`}
                       >
@@ -107,7 +107,7 @@ export default async function UsersPage({
                               <ActiveBadge isActive={u.isActive} />
                             </div>
                             <p dir="ltr" className="mt-0.5 text-start text-sm text-muted">
-                              {u.phone}
+                              {u.phone ?? '—'}
                             </p>
                             {u.role === 'COLLECTOR' && (
                               <ul

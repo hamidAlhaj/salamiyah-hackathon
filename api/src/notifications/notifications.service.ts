@@ -142,33 +142,35 @@ export class NotificationsService {
         return 0;
       }
       const donors = await this.prisma.user.findMany({
-        where: { role: 'DONOR', isActive: true, whatsappOptIn: true },
+        // A Google sign-in donor without a phone yet has nowhere to receive WhatsApp alerts.
+        where: { role: 'DONOR', isActive: true, whatsappOptIn: true, phone: { not: null } },
         select: { id: true, phone: true, locale: true },
       });
       const url = this.absolute(links.campaign(c.slug));
-      const rows = donors
-        .filter((d) => d.phone)
-        .map((d) => {
-          const lang = d.locale === 'en' ? 'en' : 'ar';
-          const text = urgentCampaignMessage(
-            {
-              title: (lang === 'en' ? c.titleEn : null) ?? c.titleAr,
-              priority: c.priority,
-              targetAmount: money(c.targetAmount),
-              currency: c.currency,
-            },
-            lang,
-          );
-          return {
-            userId: d.id,
-            phone: d.phone,
+      const rows = donors.flatMap(({ id, phone, locale }) => {
+        if (!phone) return [];
+        const lang = locale === 'en' ? 'en' : 'ar';
+        const text = urgentCampaignMessage(
+          {
+            title: (lang === 'en' ? c.titleEn : null) ?? c.titleAr,
+            priority: c.priority,
+            targetAmount: money(c.targetAmount),
+            currency: c.currency,
+          },
+          lang,
+        );
+        return [
+          {
+            userId: id,
+            phone,
             template: 'campaign.urgent' as const,
             body: whatsappText(text, url),
             link: url,
             relatedType: 'Campaign',
             relatedId: c.id,
-          };
-        });
+          },
+        ];
+      });
       if (rows.length === 0) return 0;
       const { count } = await this.prisma.outboundMessage.createMany({ data: rows });
       return count;

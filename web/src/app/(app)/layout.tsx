@@ -31,6 +31,7 @@ const STAFF_CLIENT_NAMESPACES = [
   'campaign',
   'donate',
   'myDonations',
+  'profile',
   'notifications',
   'outbox',
   'collector',

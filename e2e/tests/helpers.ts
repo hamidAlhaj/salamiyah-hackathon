@@ -50,7 +50,7 @@ export const ROLE_LABELS: Record<UserKey, string> = {
   caseOfficer: 'مدقق الحالات',
   finance: 'المدقق المالي',
   staff: 'موظف استقبال',
-  collector: 'مسؤول نقطة جمع',
+  collector: 'مكي',
   donor: 'متبرع',
   diaspora: 'متبرع',
 };

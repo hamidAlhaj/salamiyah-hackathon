@@ -26,17 +26,35 @@ export interface Paginated<T> {
 export interface CurrentUser {
   id: string;
   fullName: string;
-  phone: string;
+  /**
+   * +963… for every account, except a donor who signed in with Google and has not added a phone
+   * yet (null). Donating is refused with `phone_required` until it is set.
+   */
+  phone: string | null;
   role: Role;
   locale: 'ar' | 'en';
   /** D-XXXXXX: the donor's own reference (shown in «تبرعاتي» and on official receipts). */
   donorCode: string | null;
+  /** Consent to WhatsApp receipts and alerts (sent from the council phone). */
+  whatsappOptIn: boolean;
+  /** The account is linked to a Google sign-in. */
+  googleLinked: boolean;
 }
 
 /** Body of POST /auth/login and POST /auth/register. One 8h access token, no refresh token. */
 export interface AuthResponse {
   accessToken: string;
   user: CurrentUser;
+}
+
+/**
+ * GET /auth/google/enabled. `enabled` is true only when GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and
+ * GOOGLE_CALLBACK_URL are all set; `callbackOrigin` is the origin of the callback URL (not a
+ * secret), so the web shows the button only on the host Google redirects back to.
+ */
+export interface GoogleSignInConfig {
+  enabled: boolean;
+  callbackOrigin: string | null;
 }
 
 /** A campaign category as the public sees it (categories are data, see CampaignCategory). */

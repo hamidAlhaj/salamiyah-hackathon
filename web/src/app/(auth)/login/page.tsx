@@ -1,11 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
+import { GoogleNotice, GoogleSignIn } from '@/components/auth/GoogleSignIn';
 import { LanguageSwitch } from '@/components/layout/LanguageSwitch';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Logo } from '@/components/ui/Logo';
 import { StarLattice } from '@/components/ui/StarLattice';
+import * as authApi from '@/lib/api/auth';
+import { isGoogleLoginNotice, showGoogleButton } from '@/lib/google-signin';
 import { safeNextPath } from '@/lib/next-path';
+import type { GoogleSignInConfig } from '@/shared';
 import { LoginForm } from './LoginForm';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,11 +21,18 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string | string[] }>;
+  searchParams: Promise<{ next?: string | string[]; google?: string | string[] }>;
 }) {
-  const { next } = await searchParams;
+  const { next, google } = await searchParams;
   const t = await getTranslations('auth');
   const points = t.raw('panelPoints') as string[];
+  const safeNext = typeof next === 'string' ? safeNextPath(next) : undefined;
+  // Sign in with Google appears only when api/.env configures it (and on the callback host).
+  const [config, host] = await Promise.all([
+    authApi.googleConfig().catch((): GoogleSignInConfig | null => null),
+    headers().then((h) => h.get('host')),
+  ]);
+  const withGoogle = showGoogleButton(config, host);
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
@@ -66,7 +78,9 @@ export default async function LoginPage({
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           <h1 className="font-display text-3xl font-bold">{t('title')}</h1>
           <p className="mt-2 text-muted">{t('subtitle')}</p>
-          <LoginForm next={typeof next === 'string' ? safeNextPath(next) : undefined} />
+          {isGoogleLoginNotice(google) && <GoogleNotice notice={google} />}
+          <LoginForm next={safeNext} />
+          {withGoogle && <GoogleSignIn next={safeNext} />}
           <p className="mt-8 text-sm text-muted lg:hidden">{t('donorHint')}</p>
         </div>
       </main>

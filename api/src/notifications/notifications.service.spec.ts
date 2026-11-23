@@ -181,7 +181,7 @@ describe('NotificationsService.campaignPublished (urgent alerts)', () => {
       await expect(service.campaignPublished('c1')).resolves.toBe(3);
       expect(findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { role: 'DONOR', isActive: true, whatsappOptIn: true },
+          where: { role: 'DONOR', isActive: true, whatsappOptIn: true, phone: { not: null } },
         }),
       );
       const rows = createMany.mock.calls[0][0].data as Record<string, unknown>[];

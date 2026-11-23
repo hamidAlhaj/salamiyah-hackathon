@@ -12,6 +12,7 @@ import type {
   CashPledgeDto,
   CollectorPledgeDto,
   CouncilPledgeDto,
+  CreatePledgeDto,
   DemoPledgeDto,
 } from './pledges.dto';
 import { PledgesService } from './pledges.service';
@@ -240,6 +241,73 @@ describe('PledgesService cash at a collection point', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     },
   );
+});
+
+// ── Phone required (P22): a Google sign-in donor without a phone cannot donate on any path ─────────
+describe('PledgesService refuses every donation path until the donor has a phone', () => {
+  /** The donor stub without a phone; the payment method, point and campaign would all accept. */
+  function phoneless() {
+    const stub = donorPrisma({ point: { id: POINT_ID } });
+    stub.prisma.user.findUniqueOrThrow.mockResolvedValue({
+      id: donor.id,
+      fullName: 'Google donor',
+      phone: null,
+    });
+    return stub;
+  }
+
+  const paths: [string, (s: PledgesService) => Promise<unknown>][] = [
+    [
+      'transfer + receipt (pledge & verify)',
+      (s) =>
+        s.create(
+          {
+            campaignId: CAMPAIGN_ID,
+            amount: '50000',
+            method: 'BEMO_TRANSFER',
+          } as CreatePledgeDto,
+          donor,
+        ),
+    ],
+    [
+      'simulated e-payment («Demo»)',
+      (s) =>
+        s.createDemo(
+          { campaignId: CAMPAIGN_ID, amount: '50000', method: 'SHAM_CASH' } as DemoPledgeDto,
+          donor,
+        ),
+    ],
+    [
+      'cash at a collection point',
+      (s) =>
+        s.createCash(
+          {
+            campaignId: CAMPAIGN_ID,
+            amount: '50000',
+            collectionPointId: POINT_ID,
+          } as CashPledgeDto,
+          donor,
+        ),
+    ],
+  ];
+
+  it.each(paths)('%s → 403 phone_required, nothing written', async (_name, run) => {
+    const { prisma, create } = phoneless();
+    const result = run(donorService(prisma));
+    await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(run(donorService(prisma))).rejects.toThrow('phone_required');
+    expect(create).not.toHaveBeenCalled();
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('accepts the same donation once the phone is set, and copies it onto the pledge', async () => {
+    const { prisma, create } = donorPrisma();
+    await donorService(prisma).createDemo(
+      { campaignId: CAMPAIGN_ID, amount: '50000', method: 'SHAM_CASH' } as DemoPledgeDto,
+      donor,
+    );
+    expect(create.mock.calls[0][0].data).toMatchObject({ donorPhone: '+963900000006' });
+  });
 });
 
 describe('PledgesService receipt upload', () => {

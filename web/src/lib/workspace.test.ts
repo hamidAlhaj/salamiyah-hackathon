@@ -48,7 +48,7 @@ describe('workspace links per role', () => {
   });
 
   it('donors see their donations; collectors their collection points', () => {
-    expect(keys('DONOR')).toEqual(['home', 'donations', 'notifications']);
+    expect(keys('DONOR')).toEqual(['home', 'donations', 'profile', 'notifications']);
     expect(keys('COLLECTOR')).toEqual(['home', 'collector', 'notifications']);
     expect(canUse('STAFF', 'collector')).toBe(false);
     expect(canUse('DONOR', 'outbox')).toBe(false);
