@@ -25,3 +25,30 @@ export function linkBeneficiary(
     body: input,
   });
 }
+
+/** ADMIN corrects a record; the public code never changes. */
+export function updateBeneficiary(
+  token: string,
+  id: string,
+  input: { kind?: string; fullName?: string; area?: string; phone?: string },
+) {
+  return apiFetch<StaffBeneficiary>(`/beneficiaries/${id}`, {
+    method: 'PATCH',
+    token,
+    body: input,
+  });
+}
+
+/** ADMIN changes a link's monthly amount or ends the link. */
+export function updateBeneficiaryLink(
+  token: string,
+  campaignId: string,
+  beneficiaryId: string,
+  input: { monthlyAmount?: string; end?: boolean },
+) {
+  return apiFetch<{ code: string }>(`/campaigns/${campaignId}/beneficiaries/${beneficiaryId}`, {
+    method: 'PATCH',
+    token,
+    body: input,
+  });
+}

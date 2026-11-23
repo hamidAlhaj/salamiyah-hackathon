@@ -66,8 +66,18 @@ const THROTTLED = 'محاولات دخول كثيرة';
  * logins (10 a minute, e.g. right after a previous run), it waits for the window to pass and retries.
  */
 export async function loginWithForm(page: Page, user: UserKey, retries = 2): Promise<void> {
+  return loginWithPhone(page, USERS[user].phone, user, retries);
+}
+
+/** Same, for an account created during a test (e.g. the P17 collector). */
+export async function loginWithPhone(
+  page: Page,
+  phone: string,
+  label: string = phone,
+  retries = 2,
+): Promise<void> {
   await page.goto('/login');
-  await page.getByLabel('رقم الهاتف').fill(USERS[user].phone);
+  await page.getByLabel('رقم الهاتف').fill(phone);
   await page.getByLabel('كلمة المرور').fill(PASSWORD);
   await page.getByRole('button', { name: 'دخول' }).click();
   try {
@@ -76,9 +86,9 @@ export async function loginWithForm(page: Page, user: UserKey, retries = 2): Pro
     const alert = (await page.getByRole('alert').allInnerTexts()).join(' ').trim();
     if (alert.includes(THROTTLED) && retries > 0) {
       await page.waitForTimeout(61_000);
-      return loginWithForm(page, user, retries - 1);
+      return loginWithPhone(page, phone, label, retries - 1);
     }
-    throw new Error(`login failed for ${user} (${alert || 'no message'})`);
+    throw new Error(`login failed for ${label} (${alert || 'no message'})`);
   }
 }
 

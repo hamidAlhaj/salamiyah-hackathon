@@ -6,6 +6,7 @@ import {
   Param,
   ParseEnumPipe,
   ParseUUIDPipe,
+  Patch,
   Put,
   Query,
   UseGuards,
@@ -14,7 +15,11 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { PaymentMethod } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
-import { PaymentLangQueryDto, SetCampaignAccountDto } from './payment-methods.dto';
+import {
+  PaymentLangQueryDto,
+  SetCampaignAccountDto,
+  UpdatePaymentMethodConfigDto,
+} from './payment-methods.dto';
 import { PaymentMethodsService } from './payment-methods.service';
 
 /** Public receiving details (fake accounts for the hackathon). */
@@ -36,6 +41,32 @@ export class PublicPaymentMethodsController {
   }
 }
 
+/** ADMIN: the default receiving details per method. Roles are checked in PaymentMethodsService. */
+@ApiTags('payment-methods')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('payment-methods/config')
+export class PaymentMethodConfigController {
+  constructor(private readonly payments: PaymentMethodsService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Every payment method config, inactive too (ADMIN)' })
+  list(@CurrentUser() user: AuthenticatedUser) {
+    return this.payments.listConfigs(user);
+  }
+
+  @Patch(':method')
+  @ApiParam({ name: 'method', enum: PaymentMethod })
+  @ApiOperation({ summary: 'Edit a method’s default receiving details (ADMIN)' })
+  update(
+    @Param('method', new ParseEnumPipe(PaymentMethod)) method: PaymentMethod,
+    @Body() dto: UpdatePaymentMethodConfigDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.payments.updateConfig(method, dto, user);
+  }
+}
+
 /** ADMIN per-campaign account overrides. Roles are checked in PaymentMethodsService. */
 @ApiTags('payment-methods')
 @ApiBearerAuth()
@@ -43,6 +74,12 @@ export class PublicPaymentMethodsController {
 @Controller('campaigns/:id/payment-accounts')
 export class CampaignPaymentAccountsController {
   constructor(private readonly payments: PaymentMethodsService) {}
+
+  @Get('overrides')
+  @ApiOperation({ summary: 'This campaign’s own accounts, any status (ADMIN)' })
+  overrides(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.payments.campaignOverrides(id, user);
+  }
 
   @Put(':method')
   @ApiParam({ name: 'method', enum: PaymentMethod })

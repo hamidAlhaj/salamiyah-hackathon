@@ -21,6 +21,7 @@ const STAFF_CLIENT_NAMESPACES = [
   'common',
   'adminCategories',
   'adminCampaigns',
+  'adminSetup',
   'cases',
   'intake',
   'finance',

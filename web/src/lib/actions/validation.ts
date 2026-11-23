@@ -31,6 +31,17 @@ export function readOptional(
   return value === '' ? undefined : value;
 }
 
+/** Every valid UUID among a repeated form field (e.g. checkboxes), de-duplicated. */
+export function readUuids(formData: FormData, field: string): string[] {
+  return [...new Set(formData.getAll(field).filter(isUuid))];
+}
+
+/** A checkbox / hidden "true" field. */
+export function readFlag(formData: FormData, field: string): boolean {
+  const value = formData.get(field);
+  return value === 'true' || value === 'on';
+}
+
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
 // Only these paths may be revalidated; add new routes here.
@@ -40,6 +51,11 @@ const REVALIDATE_PATH_PATTERNS: RegExp[] = [
   /^\/dashboard\/admin\/categories$/,
   /^\/dashboard\/admin\/campaigns$/,
   /^\/dashboard\/admin\/campaigns\/new$/,
+  /^\/dashboard\/admin\/users$/,
+  /^\/dashboard\/admin\/collection-points$/,
+  /^\/dashboard\/admin\/hospitals$/,
+  /^\/dashboard\/admin\/payment-methods$/,
+  /^\/dashboard\/admin\/beneficiaries$/,
   /^\/dashboard\/cases$/,
   new RegExp(`^/dashboard/cases/${UUID}$`),
   /^\/dashboard\/finance$/,
@@ -50,6 +66,7 @@ const REVALIDATE_PATH_PATTERNS: RegExp[] = [
   /^\/dashboard\/spending$/,
   new RegExp(`^/dashboard/spending/${UUID}$`),
   /^\/campaigns\/[a-z0-9_-]{3,60}$/,
+  /^\/campaigns\/[a-z0-9_-]{3,60}\/donate$/,
 ];
 
 export function isKnownRoutePath(path: string): boolean {

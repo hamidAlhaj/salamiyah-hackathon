@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Length,
+  Max,
+  Min,
+} from 'class-validator';
 
 /** ADMIN: this campaign receives `method` payments on another (fake) account. */
 export class SetCampaignAccountDto {
@@ -25,4 +34,65 @@ export class PaymentLangQueryDto {
   @IsOptional()
   @IsIn(['ar', 'en'])
   lang: 'ar' | 'en' = 'ar';
+}
+
+/**
+ * ADMIN edits a method's default receiving details (all fake for the hackathon). The behaviour flags
+ * (receipt upload, demo checkout) and the kind are fixed by the seed and never edited here.
+ * An empty string clears an optional text field.
+ */
+export class UpdatePaymentMethodConfigDto {
+  @ApiPropertyOptional({ example: 'سيريتل كاش' })
+  @IsOptional()
+  @IsString()
+  @Length(2, 60)
+  labelAr?: string;
+
+  @ApiPropertyOptional({ example: 'Syriatel Cash' })
+  @IsOptional()
+  @IsString()
+  @Length(2, 60)
+  labelEn?: string;
+
+  @ApiPropertyOptional({ description: 'Arabic holder name' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 120)
+  accountName?: string;
+
+  @ApiPropertyOptional({ description: 'English holder name' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 120)
+  accountNameEn?: string;
+
+  @ApiPropertyOptional({ example: '0930 000 001 (FAKE)' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 60)
+  accountNumber?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 500)
+  instructionsAr?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 500)
+  instructionsEn?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+
+  @ApiPropertyOptional({ minimum: 0, maximum: 1000 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(1000)
+  sortOrder?: number;
 }

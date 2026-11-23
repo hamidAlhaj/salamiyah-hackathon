@@ -96,6 +96,137 @@ describe('BeneficiariesService.linkToCampaign', () => {
       ),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
+
+  it('reopens an ended link instead of refusing it', async () => {
+    const update = jest.fn().mockResolvedValue({ monthlyAmount: null, startedAt: new Date() });
+    const tx = { campaignBeneficiary: { update, create: jest.fn() } };
+    const prisma = {
+      campaign: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: CAMPAIGN_ID,
+          category: { supportsMonthlySponsorship: true },
+        }),
+      },
+      beneficiary: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ id: BENEFICIARY_ID, publicCode: 'B-7K3Q', isSuspended: false }),
+      },
+      campaignBeneficiary: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'link', endedAt: new Date() }),
+      },
+      $transaction: (fn: (t: typeof tx) => unknown) => fn(tx),
+    };
+    await serviceWith(prisma).linkToCampaign(
+      CAMPAIGN_ID,
+      { beneficiaryId: BENEFICIARY_ID },
+      admin,
+    );
+    expect(update.mock.calls[0][0].data).toMatchObject({ endedAt: null });
+    expect(tx.campaignBeneficiary.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('BeneficiariesService.update and updateLink', () => {
+  const admin = user(Role.ADMIN);
+
+  it.each(Object.values(Role).filter((r) => r !== Role.ADMIN))(
+    '%s cannot edit a beneficiary or a campaign link',
+    async (role) => {
+      const service = serviceWith(untouchable('prisma'), untouchable('audit'));
+      await expect(
+        service.update(BENEFICIARY_ID, { area: 'x' }, user(role)),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(
+        service.updateLink(CAMPAIGN_ID, BENEFICIARY_ID, { end: true }, user(role)),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    },
+  );
+
+  it('never writes the private name or phone into the audit row', async () => {
+    const log = jest.fn();
+    const tx = {
+      beneficiary: {
+        update: jest.fn().mockResolvedValue({
+          publicCode: 'B-7K3Q',
+          kind: 'ORPHAN',
+          area: 'حي',
+          fullName: 'سري',
+        }),
+      },
+    };
+    const prisma = {
+      beneficiary: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: BENEFICIARY_ID,
+          publicCode: 'B-7K3Q',
+          kind: 'ORPHAN',
+          area: null,
+        }),
+      },
+      $transaction: (fn: (t: typeof tx) => unknown) => fn(tx),
+    };
+    await serviceWith(prisma, { log }).update(
+      BENEFICIARY_ID,
+      { fullName: 'سري جداً', phone: '+963944123456' },
+      admin,
+    );
+    const entry = JSON.stringify(log.mock.calls[0][0]);
+    expect(entry).not.toContain('سري');
+    expect(entry).not.toContain('944123456');
+    expect(entry).toContain('"privateFieldsChanged":true');
+  });
+
+  it('refuses a monthly amount on a link whose category has no monthly sponsorship', async () => {
+    const prisma = {
+      campaignBeneficiary: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'link',
+          endedAt: null,
+          monthlyAmount: null,
+          beneficiary: { publicCode: 'B-7K3Q' },
+          campaign: { category: { supportsMonthlySponsorship: false } },
+        }),
+      },
+    };
+    await expect(
+      serviceWith(prisma).updateLink(
+        CAMPAIGN_ID,
+        BENEFICIARY_ID,
+        { monthlyAmount: '1000' },
+        admin,
+      ),
+    ).rejects.toThrow('monthly_sponsorship_not_supported');
+  });
+
+  it('ends an active link (kept for history) and 404s an ended one', async () => {
+    const update = jest.fn().mockResolvedValue({ monthlyAmount: null, endedAt: new Date() });
+    const tx = { campaignBeneficiary: { update } };
+    const findUnique = jest.fn().mockResolvedValue({
+      id: 'link',
+      endedAt: null,
+      monthlyAmount: null,
+      beneficiary: { publicCode: 'B-7K3Q' },
+      campaign: { category: { supportsMonthlySponsorship: true } },
+    });
+    const prisma = {
+      campaignBeneficiary: { findUnique },
+      $transaction: (fn: (t: typeof tx) => unknown) => fn(tx),
+    };
+    const result = await serviceWith(prisma).updateLink(
+      CAMPAIGN_ID,
+      BENEFICIARY_ID,
+      { end: true },
+      admin,
+    );
+    expect(update.mock.calls[0][0].data.endedAt).toBeInstanceOf(Date);
+    expect(result.endedAt).not.toBeNull();
+
+    findUnique.mockResolvedValue({ id: 'link', endedAt: new Date() });
+    await expect(
+      serviceWith(prisma).updateLink(CAMPAIGN_ID, BENEFICIARY_ID, { end: true }, admin),
+    ).rejects.toThrow('beneficiary_not_linked');
+  });
 });
 
 describe('public beneficiaries never contain identity fields', () => {

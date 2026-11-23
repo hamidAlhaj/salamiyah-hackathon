@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -15,6 +16,8 @@ import {
   CreateBeneficiaryDto,
   LinkBeneficiaryDto,
   ListBeneficiariesQueryDto,
+  UpdateBeneficiaryDto,
+  UpdateBeneficiaryLinkDto,
 } from './beneficiaries.dto';
 import { BeneficiariesService } from './beneficiaries.service';
 
@@ -49,6 +52,27 @@ export class BeneficiariesController {
   @ApiOperation({ summary: 'Register an anonymised beneficiary → B-XXXX (ADMIN, STAFF)' })
   create(@Body() dto: CreateBeneficiaryDto, @CurrentUser() user: AuthenticatedUser) {
     return this.beneficiaries.create(dto, user);
+  }
+
+  @Patch('beneficiaries/:id')
+  @ApiOperation({ summary: 'Correct a beneficiary record; the code never changes (ADMIN)' })
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateBeneficiaryDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.beneficiaries.update(id, dto, user);
+  }
+
+  @Patch('campaigns/:id/beneficiaries/:beneficiaryId')
+  @ApiOperation({ summary: 'Change the monthly amount of a link or end the link (ADMIN)' })
+  updateLink(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('beneficiaryId', ParseUUIDPipe) beneficiaryId: string,
+    @Body() dto: UpdateBeneficiaryLinkDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.beneficiaries.updateLink(id, beneficiaryId, dto, user);
   }
 
   @Post('campaigns/:id/beneficiaries')

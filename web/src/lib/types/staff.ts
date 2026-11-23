@@ -8,6 +8,7 @@ import type {
   Currency,
   PayeeType,
   PaymentMethod,
+  PaymentMethodKind,
   PledgeChannel,
   Priority,
   Role,
@@ -58,6 +59,70 @@ export interface StaffBeneficiary {
   isSuspended: boolean;
   createdAt: string;
   _count: { campaignLinks: number };
+  /** Active campaign links only. */
+  campaignLinks: {
+    monthlyAmount: string | null;
+    startedAt: string;
+    campaign: { id: string; slug: string; titleAr: string; titleEn: string | null };
+  }[];
+}
+
+/** ADMIN account list (never a password hash). */
+export interface AdminUser {
+  id: string;
+  fullName: string;
+  phone: string;
+  role: Role;
+  isActive: boolean;
+  createdAt: string;
+  collectionPoints: { id: string; name: string }[];
+}
+
+export interface AdminHospital {
+  id: string;
+  nameAr: string;
+  nameEn: string | null;
+  city: string;
+  isPrivate: boolean;
+  isActive: boolean;
+  _count: { cases: number; campaigns: number; expenditures: number };
+}
+
+export interface AdminCollectionPoint {
+  id: string;
+  name: string;
+  type: CollectionPointType;
+  contactName: string | null;
+  area: string;
+  isActive: boolean;
+  collectors: { id: string; fullName: string; isActive: boolean }[];
+  _count: { pledges: number };
+}
+
+/** A method's default receiving details (fake accounts for the hackathon). */
+export interface PaymentMethodConfigRow {
+  id: string;
+  method: PaymentMethod;
+  kind: PaymentMethodKind;
+  labelAr: string;
+  labelEn: string;
+  accountName: string | null;
+  accountNameEn: string | null;
+  accountNumber: string | null;
+  instructionsAr: string | null;
+  instructionsEn: string | null;
+  allowsReceiptUpload: boolean;
+  allowsDemoCheckout: boolean;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+/** A campaign's own receiving account for one method. */
+export interface CampaignAccountOverride {
+  method: PaymentMethod;
+  accountName: string;
+  accountNumber: string;
+  note: string | null;
 }
 
 export interface Hospital {

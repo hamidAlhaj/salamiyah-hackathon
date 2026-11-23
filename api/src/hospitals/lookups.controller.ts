@@ -1,59 +1,23 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiProperty,
-  ApiPropertyOptional,
-  ApiTags,
-} from '@nestjs/swagger';
-import { CollectionPointType } from '@prisma/client';
-import { IsBoolean, IsEnum, IsOptional, IsString, Length } from 'class-validator';
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
+import {
+  CreateCollectionPointDto,
+  CreateHospitalDto,
+  UpdateCollectionPointDto,
+  UpdateHospitalDto,
+} from './lookups.dto';
 import { LookupsService } from './lookups.service';
-
-export class CreateHospitalDto {
-  @ApiProperty({ example: 'المشفى الوطني بالسلمية' })
-  @IsString()
-  @Length(3, 120)
-  nameAr: string;
-
-  @ApiPropertyOptional({ example: 'Salamiyah National Hospital' })
-  @IsOptional()
-  @IsString()
-  nameEn?: string;
-
-  @ApiProperty({ example: 'السلمية' })
-  @IsString()
-  city: string;
-
-  @ApiPropertyOptional({ default: false })
-  @IsOptional()
-  @IsBoolean()
-  isPrivate?: boolean;
-}
-
-export class CreateCollectionPointDto {
-  @ApiProperty({ example: 'نقطة جمع الحي الشمالي' })
-  @IsString()
-  @Length(3, 120)
-  name: string;
-
-  @ApiPropertyOptional({ enum: CollectionPointType, default: CollectionPointType.OTHER })
-  @IsOptional()
-  @IsEnum(CollectionPointType)
-  type?: CollectionPointType;
-
-  @ApiPropertyOptional({ description: 'Contact person at the collection point (optional)' })
-  @IsOptional()
-  @IsString()
-  @Length(2, 120)
-  contactName?: string;
-
-  @ApiProperty({ example: 'الحي الشمالي' })
-  @IsString()
-  area: string;
-}
 
 /** Public: where a donor can pay cash (no guard). */
 @ApiTags('collection-points')
@@ -77,35 +41,61 @@ export class LookupsController {
   constructor(private readonly lookups: LookupsService) {}
 
   @Get('hospitals')
-  @ApiOperation({ summary: 'المشافي المعتمدة (أي مستخدم مسجّل)' })
+  @ApiOperation({ summary: 'Active approved hospitals (any signed-in user)' })
   hospitals() {
     return this.lookups.hospitals();
   }
 
+  @Get('hospitals/all')
+  @ApiOperation({ summary: 'All hospitals, inactive too, with usage counts (ADMIN)' })
+  allHospitals(@CurrentUser() user: AuthenticatedUser) {
+    return this.lookups.allHospitals(user);
+  }
+
   @Post('hospitals')
-  @ApiOperation({ summary: 'إضافة مشفى (ADMIN)' })
+  @ApiOperation({ summary: 'Add a hospital (ADMIN)' })
   createHospital(@Body() dto: CreateHospitalDto, @CurrentUser() user: AuthenticatedUser) {
     return this.lookups.createHospital(dto, user);
   }
 
+  @Patch('hospitals/:id')
+  @ApiOperation({ summary: 'Edit or (de)activate a hospital (ADMIN)' })
+  updateHospital(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateHospitalDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.lookups.updateHospital(id, dto, user);
+  }
+
   @Get('collection-points')
-  @ApiOperation({ summary: 'كل نقاط الجمع (ADMIN, FINANCE_VERIFIER, STAFF)' })
+  @ApiOperation({ summary: 'All collection points (ADMIN, FINANCE_VERIFIER, STAFF)' })
   collectionPoints(@CurrentUser() user: AuthenticatedUser) {
     return this.lookups.collectionPoints(user);
   }
 
   @Get('collection-points/mine')
-  @ApiOperation({ summary: 'نقاط الجمع المرتبطة بي فقط (COLLECTOR)' })
+  @ApiOperation({ summary: 'Only my assigned collection points (COLLECTOR)' })
   myCollectionPoints(@CurrentUser() user: AuthenticatedUser) {
     return this.lookups.myCollectionPoints(user);
   }
 
   @Post('collection-points')
-  @ApiOperation({ summary: 'إضافة نقطة جمع (ADMIN)' })
+  @ApiOperation({ summary: 'Add a collection point (ADMIN)' })
   createCollectionPoint(
     @Body() dto: CreateCollectionPointDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.lookups.createCollectionPoint(dto, user);
+  }
+
+  @Patch('collection-points/:id')
+  @ApiOperation({ summary: 'Edit or (de)activate a collection point (ADMIN)' })
+  updateCollectionPoint(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCollectionPointDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.lookups.updateCollectionPoint(id, dto, user);
   }
 }

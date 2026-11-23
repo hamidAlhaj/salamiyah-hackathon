@@ -6,7 +6,10 @@ import type { AuthenticatedUser } from '../common/decorators/current-user.decora
 import type { PaymentAccount } from '../common/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { mergePaymentAccounts } from './payment-accounts';
-import type { SetCampaignAccountDto } from './payment-methods.dto';
+import type {
+  SetCampaignAccountDto,
+  UpdatePaymentMethodConfigDto,
+} from './payment-methods.dto';
 
 /** Public campaign statuses: receiving details are only shown for these. */
 const PUBLIC_STATUSES = ['ACTIVE', 'FUNDED', 'COMPLETED'] as const;
@@ -44,6 +47,79 @@ export class PaymentMethodsService {
     });
     if (!campaign) throw new NotFoundException('campaign_not_found');
     return mergePaymentAccounts(await this.activeConfigs(), campaign.paymentAccounts, lang);
+  }
+
+  /** ADMIN: every method's default details, inactive methods too. */
+  listConfigs(actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['ADMIN']);
+    return this.prisma.paymentMethodConfig.findMany({ orderBy: { sortOrder: 'asc' } });
+  }
+
+  /** ADMIN edits the default receiving details of one method (never its kind or behaviour flags). */
+  async updateConfig(
+    method: PaymentMethod,
+    dto: UpdatePaymentMethodConfigDto,
+    actor: AuthenticatedUser,
+  ) {
+    this.access.requireRole(actor, ['ADMIN']);
+    const before = await this.prisma.paymentMethodConfig.findUnique({ where: { method } });
+    if (!before) throw new NotFoundException('payment_method_not_found');
+    const clearable = (v: string | undefined) =>
+      v === undefined ? undefined : v.trim() || null;
+    return this.prisma.$transaction(async (tx) => {
+      const config = await tx.paymentMethodConfig.update({
+        where: { method },
+        data: {
+          labelAr: dto.labelAr?.trim(),
+          labelEn: dto.labelEn?.trim(),
+          accountName: clearable(dto.accountName),
+          accountNameEn: clearable(dto.accountNameEn),
+          accountNumber: clearable(dto.accountNumber),
+          instructionsAr: clearable(dto.instructionsAr),
+          instructionsEn: clearable(dto.instructionsEn),
+          isActive: dto.isActive,
+          sortOrder: dto.sortOrder,
+        },
+      });
+      await this.audit.log(
+        {
+          actorId: actor.id,
+          action: 'payment_method.update',
+          entityType: 'PaymentMethodConfig',
+          entityId: config.id,
+          before: {
+            method,
+            accountNumber: before.accountNumber,
+            isActive: before.isActive,
+            sortOrder: before.sortOrder,
+          },
+          after: {
+            method,
+            accountNumber: config.accountNumber,
+            isActive: config.isActive,
+            sortOrder: config.sortOrder,
+          },
+        },
+        tx,
+      );
+      return config;
+    });
+  }
+
+  /** ADMIN: the campaign's own receiving accounts (works for drafts and paused campaigns too). */
+  async campaignOverrides(campaignId: string, actor: AuthenticatedUser) {
+    this.access.requireRole(actor, ['ADMIN']);
+    const campaign = await this.prisma.campaign.findUnique({
+      where: { id: campaignId },
+      select: {
+        paymentAccounts: {
+          select: { method: true, accountName: true, accountNumber: true, note: true },
+          orderBy: { method: 'asc' },
+        },
+      },
+    });
+    if (!campaign) throw new NotFoundException('campaign_not_found');
+    return campaign.paymentAccounts;
   }
 
   async setCampaignAccount(
