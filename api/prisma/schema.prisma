@@ -174,8 +174,9 @@ enum OutboundStatus {
 model User {
   id            String   @id @default(uuid()) @db.Uuid
   fullName      String   @map("full_name")
-  phone         String   @unique
+  phone         String?  @unique // null only for a Google sign-in donor who has not added a phone yet
   email         String?  @unique
+  googleSub     String?  @unique @map("google_sub") // Google account id ("sub"), set by Google sign-in
   passwordHash  String?  @map("password_hash")
   role          Role     @default(DONOR)
   locale        Locale   @default(ar)

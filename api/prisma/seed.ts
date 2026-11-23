@@ -236,6 +236,9 @@ const PAYMENT_METHODS: Prisma.PaymentMethodConfigCreateManyInput[] = [
   },
 ];
 
+/** Fixed id of the seeded Google donor without a phone (e2e: tests/06-google-signin.spec.ts). */
+const GOOGLE_DEMO_DONOR_ID = '22222222-0000-4000-8000-000000000022';
+
 async function main() {
   await reset();
   const passwordHash = await hash(SEED_PASSWORD, 10);
@@ -290,6 +293,22 @@ async function main() {
   for (const [i, phone] of alertPhones.entries()) {
     await mkUser(`فاعل خير ${i + 1} (مثال)`, phone, 'DONOR', { whatsappOptIn: true });
   }
+  // A donor who signed in with Google and has not added a phone yet (P22): no phone, no password,
+  // a fictional Google id. Nobody can log in as this account (it exists for the e2e check that
+  // donating is refused with `phone_required`); the fixed id lets the e2e test address it.
+  await prisma.user.create({
+    data: {
+      id: GOOGLE_DEMO_DONOR_ID,
+      fullName: 'متبرعة عبر Google (مثال)',
+      phone: null,
+      email: 'google.donor@example.com',
+      googleSub: 'demo-google-sub-000000000001',
+      passwordHash: null,
+      role: 'DONOR',
+      locale: 'ar',
+      donorCode: 'D-000099',
+    },
+  });
 
   // ── Hospitals (fictional) ──
   const national = await prisma.hospital.create({

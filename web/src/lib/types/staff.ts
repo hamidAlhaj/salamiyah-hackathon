@@ -129,7 +129,8 @@ export interface StaffCampaignDetail {
 export interface AdminUser {
   id: string;
   fullName: string;
-  phone: string;
+  /** null: a donor who signed in with Google and has not added a phone yet. */
+  phone: string | null;
   role: Role;
   isActive: boolean;
   createdAt: string;

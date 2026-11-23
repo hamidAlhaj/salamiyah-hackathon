@@ -77,6 +77,22 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   return payload as T;
 }
 
+/**
+ * For an API route that answers with a redirect (Sign in with Google): the Location it points to,
+ * read server-side without following it. Errors are thrown as ApiError like apiFetch.
+ */
+export async function apiRedirectLocation(
+  path: string,
+  query?: RequestOptions['query'],
+): Promise<string> {
+  const response = await fetch(buildUrl(path, query), { redirect: 'manual', cache: 'no-store' });
+  const location = response.headers.get('location');
+  if (response.status >= 300 && response.status < 400 && location) return location;
+  const isJson = response.headers.get('content-type')?.includes('application/json');
+  const payload = isJson ? await response.json() : undefined;
+  throw new ApiError(response.status, payload as ApiErrorShape);
+}
+
 export async function orNotFound<T>(promise: Promise<T>): Promise<T> {
   try {
     return await promise;

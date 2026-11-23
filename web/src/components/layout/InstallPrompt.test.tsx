@@ -13,6 +13,8 @@ const user = (role: Role): CurrentUser => ({
   role,
   locale: 'ar',
   donorCode: 'D-000006',
+  whatsappOptIn: false,
+  googleLinked: false,
 });
 
 function renderPrompt(initialUser: CurrentUser | null) {

@@ -193,7 +193,20 @@
       "Proof for every payment",
       "Beneficiaries without identities"
     ],
-    "tooMany": "Too many sign-in attempts. Wait a minute, then try again."
+    "tooMany": "Too many sign-in attempts. Wait a minute, then try again.",
+    "google": {
+      "or": "or",
+      "button": "Continue with Google",
+      "hint": "For donors. After signing in you add your phone number, so receipts reach you on WhatsApp.",
+      "notice": {
+        "unavailable": "Sign in with Google is not available right now. Log in with your phone number and password.",
+        "cancelled": "You cancelled signing in with Google. You can try again.",
+        "failed": "Signing in with Google did not work. Try again.",
+        "expired": "The Google sign-in attempt expired. Start again.",
+        "staff": "Council staff accounts log in with their phone number and password only.",
+        "mismatch": "This email is linked to a different Google account. Contact the local council."
+      }
+    }
   },
   "dash": {
     "title": "Dashboard",
@@ -631,7 +644,10 @@
       "status": "Status",
       "backToCampaign": "Back to the campaign",
       "myDonations": "My donations"
-    }
+    },
+    "phoneTitle": "Add your phone number first",
+    "phoneBody": "We need your phone number to send your donation confirmation and official receipt on WhatsApp. It takes a minute.",
+    "phoneCta": "Add phone number"
   },
   "workspace": {
     "label": "Workspace",
@@ -655,7 +671,8 @@
     "collectionPoints": "Collection points",
     "hospitals": "Hospitals",
     "paymentMethods": "Payment methods",
-    "beneficiaries": "Beneficiary registry"
+    "beneficiaries": "Beneficiary registry",
+    "profile": "My profile"
   },
   "apiErrors": {
     "generic": "The request could not be completed. Check the data and try again.",
@@ -720,7 +737,12 @@
     "campaign_unchanged": "Nothing changed: edit a field first.",
     "beneficiary_already_suspended": "The record is already on administrative hold.",
     "beneficiary_not_suspended": "The record is not on hold.",
-    "beneficiary_kind_mismatch": "This beneficiary’s kind does not fit the campaign category (for example, orphans only for sponsorship)."
+    "beneficiary_kind_mismatch": "This beneficiary’s kind does not fit the campaign category (for example, orphans only for sponsorship).",
+    "phone_required": "Add your phone number in your profile before donating.",
+    "google_staff_account": "Council staff accounts log in with their phone number and password only.",
+    "google_account_mismatch": "This email is linked to a different Google account.",
+    "google_sign_in_disabled": "Sign in with Google is not enabled.",
+    "google_sign_in_failed": "Signing in with Google did not work."
   },
   "adminCategories": {
     "title": "Campaign categories",
@@ -1345,5 +1367,29 @@
     "body": "Open campaigns and your donations with one tap from the home screen.",
     "action": "Install",
     "dismiss": "Not now"
+  },
+  "profile": {
+    "title": "My profile",
+    "intro": "Your account, and the phone number your receipts and alerts go to.",
+    "requiredTitle": "Add your phone number to donate",
+    "requiredBody": "The council sends your donation confirmation and official receipt to this number on WhatsApp. Your number never appears on a public page.",
+    "account": "Account",
+    "name": "Name",
+    "donorCode": "Donor code",
+    "signIn": "Signs in with",
+    "viaGoogle": "Google account",
+    "viaPassword": "Phone number and password",
+    "phoneSection": "Phone and WhatsApp",
+    "current": "Current number",
+    "missing": "Not added yet",
+    "phone": "Phone number",
+    "phoneHint": "Example: 0944123456, or an international number starting with +",
+    "whatsapp": "Send me receipts and new-campaign alerts on WhatsApp",
+    "loginNote": "Your phone number is also your login. After changing it, log in with the new number.",
+    "save": "Save phone number",
+    "saving": "Saving…",
+    "saved": "Phone number saved.",
+    "continue": "Continue to donate",
+    "required": "Enter your phone number."
   }
 }

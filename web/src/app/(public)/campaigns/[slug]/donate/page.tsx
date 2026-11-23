@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { DonateFlow } from '@/components/donate/DonateFlow';
+import { PhoneRequiredCallout } from '@/components/donate/PhoneRequiredCallout';
 import { buttonClasses } from '@/components/ui/Button';
 import * as authApi from '@/lib/api/auth';
 import { getCampaign } from '@/lib/api/campaigns';
@@ -61,6 +62,19 @@ export default async function DonatePage({ params }: Props) {
     );
   } else if (user.role !== 'DONOR') {
     body = <Notice title={t('staffTitle')} text={t('staffBody')} />;
+  } else if (!user.phone) {
+    // A Google sign-in donor without a phone: the API refuses every donation (phone_required).
+    body = (
+      <PhoneRequiredCallout className="max-w-xl" title={t('phoneTitle')} body={t('phoneBody')}>
+        <Link
+          href={`/dashboard/profile?next=${encodeURIComponent(`/campaigns/${campaign.slug}/donate`)}`}
+          className={buttonClasses('primary', 'md', 'mt-4')}
+          data-testid="add-phone"
+        >
+          {t('phoneCta')}
+        </Link>
+      </PhoneRequiredCallout>
+    );
   } else {
     const [accounts, points, messages] = await Promise.all([
       getCampaignAccounts(campaign.id, locale),

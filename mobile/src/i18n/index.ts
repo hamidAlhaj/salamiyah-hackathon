@@ -236,6 +236,7 @@ const ar = {
     payment_method_unavailable: 'طريقة الدفع هذه غير متاحة حالياً.',
     collection_point_unavailable: 'نقطة الجمع هذه غير متاحة.',
     receipt_not_applicable: 'لا يحتاج هذا التبرع إلى إيصال.',
+    phone_required: 'أضف رقم هاتفك أولاً من «ملفي» على موقع مجلس فند، ليصلك تأكيد التبرع والإيصال على واتساب.',
   },
 };
 
@@ -474,6 +475,8 @@ const en: Messages = {
     payment_method_unavailable: 'This payment method is not available right now.',
     collection_point_unavailable: 'This collection point is not available.',
     receipt_not_applicable: 'This donation does not need a receipt.',
+    phone_required:
+      'Add your phone number first in "My profile" on the Majlis Fund website, so the confirmation and receipt reach you on WhatsApp.',
   },
 };
 

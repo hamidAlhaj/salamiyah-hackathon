@@ -109,6 +109,50 @@ Open `http://localhost:3000`. Collector pages are mobile-first and installable f
 off in development. For the **LAN demo** (a production build served over plain HTTP at `http://<LAN-IP>:3000`) set it
 to `"false"`, otherwise phones drop the cookie and login fails. Never set it to `"false"` behind HTTPS.
 
+### 5a. Sign in with Google (optional, off by default)
+Phone + password stays the main login (staff, collectors, older donors) and is unchanged. "Continue with Google"
+appears under the login form **only** when `api/.env` has all three of `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+and `GOOGLE_CALLBACK_URL`; otherwise the button is hidden and the Google API routes answer 404
+`google_sign_in_disabled`. No keys are committed; you create the OAuth client yourself:
+
+1. Open <https://console.cloud.google.com/>, create (or pick) a project, e.g. "Majlis Fund demo".
+2. **Google Auth Platform → Branding / Audience** (older consoles: *APIs & Services → OAuth consent screen*):
+   user type **External**, app name «مجلس فند» / Majlis Fund, your support and developer email. Scopes: only
+   `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile` (non-sensitive). Leave the publishing status on
+   **Testing** and add every Gmail address that will try it as a **test user** (only they can sign in while testing).
+3. **Clients → Create client** (older: *Credentials → Create credentials → OAuth client ID*), application type
+   **Web application**:
+   - Authorized JavaScript origins: `http://localhost:3000`
+   - Authorized redirect URIs: `http://localhost:3000/auth/google/callback`
+   (The redirect goes to the **web** app, not to the API on :4000.)
+4. Copy the client ID and secret into `api/.env` (never into git, never into `web/.env`):
+   ```
+   GOOGLE_CLIENT_ID="<client id>.apps.googleusercontent.com"
+   GOOGLE_CLIENT_SECRET="<client secret>"
+   GOOGLE_CALLBACK_URL="http://localhost:3000/auth/google/callback"
+   ```
+   Restart the API. `http://localhost:4000/auth/google/enabled` must now say `"enabled": true`, and the login page
+   at `http://localhost:3000/login` shows the button.
+5. **LAN / phones:** Google only accepts plain-`http` redirect URIs on `localhost`, never on a raw IP address, so
+   `http://192.168.x.x:3000/...` cannot be registered (the console rejects it). On the LAN demo the button is
+   therefore hidden automatically on any host other than the callback's (phones keep phone + password). To use
+   Google from other devices you need an HTTPS host name (a real domain or an HTTPS tunnel): add
+   `https://<host>` as an origin and `https://<host>/auth/google/callback` as a redirect URI, and set
+   `GOOGLE_CALLBACK_URL` to that URL.
+
+How it works: `/auth/google/start` (web) stores a random CSRF `state` in an HttpOnly cookie and sends the browser to
+Google; Google returns to `/auth/google/callback` (web), which checks the state and hands Google's one-time code to the
+API server-side (`GET /auth/google/callback`, `passport-google-oauth20`). The API returns the same 8h session as
+`POST /auth/login`; the token goes only into the HttpOnly `session` cookie, never into a URL. Rules:
+- A new Google account becomes a **DONOR** without phone or password. Before donating it must add a phone on
+  «ملفي» / *My profile* (`/dashboard/profile`, same phone rules as registration, unique): every donate endpoint
+  refuses with `403 phone_required` until then, because receipts and alerts go out on WhatsApp.
+- A Google account is matched by its Google id. If none is linked yet and Google reports a **verified** email that
+  belongs to an existing **DONOR**, that donor is linked once (audited). Staff, collector and admin accounts are
+  never linked or entered through Google (`google_staff_account`); they keep phone + password.
+- The mobile app keeps phone + password only (no native Google sign-in) and shows the `phone_required` message if
+  the API ever returns it.
+
 ### 6. Mobile (donor app)
 ```powershell
 cd mobile
@@ -233,6 +277,7 @@ Libraries used here that the b4f reference does not have. Each one is pinned to 
 | `@expo-google-fonts/ibm-plex-sans-arabic`, `@expo-google-fonts/noto-kufi-arabic` | mobile | The web fonts (IBM Plex Sans Arabic body, Noto Kufi Arabic headings) bundled for expo-font | 0.4.2 / 0.4.3 | P09 |
 | `qrcode`, `@types/qrcode` (dev) | api | QR code (server-side SVG) on official receipts, encoding the public receipt URL | 1.5.4 / 1.5.6 | P13 |
 | `@playwright/test` (dev) | e2e | Smoke tests and the demo scenario in a separate test-only project; runs on the installed Chrome | 1.64.1 | P16 |
+| `passport-google-oauth20`, `@types/passport-google-oauth20` (dev) | api | Optional "Sign in with Google" (OAuth 2.0 strategy for the installed `passport` 0.7.0 / `@nestjs/passport` 10.0.3); off unless the three `GOOGLE_*` keys are set | 2.0.0 / 2.0.17 | P22 |
 
 ## Docs
 - `docs/input/`: council PoC proposal (**primary requirement source**), full system specification, team brief (ar/en),
