@@ -21,7 +21,7 @@ diagrams.architecture = () => {
   const W = 1640;
   const H = 900;
   let b = '';
-  b += text(W / 2, 40, 'Majlis Fund — system architecture · معمارية النظام', { size: 24, weight: 700, fill: C.greenDark });
+  b += text(W / 2, 40, 'Madad — system architecture · معمارية النظام', { size: 24, weight: 700, fill: C.greenDark });
 
   // Clients
   b += rect(30, 80, 330, 560, { fill: C.greyBg, stroke: C.border, dash: '6 5' });
@@ -232,7 +232,7 @@ diagrams['use-cases'] = () => {
   let b = '';
   b += text(W / 2, 40, 'Use case diagram · مخطط حالات الاستخدام', { size: 24, weight: 700, fill: C.greenDark });
   b += rect(300, 70, 960, 910, { fill: C.greyBg, stroke: C.green, sw: 1.8, rx: 16 });
-  b += text(780, 98, 'Majlis Fund platform · منصة مجلس فند', { size: 16, weight: 700, fill: C.green });
+  b += text(780, 98, 'Madad platform · منصة مدد', { size: 16, weight: 700, fill: C.green });
 
   const actor = (x, y, en, ar, color) => {
     let s = `<g stroke="${color}" stroke-width="2.2" fill="none"><circle cx="${x}" cy="${y - 34}" r="13"/><path d="M${x},${y - 21} v34 M${x - 22},${y - 8} h44 M${x},${y + 13} l-18,26 M${x},${y + 13} l18,26"/></g>`;
@@ -437,7 +437,7 @@ diagrams['map-backend'] = () => {
     b += text(x + cw / 2, 165, c[2], { size: 13.5, weight: 600 });
     b += text(x + cw / 2, 186, c[3], { size: 13, fill: C.muted });
     b += `<line x1="${x + 20}" y1="205" x2="${x + cw - 20}" y2="205" stroke="${C.border}"/>`;
-    b += text(x + cw / 2, 232, 'in Majlis Fund:', { size: 11.5, fill: C.muted });
+    b += text(x + cw / 2, 232, 'in Madad:', { size: 11.5, fill: C.muted });
     b += text(x + cw / 2, 256, c[4], { size: 12, weight: 600, fill: color });
     b += text(x + cw / 2, 280, c[5], { size: 11, fill: C.muted });
     if (i < 4) b += arrow([[x + cw + 2, 205], [x + 310, 205]], { color: C.muted });

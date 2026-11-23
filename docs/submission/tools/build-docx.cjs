@@ -8,8 +8,8 @@
 // reports the page count. Windows + Word required.
 //
 // Usage (from the repository root):
-//   node docs/submission/tools/build-docx.cjs [--team-en TeamName] [--team-ar اسم-الفريق]
-//                                             [--label-en 'Team 4'] [--label-ar 'الفريق الرابع']
+//   node docs/submission/tools/build-docx.cjs [--team-en Madad] [--team-ar مدد]
+//                                             [--label-en Madad] [--label-ar مدد]
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -25,15 +25,15 @@ const arg = (n, d) => {
   const i = process.argv.indexOf(n);
   return i > 0 ? process.argv[i + 1] : d;
 };
-const TEAM_EN = arg('--team-en', 'TeamName');
-const TEAM_AR = arg('--team-ar', 'اسم-الفريق');
+const TEAM_EN = arg('--team-en', 'Madad');
+const TEAM_AR = arg('--team-ar', 'مدد');
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // Content strings may contain <b>…</b>; everything else is escaped.
 const rich = (s) => esc(s).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>');
 // The team label printed inside the documents (the file names keep --team-en / --team-ar).
-const LABEL_EN = arg('--label-en', 'Team 4');
-const LABEL_AR = arg('--label-ar', 'الفريق الرابع');
+const LABEL_EN = arg('--label-en', 'Madad');
+const LABEL_AR = arg('--label-ar', 'مدد');
 const fill = (s) => s.replace('TEAM_AR', LABEL_AR).replace('TEAM_EN', LABEL_EN);
 
 function page(lang, bodyHtml, { size = 10.5 } = {}) {

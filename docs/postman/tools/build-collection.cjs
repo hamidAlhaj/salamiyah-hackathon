@@ -313,12 +313,13 @@ async function loadSpec() {
 
   const collection = {
     info: {
-      name: 'Majlis Fund (مجلس فند) API — salamiyah-hackathon',
+      name: 'Madad (مدد) API — salamiyah-hackathon',
       description:
         'Every endpoint of the NestJS API (generated from its Swagger document; see docs/postman/README.md).\n\n' +
         '1. Set {{baseUrl}} (default http://localhost:4000).\n2. Run Auth → Login or Auth → Demo logins → Login as <ROLE>; the test script saves {{token}}.\n' +
         '3. Protected requests inherit Bearer {{token}} from the collection. Public requests use No Auth.\n\n' +
-        'All data is fictional (demo seed). No secrets or real phone numbers are stored here.',
+        'All data is fictional (demo seed). No secrets or real phone numbers are stored here.\n\n' +
+        'The app UI and the Swagger title still show the earlier working name «مجلس فند» (Majlis Fund API); rename in progress.',
       schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
     },
     auth: { type: 'bearer', bearer: [{ key: 'token', value: '{{token}}', type: 'string' }] },

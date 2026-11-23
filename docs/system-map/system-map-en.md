@@ -1,4 +1,4 @@
-# Majlis Fund — System Construction Map
+# Madad — System Construction Map
 
 A guide to the system we built for the Local Council of Salamiyah: its pieces, how they connect, the order we built
 them in, and how one donation travels through the whole stack. Written in the style of the B4F Board "System
@@ -6,7 +6,7 @@ Construction Map", grounded in the real code of `salamiyah-hackathon` (branch `m
 
 ## 1. What are we actually building?
 
-**Majlis Fund (مجلس فند)** is the official hackathon idea of Team 4: *donation automation for the Local Council in
+**Madad (مدد)** is the official hackathon idea of team Madad (approved as idea no. 4): *donation automation for the Local Council in
 Salamiyah*. It is a working system, not a mock-up:
 
 - The council creates **donation campaigns** in data-driven **categories** (medical aid, orphan sponsorship, home
@@ -27,6 +27,8 @@ Salamiyah*. It is a working system, not a mock-up:
 
 Swagger, Postman, Git and the tests are tools we use while building the system; they are not parts of the product.
 
+> The app UI still shows the earlier working name «مجلس فند» (Majlis Fund); rename in progress. The Swagger title (`Majlis Fund API`) and the demo screens show it too.
+
 <!-- pagebreak -->
 
 ## 2. The whole system map
@@ -41,7 +43,7 @@ Swagger, Postman, Git and the tests are tools we use while building the system; 
   category behaviour) follows a known, safe pattern.
 - **WhatsApp without an API:** messages are written to an outbox and sent by staff with one tap on a `wa.me` link.
 
-## 3. What is Majlis Fund made of?
+## 3. What is Madad made of?
 
 | Product piece | Screens | Main endpoints | Main tables |
 |---|---|---|---|

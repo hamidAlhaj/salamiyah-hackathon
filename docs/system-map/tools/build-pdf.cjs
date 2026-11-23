@@ -39,6 +39,9 @@ function toHtml(md, baseDir) {
     if (/^<!-- pagebreak -->/.test(l)) {
       flush();
       // Page breaks are left to the browser (figures never split); the markers only document section groups.
+    } else if (/^> /.test(l)) {
+      flush();
+      out.push(`<blockquote>${inline(l.slice(2))}</blockquote>`);
     } else if (/^#{1,3} /.test(l)) {
       flush();
       const n = l.match(/^#+/)[0].length;
@@ -102,6 +105,7 @@ figure{margin:6pt 0 10pt;text-align:center;page-break-inside:avoid}
 img{max-width:100%;max-height:112mm;border:1px solid #dfe7e2;border-radius:4px}
 figcaption{font-size:8.5pt;color:#55655c}
 .pb{page-break-after:always}
+blockquote{margin:6pt 0;padding:5pt 9pt;background:#fcf1dc;border-${rtl ? 'right' : 'left'}:3px solid #8a5d0c;font-size:9.5pt}
 `;
 }
 
@@ -125,7 +129,7 @@ async function main() {
       printBackground: true,
       displayHeaderFooter: true,
       headerTemplate: '<span></span>',
-      footerTemplate: `<div style="font-size:8px;width:100%;text-align:center;color:#666">Majlis Fund · System Construction Map · <span class="pageNumber"></span>/<span class="totalPages"></span></div>`,
+      footerTemplate: `<div style="font-size:8px;width:100%;text-align:center;color:#666">Madad · System Construction Map · <span class="pageNumber"></span>/<span class="totalPages"></span></div>`,
       margin: { top: '16mm', bottom: '16mm', left: '14mm', right: '14mm' },
     });
     const pages = (fs.readFileSync(pdfPath, 'latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
