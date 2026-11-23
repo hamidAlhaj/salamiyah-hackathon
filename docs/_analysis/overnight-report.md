@@ -61,3 +61,67 @@ Dev DB reseeded (`demo:reset`, verified 39,600,000). Stopped PIDs 1080 (web :300
   if wanted (then the outbox count is 1 + their count; `E2E_ALERT_DONORS` for the test).
 - Risk noted in DEMO.md: the API's global throttle (120 requests/min per IP) is shared by every device using the web
   app, because Next calls the API from the PC. Normal demo pace is fine; avoid rapid repeated refreshes.
+
+## P17
+
+**Status:** merged to `main` (fast-forward) and pushed; branch `p17-admin-setup` pushed.
+Commit `f5fea5a` — `feat(web): admin setup screens for users, collection points, hospitals, payment methods and the beneficiary registry with PATCH endpoints`.
+
+### What was built
+Existing before P17 (kept): `POST/GET/PATCH /users`, `POST /hospitals`, `POST /collection-points`, `PUT/DELETE
+/campaigns/:id/payment-accounts/:method`, `POST /beneficiaries`, `POST /campaigns/:id/beneficiaries`; no web screens
+except beneficiary create/link and account overrides inside "new campaign".
+- **api** (no schema change, no migration):
+  - users: DTOs moved to `users.dto.ts`; `GET /users?role=`; `PATCH` now 404s unknown ids (`ParseUUIDPipe`), refuses
+    points for non-collectors (`collection_points_collector_only`), checks point ids exist, clears a collector's points
+    when the role changes, blocks an admin demoting/deactivating themself (`cannot_change_own_account`), audits
+    before/after.
+  - hospitals: `GET /hospitals/all` (inactive too, usage counts), `PATCH /hospitals/:id`; create now audited.
+  - collection points: `PATCH /collection-points/:id` (name, type, `contactName` — empty clears, area, isActive);
+    create now audited. DTOs moved to `lookups.dto.ts`.
+  - payment methods: `GET /payment-methods/config`, `PATCH /payment-methods/config/:method` (labels, holder names,
+    number, instructions, isActive, sortOrder; kind and receipt/demo flags never editable), `GET
+    /campaigns/:id/payment-accounts/overrides` (any campaign status). All ADMIN, audited.
+  - beneficiaries: `PATCH /beneficiaries/:id` (ADMIN; audit row holds only public fields + `privateFieldsChanged`),
+    `PATCH /campaigns/:id/beneficiaries/:beneficiaryId` (monthly amount by the category flag, or `end`); linking an
+    ended link reopens it; the staff list returns active campaign links.
+- **web** (ADMIN "الإعداد / Setup" group in the Sidebar + beneficiary registry for ADMIN/STAFF):
+  `/dashboard/admin/users` (staff by role / donors tabs, create, edit role + collector points checklist,
+  activate/deactivate), `/collection-points` (type, area, contact person, collectors, donations count),
+  `/hospitals`, `/payment-methods` (default accounts + per-campaign account picker → override/remove, link to the
+  donate page), `/beneficiaries` (search, code + private record, linked campaigns, edit, link, change monthly amount,
+  end link). Server Actions `lib/actions/{users,lookups,payment-methods,beneficiaries}.ts`, new paths in the
+  `safeRevalidate` whitelist (+ `/campaigns/<slug>/donate`), `adminSetup` namespace (AR/EN) in
+  `STAFF_CLIENT_NAMESPACES`, new `apiErrors` codes.
+- **e2e:** `e2e/tests/03-admin-setup.spec.ts` (runs after the scenario): add point → create collector → assign the point
+  (role select keeps COLLECTOR after save) → the collector logs in at 375 px and sees the point in the PWA → override
+  Sheikh Badr's Syriatel Cash number → public campaign page and the donor's transfer details show it. `helpers.ts`
+  gained `loginWithPhone`.
+
+### Checks
+- api: lint ✓ · **292** tests ✓ (+40: users, lookups, payment-method config, beneficiary update/link) · build ✓
+- web: lint ✓ · prettier ✓ · **40** tests ✓ (+4: workspace setup links, revalidate whitelist, form helpers) · build ✓
+- mobile (unchanged): `tsc --noEmit` ✓ · `expo lint` ✓ · `expo-doctor` 20/20 ✓
+- e2e: **27 passed, 1 skipped** (the LAN login test skips without `E2E_LAN_URL`, as in P16), twice on fresh resets.
+- Screenshots: `docs/screenshots/p17/` (users, collector assigned, donors tab, English, collection points + dark,
+  hospitals, payment defaults, override, 375 px, beneficiary registry + edit/link, collector PWA, donate page).
+
+### Decisions made alone
+- No schema change: every field the spec names already existed.
+- Collection points are assigned on the user (collector) form; the point list shows its collectors and links to Users.
+- Card (PayPal/Visa) and cash methods get no account box and no campaign override (cards are simulated checkout, cash
+  goes to a point); only TRANSFER/WALLET methods can be overridden.
+- Beneficiary edit and link are ADMIN-only (STAFF can only register, as before); the private name/phone never enter the
+  audit log.
+- Found and fixed while testing: React 19 resets action forms after submit, which made a controlled role select show
+  "متبرع" while the state said COLLECTOR (a second save would have demoted the user). Selects are now uncontrolled and
+  edit forms are keyed by the saved values; the e2e test asserts it.
+
+### Servers / cleanup
+Dev DB reseeded (`demo:reset`). Stopped PIDs 18884 / 10096 (api :4000 and web :3000; 1208 and 4272 were earlier web
+restarts); ports 3000/4000/8081 free (Expo not started: mobile unchanged). No `.playwright-mcp` folder was created.
+
+### Needs human
+- At 375 px every signed-in workspace page (also the pre-P17 categories page) scrolls ~32 px sideways: the signed-in
+  site header row is wider than the phone. Pre-existing, not touched here; fits P19's 375 px pass.
+- The collector PWA step was checked in Playwright at phone size, not on a physical phone.
