@@ -24,7 +24,7 @@ export function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
         </span>
         {completed ? (
           <span
-            className="absolute end-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2.5 py-1 text-xs font-bold text-white shadow-card dark:bg-brand-600"
+            className="absolute end-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-600 px-2.5 py-1 text-xs font-bold text-white shadow-card dark:bg-brand-600"
             data-testid="completed-badge"
           >
             <svg

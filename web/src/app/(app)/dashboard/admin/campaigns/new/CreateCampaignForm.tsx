@@ -122,7 +122,7 @@ export function CreateCampaignForm({
                     onChange={() => chooseCategory(c.id)}
                     className="peer sr-only"
                   />
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium peer-checked:border-brand-700 peer-checked:bg-brand-700 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-ring dark:peer-checked:bg-brand-600">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium peer-checked:border-brand-600 peer-checked:bg-brand-600 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-ring dark:peer-checked:border-brand-700 dark:peer-checked:bg-brand-600">
                     <CategoryIcon icon={c.icon} className="h-4 w-4" />
                     {c.name}
                   </span>

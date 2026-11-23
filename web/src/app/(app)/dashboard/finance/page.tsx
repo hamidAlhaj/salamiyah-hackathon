@@ -54,7 +54,7 @@ export default async function FinancePage({ searchParams }: Props) {
             aria-current={s === status ? 'page' : undefined}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               s === status
-                ? 'bg-brand-700 text-white dark:bg-brand-600'
+                ? 'bg-brand-600 text-white dark:bg-brand-600'
                 : 'bg-surface-muted text-muted hover:text-ink'
             }`}
             data-testid={`finance-tab-${s}`}

@@ -164,7 +164,7 @@ export default async function ManageCampaignPage({ params }: Props) {
                   aria-hidden
                   className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold tabular-nums ${
                     current
-                      ? 'bg-brand-700 text-white dark:bg-brand-600'
+                      ? 'bg-brand-600 text-white dark:bg-brand-600'
                       : passed
                         ? 'bg-brand-200 text-brand-800 dark:bg-brand-800 dark:text-brand-100'
                         : 'bg-surface-muted text-muted ring-1 ring-inset ring-border'

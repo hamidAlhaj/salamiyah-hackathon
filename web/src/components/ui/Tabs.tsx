@@ -27,7 +27,7 @@ export function Tabs({
           aria-current={item.current ? 'page' : undefined}
           className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition duration-150 ${
             item.current
-              ? 'border-brand-700 bg-brand-700 text-white shadow-card dark:border-brand-500 dark:bg-brand-600'
+              ? 'border-brand-600 bg-brand-600 text-white shadow-card dark:border-brand-500 dark:bg-brand-600'
               : 'border-border bg-surface text-ink hover:border-brand-600 hover:text-accent'
           }`}
         >

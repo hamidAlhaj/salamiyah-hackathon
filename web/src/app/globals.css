@@ -4,40 +4,42 @@
 
 @layer base {
   /* Theme tokens as "R G B" (see tailwind.config.ts). Text pairs are chosen for WCAG AA in both
-     themes: ink on page ≈ 15:1, muted on page ≈ 6:1, accent on page ≈ 7:1, control on surface ≈ 3.5:1. */
+     themes (measured in P21): light ink on page 16.6:1, muted on page 7.3:1, accent on page 5.5:1,
+     control on surface 4.1:1; dark ink on page 16.3:1, muted 8.2:1, accent 8.6:1, control 4.2:1. */
 
-  /* Light: cool limestone with a faint sage tint (Salamiyah stone, not cream paper). */
+  /* Light: clean morning white. A near-white page with a breath of mint, pure-white cards lifted by
+     a hairline border and a soft green-tinted shadow, and a fresh Salamiyah green for every accent. */
   :root {
     color-scheme: light;
-    --page: 238 242 239; /* #eef2ef */
-    --surface: 249 251 249; /* #f9fbf9 cards, inputs, header */
-    --surface-muted: 228 234 229; /* #e4eae5 recessed panels */
-    --border: 211 220 213; /* #d3dcd5 */
-    --track: 203 213 205; /* #cbd5cd progress track, skeletons */
-    --control: 123 138 128; /* #7b8a80 input outlines */
-    --text: 22 35 29; /* #16231d green-black ink */
-    --text-muted: 79 95 86; /* #4f5f56 */
-    --ring: 24 115 75; /* brand-600 */
-    --accent: 19 91 60; /* brand-700: links, active text */
-    --accent-strong: 17 74 50; /* brand-800 */
-    --accent-soft: 220 238 229; /* #dceee5 chips, selected */
-    --danger: 163 39 28;
-    --danger-soft: 245 222 214;
-    --danger-line: 233 195 184;
-    --warning: 133 70 11;
-    --warning-soft: 244 227 193;
-    --warning-line: 229 204 151;
-    --info: 15 76 110;
-    --info-soft: 217 232 238;
-    --panel: 15 61 42; /* brand-900: brand panel, logo tile */
-    --panel-ink: 228 242 235;
-    --lattice: rgb(255 255 255 / 0.09); /* star lattice lines on the panel */
-    --lattice-soft: rgb(19 91 60 / 0.07); /* star lattice on light surfaces */
+    --page: 246 249 247; /* #f6f9f7 */
+    --surface: 255 255 255; /* #ffffff cards, inputs, header */
+    --surface-muted: 239 245 241; /* #eff5f1 recessed panels, mint not grey */
+    --border: 222 231 226; /* #dee7e2 hairline */
+    --track: 220 231 224; /* #dce7e0 progress track, skeletons */
+    --control: 110 130 120; /* #6e8278 input outlines */
+    --text: 13 28 21; /* #0d1c15 green-black ink */
+    --text-muted: 69 87 78; /* #45574e */
+    --ring: 31 138 91; /* brand-500 */
+    --accent: 24 115 75; /* brand-600: links, active text */
+    --accent-strong: 19 91 60; /* brand-700 */
+    --accent-soft: 225 244 233; /* #e1f4e9 chips, selected */
+    --danger: 168 36 26; /* #a8241a */
+    --danger-soft: 253 236 233; /* #fdece9 */
+    --danger-line: 245 200 192; /* #f5c8c0 */
+    --warning: 133 70 11; /* #85460b */
+    --warning-soft: 254 243 219; /* #fef3db */
+    --warning-line: 240 214 158; /* #f0d69e */
+    --info: 15 76 110; /* #0f4c6e */
+    --info-soft: 228 241 248; /* #e4f1f8 */
+    --panel: 14 74 51; /* #0e4a33 deep Salamiyah green: brand panel, logo tile */
+    --panel-ink: 230 245 237;
+    --lattice: rgb(255 255 255 / 0.1); /* star lattice lines on the panel */
+    --lattice-soft: rgb(24 115 75 / 0.07); /* star lattice on light surfaces */
     /* Chart series (validated for CVD separation and contrast on the surface): money in, money out. */
     --series-collected: 217 111 26; /* give-600 #d96f1a */
     --series-spent: 24 115 75; /* brand-600 #18734b */
-    --shadow-card: 0 1px 2px rgb(16 40 28 / 0.05), 0 2px 8px -2px rgb(16 40 28 / 0.08);
-    --shadow-lift: 0 14px 30px -12px rgb(16 40 28 / 0.25), 0 3px 8px rgb(16 40 28 / 0.06);
+    --shadow-card: 0 1px 2px rgb(14 74 51 / 0.04), 0 4px 14px -6px rgb(14 74 51 / 0.1);
+    --shadow-lift: 0 18px 36px -16px rgb(14 74 51 / 0.22), 0 4px 10px rgb(14 74 51 / 0.05);
   }
 
   /* Dark: deep pine, never pure black; elevation becomes a faint outline. */
@@ -153,35 +155,35 @@
   :root,
   .dark {
     color-scheme: light;
-    --page: 238 242 239; /* #eef2ef */
-    --surface: 249 251 249; /* #f9fbf9 cards, inputs, header */
-    --surface-muted: 228 234 229; /* #e4eae5 recessed panels */
-    --border: 211 220 213; /* #d3dcd5 */
-    --track: 203 213 205; /* #cbd5cd progress track, skeletons */
-    --control: 123 138 128; /* #7b8a80 input outlines */
-    --text: 22 35 29; /* #16231d green-black ink */
-    --text-muted: 79 95 86; /* #4f5f56 */
-    --ring: 24 115 75; /* brand-600 */
-    --accent: 19 91 60; /* brand-700: links, active text */
-    --accent-strong: 17 74 50; /* brand-800 */
-    --accent-soft: 220 238 229; /* #dceee5 chips, selected */
-    --danger: 163 39 28;
-    --danger-soft: 245 222 214;
-    --danger-line: 233 195 184;
-    --warning: 133 70 11;
-    --warning-soft: 244 227 193;
-    --warning-line: 229 204 151;
-    --info: 15 76 110;
-    --info-soft: 217 232 238;
-    --panel: 15 61 42; /* brand-900: brand panel, logo tile */
-    --panel-ink: 228 242 235;
-    --lattice: rgb(255 255 255 / 0.09); /* star lattice lines on the panel */
-    --lattice-soft: rgb(19 91 60 / 0.07); /* star lattice on light surfaces */
+    --page: 246 249 247; /* #f6f9f7 */
+    --surface: 255 255 255; /* #ffffff cards, inputs, header */
+    --surface-muted: 239 245 241; /* #eff5f1 recessed panels, mint not grey */
+    --border: 222 231 226; /* #dee7e2 hairline */
+    --track: 220 231 224; /* #dce7e0 progress track, skeletons */
+    --control: 110 130 120; /* #6e8278 input outlines */
+    --text: 13 28 21; /* #0d1c15 green-black ink */
+    --text-muted: 69 87 78; /* #45574e */
+    --ring: 31 138 91; /* brand-500 */
+    --accent: 24 115 75; /* brand-600: links, active text */
+    --accent-strong: 19 91 60; /* brand-700 */
+    --accent-soft: 225 244 233; /* #e1f4e9 chips, selected */
+    --danger: 168 36 26; /* #a8241a */
+    --danger-soft: 253 236 233; /* #fdece9 */
+    --danger-line: 245 200 192; /* #f5c8c0 */
+    --warning: 133 70 11; /* #85460b */
+    --warning-soft: 254 243 219; /* #fef3db */
+    --warning-line: 240 214 158; /* #f0d69e */
+    --info: 15 76 110; /* #0f4c6e */
+    --info-soft: 228 241 248; /* #e4f1f8 */
+    --panel: 14 74 51; /* #0e4a33 deep Salamiyah green: brand panel, logo tile */
+    --panel-ink: 230 245 237;
+    --lattice: rgb(255 255 255 / 0.1); /* star lattice lines on the panel */
+    --lattice-soft: rgb(24 115 75 / 0.07); /* star lattice on light surfaces */
     /* Chart series (validated for CVD separation and contrast on the surface): money in, money out. */
     --series-collected: 217 111 26; /* give-600 #d96f1a */
     --series-spent: 24 115 75; /* brand-600 #18734b */
-    --shadow-card: 0 1px 2px rgb(16 40 28 / 0.05), 0 2px 8px -2px rgb(16 40 28 / 0.08);
-    --shadow-lift: 0 14px 30px -12px rgb(16 40 28 / 0.25), 0 3px 8px rgb(16 40 28 / 0.06);
+    --shadow-card: 0 1px 2px rgb(14 74 51 / 0.04), 0 4px 14px -6px rgb(14 74 51 / 0.1);
+    --shadow-lift: 0 18px 36px -16px rgb(14 74 51 / 0.22), 0 4px 10px rgb(14 74 51 / 0.05);
   }
   html,
   body {

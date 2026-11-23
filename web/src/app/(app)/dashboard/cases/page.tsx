@@ -38,7 +38,7 @@ export default async function CasesPage({
           <Link
             href="/dashboard/cases"
             aria-current={!overdue ? 'page' : undefined}
-            className={`${chip} ${!overdue ? 'border-brand-700 bg-brand-700 text-white dark:bg-brand-600' : 'border-border bg-surface'}`}
+            className={`${chip} ${!overdue ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-700 dark:bg-brand-600' : 'border-border bg-surface'}`}
           >
             {t('filterAll')}
           </Link>

@@ -133,7 +133,7 @@ export default async function CampaignPage({ params }: Props) {
             <span
               className={`rounded-full px-3 py-1 text-sm font-semibold ${
                 campaign.status === 'COMPLETED'
-                  ? 'bg-brand-700 text-white dark:bg-brand-600'
+                  ? 'bg-brand-600 text-white dark:bg-brand-600'
                   : 'bg-surface-muted'
               }`}
             >

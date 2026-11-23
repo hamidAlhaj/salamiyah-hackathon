@@ -71,7 +71,7 @@ export function InstallPrompt() {
       data-testid="install-prompt"
       className="fixed inset-x-3 bottom-3 z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-border bg-surface p-3 shadow-lift print:hidden"
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-700 text-white dark:bg-brand-600">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white dark:bg-brand-600">
         <svg
           viewBox="0 0 24 24"
           className="h-5 w-5"

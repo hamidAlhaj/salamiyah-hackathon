@@ -118,7 +118,7 @@ export function NotificationBell({
         <NotificationGlyph type="bell" />
         {unread > 0 && (
           <span
-            className="absolute -top-0.5 end-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand-700 px-1 text-[0.75rem] font-bold leading-none text-white ring-2 ring-surface dark:bg-brand-500"
+            className="absolute -top-0.5 end-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand-600 px-1 text-[0.75rem] font-bold leading-none text-white ring-2 ring-surface dark:bg-brand-500"
             data-testid="notification-unread"
           >
             {unread > 9 ? '9+' : unread}

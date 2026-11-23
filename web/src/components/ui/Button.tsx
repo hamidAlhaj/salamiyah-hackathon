@@ -11,7 +11,7 @@ const base =
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    'bg-brand-700 text-white shadow-card hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700',
+    'bg-brand-600 text-white shadow-card hover:bg-brand-700 dark:bg-brand-600 dark:hover:bg-brand-700',
   // give-700 / give-800 keep white text at 4.9:1 / 7.1:1 in both themes (give-600 is only 3.4:1).
   give: 'bg-give-700 text-white shadow-card hover:bg-give-800',
   secondary: 'border border-border bg-surface text-ink hover:bg-surface-muted',

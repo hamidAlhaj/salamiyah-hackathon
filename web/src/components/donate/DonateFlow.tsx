@@ -406,7 +406,7 @@ function StepLabel({ step, children }: { step: number; children: React.ReactNode
   return (
     <span className="flex items-center gap-2 text-base font-bold">
       <span
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-700 text-sm text-white dark:bg-brand-600"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm text-white dark:bg-brand-600"
         aria-hidden="true"
       >
         {step}
