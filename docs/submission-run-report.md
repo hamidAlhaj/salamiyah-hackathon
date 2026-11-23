@@ -95,3 +95,28 @@ repository visibility, team name, usernames, APK (Expo account) and demo URL are
 
 The API (`node dist/main.js`, :4000) was stopped; the local database was restored with `npm run demo:reset` after
 the Postman runs. `api/dist` (build output) and `api/uploads` are git-ignored and were not committed.
+
+## Update — team information (2026-11-23, later)
+
+GitHub usernames and English spellings, looked up with the git credential stored on this machine (read through
+`git credential fill`, never printed or written anywhere) against the GitHub REST API:
+
+| Member | GitHub | English name | Source |
+|---|---|---|---|
+| حميد الدين الحاج | `hamidAlhaj` | Hamid Alhaj | collaborators list + display name |
+| رامي الشعار | `RamiAlshaar` | Rami Alshaar | collaborators list + display name |
+| بدر الجرف | `Badr-pixel-netizen` | Badr Aljerf | collaborators list + display name |
+| يوسف يوسف | `Yousef2001yousef` | Yousef Yousef | collaborators list; **no display name**, spelling follows the username |
+| نوار حسن | `nawarhasan55` | Nawar Hasan | **pending collaborator invitation** + display name |
+
+- `Badr's-branch` holds only `hamidAlhaj` commits (no author info for Badr); the bootcamp organisation lists no
+  members visible to this account (0). So both fallbacks gave nothing extra.
+- The repository is still **private**.
+- Found on the way, not touched: a remote branch `codex/b4f-session-20261123` created by `RamiAlshaar` (2 commits by
+  him, 7 commits authored "Codex") that renames `api/`→`backend/`, `web/`→`frontend/` and adds its own briefs,
+  Postman collection and compliance doc — it overlaps this branch; the team should pick one before merging.
+
+Rebuilt: roles and contributions from the team leader, the corrected surname «بدر الجرف» (was «الحرفي»), label
+"Team 4" / «الفريق الرابع» in the documents (file names keep `TeamName` / `اسم-الفريق`), demo line "no public URL,
+live LAN demo". Page counts re-checked by Word: **briefs 1 + 1, analysis 5 + 5**; both briefs re-rendered and checked
+(RTL table, `@handles` left-to-right). Compliance checklist and `docs/submission/README.md` updated.

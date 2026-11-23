@@ -9,6 +9,7 @@
 //
 // Usage (from the repository root):
 //   node docs/submission/tools/build-docx.cjs [--team-en TeamName] [--team-ar اسم-الفريق]
+//                                             [--label-en 'Team 4'] [--label-ar 'الفريق الرابع']
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -30,7 +31,10 @@ const TEAM_AR = arg('--team-ar', 'اسم-الفريق');
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // Content strings may contain <b>…</b>; everything else is escaped.
 const rich = (s) => esc(s).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>');
-const fill = (s) => s.replace('TEAM_AR', TEAM_AR).replace('TEAM_EN', TEAM_EN);
+// The team label printed inside the documents (the file names keep --team-en / --team-ar).
+const LABEL_EN = arg('--label-en', 'Team 4');
+const LABEL_AR = arg('--label-ar', 'الفريق الرابع');
+const fill = (s) => s.replace('TEAM_AR', LABEL_AR).replace('TEAM_EN', LABEL_EN);
 
 function page(lang, bodyHtml, { size = 10.5 } = {}) {
   const rtl = lang === 'ar';
@@ -67,7 +71,8 @@ function para(lang, html, cls) {
 function table(lang, head, rows) {
   const d = lang === 'ar' ? 'rtl' : 'ltr';
   return `<table dir="${d}"><tr>${head.map((h) => `<th dir="${d}">${rich(h)}</th>`).join('')}</tr>${rows
-    .map((r) => `<tr>${r.map((c) => `<td dir="${d}">${rich(c)}</td>`).join('')}</tr>`)
+    // GitHub handles (@user) stay left-to-right inside Arabic cells.
+    .map((r) => `<tr>${r.map((c) => `<td dir="${d}">${c.startsWith('@') ? `<span dir="ltr">${esc(c)}</span>` : rich(c)}</td>`).join('')}</tr>`)
     .join('')}</table>`;
 }
 function list(lang, items, ordered) {
@@ -94,7 +99,9 @@ function briefHtml(lang) {
   h += table(
     lang,
     c.teamHead,
-    MEMBERS.map(([ar, en]) => [lang === 'ar' ? ar : en, 'TODO', 'TODO', 'TODO']),
+    MEMBERS.map(([ar, en, gh, roleAr, roleEn, cAr, cEn]) =>
+      lang === 'ar' ? [ar, roleAr, cAr, `@${gh}`] : [en, roleEn, cEn, `@${gh}`],
+    ),
   );
   h += c.links.map(([k, v]) => para(lang, `<b>${esc(k)}:</b> ${/^https?:/.test(v) ? `<span dir="ltr">${esc(v)}</span>` : esc(v)}`)).join('');
   return page(lang, h, { size: 10 });

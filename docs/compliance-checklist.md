@@ -16,15 +16,15 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| `اسم-الفريق_ملخص-المشروع.docx`, max 1 page | `docs/submission/اسم-الفريق_ملخص-المشروع.docx` — Word reports **1 page** (PDF check in `docs/submission/pdf/`) | done (placeholder name) |
-| `TeamName_ProjectBrief_EN.docx`, 1 page, same information | `docs/submission/TeamName_ProjectBrief_EN.docx` — **1 page** | done (placeholder name) |
+| `اسم-الفريق_ملخص-المشروع.docx`, max 1 page | `docs/submission/اسم-الفريق_ملخص-المشروع.docx` — Word reports **1 page** (PDF check in `docs/submission/pdf/`); text says «الفريق الرابع» | done (file name placeholder) |
+| `TeamName_ProjectBrief_EN.docx`, 1 page, same information | `docs/submission/TeamName_ProjectBrief_EN.docx` — **1 page**; text says "Team 4" | done (file name placeholder) |
 | Project name and summary · problem and solution · audience and main features · technologies (NestJS, Next.js, React Native) | both briefs, sections 1–4 | done |
-| Team members: name, role, main contribution | table with the five members; role and contribution are `TODO` | **needs human** |
-| GitHub username of every member | `TODO` in the table | **needs human** |
-| English spelling of the members' names | transliterated in the EN brief (Hamid Al-Din Al-Hajj, Rami Al-Shaar, Badr Al-Harfi, Youssef Youssef, Nawar Hassan) — confirm | **needs human** |
-| Repository link and demo link | repo URL filled; demo URL `TODO` (live LAN demo) | needs human (demo URL) |
-| Team name in the file names | `TeamName` / `اسم-الفريق` placeholders; rebuild with `node docs/submission/tools/build-docx.cjs --team-en <Name> --team-ar <الاسم>` | **needs human** |
-| Contributions written in the brief must match the Git history | Git shows one author for all commits (see `docs/review/project-review.md` §2.8 on `review-2026-11-23`) | **TODO-team** (honest roles + real commits from each account) |
+| Team members: name, role, main contribution | table with the five members, roles and contributions given by the team leader | done |
+| GitHub username of every member | @hamidAlhaj · @RamiAlshaar · @Badr-pixel-netizen · @Yousef2001yousef · @nawarhasan55 (repo collaborators via the GitHub API; Nawar's invitation is still pending) | done — Nawar must accept the invitation |
+| English spelling of the members' names | GitHub display names: Hamid Alhaj, Rami Alshaar, Badr Aljerf, Nawar Hasan; Yousef has no display name, so "Yousef Yousef" follows the username | done (Yousef: confirm) |
+| Repository link and demo link | repo URL filled; demo: "no public URL, live demo on the local network (DEMO.md)" | done (add a URL if one appears) |
+| Team name in the file names | documents say "Team 4" / «الفريق الرابع»; file names keep `TeamName` / `اسم-الفريق` until the name is confirmed, then `node docs/submission/tools/build-docx.cjs --team-en <Name> --team-ar <الاسم>` | **needs human** (confirm name) |
+| Contributions written in the brief must match the Git history | `main` has one author (`hamidAlhaj`); `RamiAlshaar` created `codex/b4f-session-20261123` but most of its commits are authored "Codex", not his account | **TODO-team** (each member commits their own work from their account: security report, PowerPoint, frontend, mobile testing) |
 
 ## Page 3 — Analysis & Design study (Word, 4–5 pages preferred, max 10)
 
@@ -100,10 +100,10 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 
 | Item | Evidence | Status |
 |---|---|---|
-| 1–2 Project Brief AR + EN | `docs/submission/` | done (team name, roles, usernames: needs human) |
+| 1–2 Project Brief AR + EN | `docs/submission/` | done (team name in file names: needs human) |
 | 3–4 Analysis & Design AR + EN | `docs/submission/` | done (team name: needs human) |
 | 5 GitHub repository link | https://github.com/hamidAlhaj/salamiyah-hackathon (private now) | needs human (visibility) |
-| 6 Demo URL if available | none (LAN demo) | needs human |
+| 6 Demo URL if available | none — live LAN demo stated in the briefs | done (optional) |
 | 7 Short demo video (optional) | none | TODO-team (optional) |
 | Repo: README, three folders, Swagger, Postman, three `.env.example`, demo accounts, seed, APK/Expo link, clear Git history for every member | see rows above | partly done |
 

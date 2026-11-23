@@ -1,14 +1,22 @@
 // Text of the four submission documents (Arabic + English, same information in both).
-// Placeholders: TEAM_AR / TEAM_EN (team name) and TODO cells are filled by the team.
+// TEAM_AR / TEAM_EN in the subtitles = the team label (build-docx.cjs --label-ar / --label-en).
+// Members: roles and contributions from the team leader (2026-11-23); English names = GitHub display names, and
+// usernames = collaborators of hamidAlhaj/salamiyah-hackathon (GitHub REST API, 2026-11-23).
 'use strict';
 
 const REPO = 'https://github.com/hamidAlhaj/salamiyah-hackathon';
+// [Arabic name, English name, GitHub username, role AR, role EN, contribution AR, contribution EN]
 const MEMBERS = [
-  ['حميد الدين الحاج', 'Hamid Al-Din Al-Hajj'],
-  ['رامي الشعار', 'Rami Al-Shaar'],
-  ['بدر الحرفي', 'Badr Al-Harfi'],
-  ['يوسف يوسف', 'Youssef Youssef'],
-  ['نوار حسن', 'Nawar Hassan'],
+  ['حميد الدين الحاج', 'Hamid Alhaj', 'hamidAlhaj', 'قائد الفريق، الموبايل والخلفية', 'Team Leader, Mobile & Backend',
+    'قاد المشروع، وبنى خلفية NestJS وقاعدة البيانات وتطبيق React Native', 'Led the project; built the NestJS backend, the database and the React Native mobile app'],
+  ['رامي الشعار', 'Rami Alshaar', 'RamiAlshaar', 'الخلفية والواجهة، مختبر الأمان', 'Backend & Frontend, Security Tester',
+    'اختبار أمان الخلفية: فحص OWASP ZAP، وXSS، وحقن SQL/NoSQL، وتحديد المعدل، وفحوص المصادقة', 'Backend security testing: OWASP ZAP scan, XSS, SQL/NoSQL injection, rate limiting and auth checks'],
+  ['بدر الجرف', 'Badr Aljerf', 'Badr-pixel-netizen', 'الواجهة والعرض التقديمي', 'Frontend, Presentation',
+    'أعمال الواجهة والعرض التقديمي النهائي (PowerPoint)', 'Frontend work and the final presentation (PowerPoint)'],
+  ['يوسف يوسف', 'Yousef Yousef', 'Yousef2001yousef', 'الواجهة', 'Frontend',
+    'صفحات وواجهات Next.js', 'Next.js frontend pages and UI'],
+  ['نوار حسن', 'Nawar Hasan', 'nawarhasan55', 'الموبايل', 'Mobile',
+    'شاشات تطبيق React Native واختباره على الأجهزة', 'React Native mobile app screens and device testing'],
 ];
 
 // ───────────────────────── Project brief (1 page) ─────────────────────────
@@ -36,7 +44,7 @@ const brief = {
     teamHead: ['الاسم', 'الدور', 'المساهمة الرئيسية', 'GitHub'],
     links: [
       ['رابط المستودع', REPO],
-      ['رابط العرض التجريبي', 'TODO — العرض حي على الشبكة المحلية، انظر ملف DEMO.md'],
+      ['رابط العرض التجريبي', 'لا يوجد رابط عام؛ العرض حي على الشبكة المحلية (انظر ملف DEMO.md)'],
     ],
   },
   en: {
@@ -62,7 +70,7 @@ const brief = {
     teamHead: ['Name', 'Role', 'Main contribution', 'GitHub'],
     links: [
       ['Repository', REPO],
-      ['Demo URL', 'TODO (live demo on the local network — see DEMO.md)'],
+      ['Demo URL', 'No public URL; live demo on the local network (see DEMO.md)'],
     ],
   },
 };
