@@ -53,11 +53,20 @@ export function AppText({
 
 export function Card({ style, ...rest }: ViewProps) {
   const c = usePalette();
+  const lightMode = c.page === c.surface;
   return (
     <View
       style={[
         styles.card,
-        { backgroundColor: c.surface, borderColor: c.border },
+        {
+          backgroundColor: c.surface,
+          borderColor: c.border,
+          shadowColor: c.ink,
+          shadowOpacity: lightMode ? 0.12 : 0,
+          shadowRadius: lightMode ? 16 : 0,
+          shadowOffset: { width: 0, height: lightMode ? 8 : 0 },
+          elevation: lightMode ? 3 : 0,
+        },
         style,
       ]}
       {...rest}
@@ -87,7 +96,7 @@ export function Button({
 }) {
   const c = usePalette();
   const bg = variant === 'primary' ? c.accent : variant === 'give' ? c.give : 'transparent';
-  const fg = variant === 'primary' ? c.surface : variant === 'give' ? c.giveInk : c.accent;
+  const fg = variant === 'primary' ? c.white : variant === 'give' ? c.giveInk : c.accent;
   return (
     <Pressable
       accessibilityRole="button"
@@ -98,8 +107,11 @@ export function Button({
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
-        variant === 'secondary' && { borderWidth: 1, borderColor: c.border },
+        {
+          backgroundColor: variant === 'primary' && pressed ? c.accentStrong : bg,
+          borderColor: variant === 'secondary' ? c.accent : bg,
+          opacity: disabled ? 0.6 : pressed && variant !== 'primary' ? 0.85 : 1,
+        },
       ]}
     >
       {loading ? (
@@ -136,16 +148,30 @@ export function Chip({
       onPress={onPress}
       style={[
         styles.chip,
-        selected
-          ? { backgroundColor: c.accent, borderColor: c.accent }
-          : { backgroundColor: c.surface, borderColor: c.border },
+        {
+          backgroundColor: c.accentSoft,
+          borderColor: selected ? c.accent : c.border,
+          borderWidth: selected ? 1.5 : 1,
+        },
       ]}
     >
-      {icon && <CategoryIcon icon={icon} color={selected ? c.surface : c.accent} size={17} />}
-      <AppText size="sm" weight="medium" style={{ color: selected ? c.surface : c.ink }}>
+      {icon && <CategoryIcon icon={icon} color={c.accentStrong} size={17} />}
+      <AppText size="xs" weight="bold" style={{ color: c.accentStrong }}>
         {label}
       </AppText>
+      {selected && <SelectionMark selected />}
     </Pressable>
+  );
+}
+
+/** A visible check keeps selected donation choices distinguishable without relying on colour alone. */
+export function SelectionMark({ selected }: { selected: boolean }) {
+  const c = usePalette();
+  if (!selected) return null;
+  return (
+    <AppText size="sm" weight="bold" style={{ color: c.accentStrong }}>
+      ✓
+    </AppText>
   );
 }
 
@@ -153,8 +179,8 @@ export function CategoryBadge({ category }: { category: PublicCampaignCategory }
   const c = usePalette();
   return (
     <View style={[styles.badge, { backgroundColor: c.accentSoft }]}>
-      <CategoryIcon icon={category.icon} color={c.accent} size={15} />
-      <AppText size="xs" weight="medium" tone="accent">
+      <CategoryIcon icon={category.icon} color={c.accentStrong} size={15} />
+      <AppText size="xs" weight="bold" style={{ color: c.accentStrong }}>
         {category.name}
       </AppText>
     </View>
@@ -264,11 +290,12 @@ export function Notice({ tone, children }: { tone: 'danger' | 'success' | 'muted
 }
 
 export const styles = StyleSheet.create({
-  card: { borderRadius: radius.lg, borderWidth: 1, padding: 16, gap: 10 },
+  card: { borderRadius: radius.lg, borderWidth: 1, padding: 16, gap: 16 },
   button: {
     minHeight: 48,
     paddingHorizontal: 18,
-    borderRadius: radius.md,
+    borderRadius: radius.pill,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -276,7 +303,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    minHeight: 40,
+    minHeight: 44,
     paddingHorizontal: 14,
     borderRadius: radius.pill,
     borderWidth: 1,

@@ -134,7 +134,7 @@ export default function CampaignScreen() {
     >
       <Stack.Screen options={{ title: cp.category.name }} />
       <CampaignCover coverKey={cp.coverKey} height={180} />
-      <View style={{ padding: 16, gap: 14 }}>
+      <View style={{ padding: 16, gap: 24 }}>
         <View style={styles.row}>
           <CategoryBadge category={cp.category} />
           <PriorityBadge priority={cp.priority} />
@@ -146,9 +146,10 @@ export default function CampaignScreen() {
           {cp.status === 'COMPLETED' && (
             <View
               testID="completed-badge"
-              style={{ backgroundColor: c.panel, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2 }}
+              style={{ backgroundColor: c.accentSoft, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 2 }}
             >
-              <AppText size="xs" weight="bold" style={{ color: c.panelInk }}>
+              <AppText size="xs" weight="bold" style={{ color: c.accentStrong }}>
+                ✓{' '}
                 {t('campaign.completed')}
               </AppText>
             </View>

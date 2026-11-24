@@ -60,7 +60,7 @@ export default function TransparencyScreen() {
   return (
     <ScrollView
       testID="transparency-screen"
-      contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}
+      contentContainerStyle={{ padding: 16, gap: 24, paddingBottom: 40 }}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} />}
     >
       {offline && <Notice tone="danger">{t('offline')}</Notice>}
@@ -69,7 +69,7 @@ export default function TransparencyScreen() {
         <>
           <View
             testID="transparency-hero"
-            style={{ backgroundColor: c.panel, borderRadius: 24, padding: 20, gap: 16 }}
+            style={{ backgroundColor: c.panel, borderRadius: radius.lg, padding: 20, gap: 16 }}
           >
             <View style={{ gap: 6 }}>
               <AppText display size="xl" style={{ color: c.panelInk }}>

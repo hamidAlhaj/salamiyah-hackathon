@@ -16,7 +16,7 @@ import type {
 import { useLang } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import { money } from '@/lib/format';
-import { AppText, Button, Card, Chip, DemoBadge, Notice, styles } from '@/ui/components';
+import { AppText, Button, Card, Chip, DemoBadge, Notice, SelectionMark, styles } from '@/ui/components';
 import { fonts, radius, type, usePalette } from '@/ui/theme';
 
 type Path = 'demo' | 'transfer' | 'cash';
@@ -194,7 +194,7 @@ export default function DonateScreen() {
   const paths = (['demo', 'transfer', 'cash'] as const).filter((p) => methodsFor[p].length > 0);
 
   return (
-    <ScrollView style={screen} contentContainerStyle={{ padding: 16, gap: 18 }} keyboardShouldPersistTaps="handled">
+    <ScrollView style={screen} contentContainerStyle={{ padding: 16, gap: 24 }} keyboardShouldPersistTaps="handled">
       {/* 1. Path and method */}
       <View style={{ gap: 10 }} pointerEvents={locked ? 'none' : 'auto'}>
         <StepTitle n={1} title={t('pledge.stepPath')} />
@@ -208,7 +208,7 @@ export default function DonateScreen() {
               onPress={() => choosePath(p)}
               testID={`path-${p}`}
               style={{
-                borderWidth: 2,
+                borderWidth: active ? 1.5 : 1,
                 borderRadius: radius.lg,
                 padding: 14,
                 gap: 2,
@@ -218,7 +218,10 @@ export default function DonateScreen() {
             >
               <View style={[styles.row, { justifyContent: 'space-between' }]}>
                 <AppText weight="bold">{t(`pledge.paths.${p}`)}</AppText>
-                {p === 'demo' && <DemoBadge />}
+                <View style={[styles.row, { gap: 8 }]}>
+                  {p === 'demo' && <DemoBadge />}
+                  <SelectionMark selected={active} />
+                </View>
               </View>
               <AppText size="xs" tone="muted">{t(`pledge.paths.${p}Body`)}</AppText>
             </Pressable>
@@ -354,7 +357,7 @@ export default function DonateScreen() {
                         styles.row,
                         {
                           justifyContent: 'space-between',
-                          borderWidth: 2,
+                          borderWidth: pointId === p.id ? 1.5 : 1,
                           borderRadius: radius.md,
                           padding: 12,
                           borderColor: pointId === p.id ? c.accent : c.border,
@@ -363,7 +366,10 @@ export default function DonateScreen() {
                       ]}
                     >
                       <AppText weight="medium">{p.name}</AppText>
-                      <AppText size="xs" tone="muted">{t(`pledge.pointTypes.${p.type}`)}</AppText>
+                      <View style={[styles.row, { gap: 8 }]}>
+                        <AppText size="xs" tone="muted">{t(`pledge.pointTypes.${p.type}`)}</AppText>
+                        <SelectionMark selected={pointId === p.id} />
+                      </View>
                     </Pressable>
                   ))}
                 </View>
@@ -471,7 +477,7 @@ function StepTitle({ n, title }: { n: number; title: string }) {
       <View
         style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' }}
       >
-        <AppText size="xs" weight="bold" style={{ color: c.surface }}>{String(n)}</AppText>
+        <AppText size="xs" weight="bold" style={{ color: c.white }}>{String(n)}</AppText>
       </View>
       <AppText weight="bold">{title}</AppText>
     </View>

@@ -65,11 +65,12 @@ export default function CampaignsScreen() {
   );
 
   const header = (
-    <View style={{ gap: 14, paddingBottom: 4 }}>
+    <View style={{ gap: 20, paddingBottom: 4 }}>
       <View style={{ gap: 4 }}>
         <AppText display size="xl">
           {t('browse.title')}
         </AppText>
+        <View style={{ width: 32, height: 2, backgroundColor: c.sectionMark }} />
         <AppText size="sm" tone="muted">
           {t('browse.intro')}
         </AppText>
@@ -82,59 +83,61 @@ export default function CampaignsScreen() {
         onPress={() => router.push('/campaign/general-fund')}
       />
       {offline && <Notice tone="danger">{t('offline')}</Notice>}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        accessibilityLabel={t('browse.categoriesLabel')}
-        contentContainerStyle={{ gap: 8 }}
-        testID="category-chips"
-      >
-        <Chip
-          label={t('browse.all')}
-          selected={category === undefined}
-          onPress={() => setCategory(undefined)}
-          testID="category-ALL"
-        />
-        {categories.map((cat) => (
+      <View style={{ backgroundColor: c.surfaceMuted, borderRadius: radius.lg, padding: 12, gap: 12 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          accessibilityLabel={t('browse.categoriesLabel')}
+          contentContainerStyle={{ gap: 8 }}
+          testID="category-chips"
+        >
           <Chip
-            key={cat.id}
-            label={cat.name}
-            icon={cat.icon}
-            selected={category === cat.code}
-            onPress={() => setCategory(cat.code)}
-            testID={`category-${cat.code}`}
+            label={t('browse.all')}
+            selected={category === undefined}
+            onPress={() => setCategory(undefined)}
+            testID="category-ALL"
           />
-        ))}
-      </ScrollView>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        accessibilityLabel={t('browse.priorityLabel')}
-        contentContainerStyle={{ gap: 8 }}
-      >
-        <Chip
-          label={t('browse.priorityAll')}
-          selected={priority === undefined}
-          onPress={() => setPriority(undefined)}
-          testID="priority-ALL"
-        />
-        {PRIORITIES.map((p) => (
+          {categories.map((cat) => (
+            <Chip
+              key={cat.id}
+              label={cat.name}
+              icon={cat.icon}
+              selected={category === cat.code}
+              onPress={() => setCategory(cat.code)}
+              testID={`category-${cat.code}`}
+            />
+          ))}
+        </ScrollView>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          accessibilityLabel={t('browse.priorityLabel')}
+          contentContainerStyle={{ gap: 8 }}
+        >
           <Chip
-            key={p}
-            label={t(`priority.${p}`)}
-            selected={priority === p}
-            onPress={() => setPriority(p)}
-            testID={`priority-${p}`}
+            label={t('browse.priorityAll')}
+            selected={priority === undefined}
+            onPress={() => setPriority(undefined)}
+            testID="priority-ALL"
           />
-        ))}
-      </ScrollView>
+          {PRIORITIES.map((p) => (
+            <Chip
+              key={p}
+              label={t(`priority.${p}`)}
+              selected={priority === p}
+              onPress={() => setPriority(p)}
+              testID={`priority-${p}`}
+            />
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 
   return (
     <FlatList
       style={{ flex: 1, backgroundColor: c.page }}
-      contentContainerStyle={{ padding: 16, gap: 14 }}
+      contentContainerStyle={{ padding: 16, gap: 24 }}
       data={items}
       keyExtractor={(x) => x.id}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} />}
@@ -166,6 +169,7 @@ function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
   const { t } = useTranslation();
   const lang = useLang();
   const c = usePalette();
+  const lightMode = c.page === c.surface;
   return (
     <Link href={`/campaign/${campaign.slug}`} asChild>
       <Pressable
@@ -177,13 +181,19 @@ function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
             borderColor: c.border,
             borderWidth: 1,
             borderRadius: radius.lg,
-            overflow: 'hidden',
+            shadowColor: c.ink,
+            shadowOpacity: lightMode ? 0.12 : 0,
+            shadowRadius: lightMode ? 16 : 0,
+            shadowOffset: { width: 0, height: lightMode ? 8 : 0 },
+            elevation: lightMode ? 3 : 0,
             opacity: pressed ? 0.92 : 1,
           },
         ]}
       >
-        <CampaignCover coverKey={campaign.coverKey} height={132} />
-        <View style={{ padding: 16, gap: 10 }}>
+        <View style={{ overflow: 'hidden', borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg }}>
+          <CampaignCover coverKey={campaign.coverKey} height={132} />
+        </View>
+        <View style={{ padding: 16, gap: 16 }}>
           <View style={styles.row}>
             <CategoryBadge category={campaign.category} />
             <PriorityBadge priority={campaign.priority} />

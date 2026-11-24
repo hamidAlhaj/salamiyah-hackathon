@@ -12,6 +12,8 @@ export interface Palette {
   border: string;
   track: string;
   control: string;
+  white: string;
+  sectionMark: string;
   ink: string;
   muted: string;
   accent: string;
@@ -46,6 +48,8 @@ const light: Palette = {
   border: '#E3EAE5',
   track: '#DDE7E1',
   control: '#6E8278',
+  white: '#FFFFFF',
+  sectionMark: '#C9A13B',
   ink: '#182420',
   muted: '#4A5A54',
   accent: '#0F6B2F',
@@ -75,6 +79,8 @@ const dark: Palette = {
   border: '#2c3a33',
   track: '#3a4a42',
   control: '#71837a',
+  white: '#FFFFFF',
+  sectionMark: '#D9B45A',
   ink: '#ecf2ee',
   muted: '#a0b0a7',
   accent: '#6BCFA5',
@@ -119,4 +125,4 @@ export const type = {
   xxl: 25,
 } as const;
 
-export const radius = { sm: 10, md: 14, lg: 18, pill: 999 } as const;
+export const radius = { sm: 10, md: 12, lg: 16, pill: 999 } as const;
