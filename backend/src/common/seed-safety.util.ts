@@ -17,7 +17,7 @@ export interface SeedSafetyResult {
   databaseName?: string;
 }
 
-// Checks that DATABASE_URL points at the dedicated local Majlis Fund database (the locally
+// Checks that DATABASE_URL points at the dedicated local Athar database (the locally
 // installed PostgreSQL) before the seed is allowed to run its destructive reset.
 export function checkSeedDatabaseUrl(databaseUrl: string | undefined): SeedSafetyResult {
   if (!databaseUrl) {

@@ -4,7 +4,7 @@ import { I18nManager, Platform } from 'react-native';
 import { getItem, setItem } from '@/lib/storage';
 
 const ar = {
-  appName: 'مجلس فند',
+  appName: 'أثر',
   council: 'المجلس المحلي في السلمية',
   myDonations: 'تبرعاتي',
   login: 'دخول',
@@ -103,7 +103,7 @@ const ar = {
     proofKept: 'الإثبات محفوظ لدى المجلس',
     updates: 'آخر التحديثات',
     share: 'شارك عبر واتساب',
-    shareText: 'ساهم في «{{title}}» عبر مجلس فند — {{percent}}% من الهدف تحقق. {{url}}',
+    shareText: 'ساهم في «{{title}}» عبر أثر — {{percent}}% من الهدف تحقق. {{url}}',
   },
   auth: {
     loginTitle: 'تسجيل الدخول',
@@ -185,7 +185,7 @@ const ar = {
     cardCvc: 'رمز التحقق',
     pay: 'ادفع {{amount}}',
     paypalAccount: 'حساب PayPal تجريبي',
-    paypalTo: 'إلى: صندوق مجلس فند (تجريبي)',
+    paypalTo: 'إلى: صندوق أثر (تجريبي)',
     paypalApprove: 'وافق وادفع {{amount}}',
     showAccount: 'اعرض حساب التحويل ورقم المرجع',
     accountTitle: 'حوّل إلى هذا الحساب',
@@ -258,14 +258,14 @@ const ar = {
     payment_method_unavailable: 'طريقة الدفع هذه غير متاحة حالياً.',
     collection_point_unavailable: 'نقطة الجمع هذه غير متاحة.',
     receipt_not_applicable: 'لا يحتاج هذا التبرع إلى إيصال.',
-    phone_required: 'أضف رقم هاتفك أولاً من «ملفي» على موقع مجلس فند، ليصلك تأكيد التبرع والإيصال على واتساب.',
+    phone_required: 'أضف رقم هاتفك أولاً من «ملفي» على موقع أثر، ليصلك تأكيد التبرع والإيصال على واتساب.',
   },
 };
 
 type Messages = typeof ar;
 
 const en: Messages = {
-  appName: 'Majlis Fund',
+  appName: 'Athar',
   council: 'Salamiyah Local Council',
   myDonations: 'My donations',
   login: 'Log in',
@@ -364,7 +364,7 @@ const en: Messages = {
     proofKept: 'Proof kept by the council',
     updates: 'Latest updates',
     share: 'Share on WhatsApp',
-    shareText: 'Support “{{title}}” on Majlis Fund — {{percent}}% of the goal is verified. {{url}}',
+    shareText: 'Support “{{title}}” on Athar — {{percent}}% of the goal is verified. {{url}}',
   },
   auth: {
     loginTitle: 'Log in',
@@ -446,7 +446,7 @@ const en: Messages = {
     cardCvc: 'CVC',
     pay: 'Pay {{amount}}',
     paypalAccount: 'Demo PayPal account',
-    paypalTo: 'To: Majlis Fund (demo)',
+    paypalTo: 'To: Athar (demo)',
     paypalApprove: 'Approve and pay {{amount}}',
     showAccount: 'Show the transfer account and reference',
     accountTitle: 'Transfer to this account',
@@ -520,7 +520,7 @@ const en: Messages = {
     collection_point_unavailable: 'This collection point is not available.',
     receipt_not_applicable: 'This donation does not need a receipt.',
     phone_required:
-      'Add your phone number first in "My profile" on the Majlis Fund website, so the confirmation and receipt reach you on WhatsApp.',
+      'Add your phone number first in "My profile" on the Athar website, so the confirmation and receipt reach you on WhatsApp.',
   },
 };
 

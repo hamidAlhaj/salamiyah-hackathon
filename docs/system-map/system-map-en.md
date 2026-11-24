@@ -27,8 +27,6 @@ Salamiyah*. It is a working system, not a mock-up:
 
 Swagger, Postman, Git and the tests are tools we use while building the system; they are not parts of the product.
 
-> The app UI still shows the earlier working name «مجلس فند» (Majlis Fund); rename in progress. The Swagger title (`Majlis Fund API`) and the demo screens show it too.
-
 <!-- pagebreak -->
 
 ## 2. The whole system map

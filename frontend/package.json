@@ -1,7 +1,7 @@
 {
-  "name": "majlis-fund-web",
+  "name": "athar-web",
   "version": "0.1.0",
-  "description": "Majlis Fund — Next.js web (Salamiyah medical crowdfunding, hackathon PoC)",
+  "description": "Athar — Next.js web (Salamiyah medical crowdfunding, hackathon PoC)",
   "private": true,
   "license": "UNLICENSED",
   "engines": {

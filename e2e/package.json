@@ -1,7 +1,7 @@
 {
-  "name": "majlis-fund-e2e",
+  "name": "athar-e2e",
   "version": "0.1.0",
-  "description": "Majlis Fund — Playwright smoke tests and the judges' demo scenario (runs against the running api + web)",
+  "description": "Athar — Playwright smoke tests and the judges' demo scenario (runs against the running api + web)",
   "private": true,
   "license": "UNLICENSED",
   "engines": {

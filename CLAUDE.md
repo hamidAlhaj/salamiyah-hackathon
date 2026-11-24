@@ -1,4 +1,4 @@
-# Majlis Fund (مجلس فند) — Salamiyah Medical Crowdfunding · Hackathon PoC
+# Athar (أثر) — Salamiyah Medical Crowdfunding · Hackathon PoC
 
 Read this file before any task.
 

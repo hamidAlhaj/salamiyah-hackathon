@@ -25,7 +25,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Majlis Fund API')
+    .setTitle('Athar API')
     .setDescription('Salamiyah medical crowdfunding — Pledge & Verify (hackathon PoC)')
     .setVersion('0.1.0')
     .addBearerAuth()
@@ -35,7 +35,7 @@ async function bootstrap() {
 
   const port = process.env.PORT ? Number(process.env.PORT) : 4000;
   await app.listen(port);
-  logger.log(`Majlis Fund API listening on http://localhost:${port}`);
+  logger.log(`Athar API listening on http://localhost:${port}`);
   logger.log(`Swagger UI at http://localhost:${port}/api/docs`);
 }
 

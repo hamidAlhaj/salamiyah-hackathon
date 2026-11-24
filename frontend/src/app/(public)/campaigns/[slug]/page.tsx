@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: { canonical: `/campaigns/${campaign.slug}` },
     openGraph: {
       type: 'website',
-      siteName: 'Majlis Fund · مجلس فند',
+      siteName: 'Athar · أثر',
       title: campaign.title,
       description,
       url: `/campaigns/${campaign.slug}`,

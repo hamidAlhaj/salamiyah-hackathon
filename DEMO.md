@@ -1,4 +1,4 @@
-# عرض «مجلس فند» للجنة التحكيم
+# عرض «أثر» للجنة التحكيم
 
 دليل العرض الحي: سيناريو من 7 خطوات على الحاسوب وهاتفين، ونسخة دقيقتين، وقائمة تحقق قبل العرض، وحلول للمشاكل.
 كل البيانات **وهمية** (أسماء ومبالغ وحسابات استلام وأرقام هواتف)، وتُعاد بأمر واحد: `npm run demo:reset` داخل `backend/`.
@@ -151,8 +151,7 @@
    التقسيم، ولوحة الشفافية تحسب المبلغ **مرة واحدة**.
 5. تبرّع جديد للحملة نفسها ← «اكتملت هذه الحملة» مع زر «تبرّع لصندوق المجلس العام بدلاً منها».
 
-> هذه الإضافة تغيّر أرقام الحملة والمجاميع؛ أعد الضبط (`demo:reset`) بعدها. واجهة التطبيق ما زالت تعرض الاسم السابق
-> «مجلس فند»؛ تغيير الاسم إلى «أثر» قيد التنفيذ.
+> هذه الإضافة تغيّر أرقام الحملة والمجاميع؛ أعد الضبط (`demo:reset`) بعدها.
 
 ## نسخة الدقيقتين
 
@@ -173,9 +172,9 @@
 2. اعرف عنوان الحاسوب: `ipconfig` ← Wi-Fi ← IPv4 Address (مثال `192.168.1.10`). نسمّيه أدناه `<LAN-IP>`.
 3. **جدار حماية Windows**: مرة واحدة في PowerShell **كمسؤول**:
    ```powershell
-   New-NetFirewallRule -DisplayName "Majlis Fund demo (3000, 4000, 8081)" -Direction Inbound -Protocol TCP -LocalPort 3000,4000,8081 -RemoteAddress LocalSubnet -Action Allow -Profile Private,Public
+   New-NetFirewallRule -DisplayName "Athar demo (3000, 4000, 8081)" -Direction Inbound -Protocol TCP -LocalPort 3000,4000,8081 -RemoteAddress LocalSubnet -Action Allow -Profile Private,Public
    ```
-   للحذف بعد الهاكاثون: `Remove-NetFirewallRule -DisplayName "Majlis Fund demo (3000, 4000, 8081)"`.
+   للحذف بعد الهاكاثون: `Remove-NetFirewallRule -DisplayName "Athar demo (3000, 4000, 8081)"`.
 4. **متغيرات الشبكة المحلية:**
    - `mobile/.env`: `EXPO_PUBLIC_API_URL=http://<LAN-IP>:4000` و `EXPO_PUBLIC_SITE_URL=http://<LAN-IP>:3000`.
    - الويب: `SESSION_COOKIE_SECURE="false"` (نسخة إنتاج عبر HTTP عادي على الشبكة؛ بدونه يرفض متصفح الهاتف ملف تعريف

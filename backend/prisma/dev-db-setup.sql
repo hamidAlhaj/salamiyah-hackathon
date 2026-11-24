@@ -1,4 +1,4 @@
--- Majlis Fund: one-time local database setup (PostgreSQL installed on the machine, no Docker).
+-- Athar: one-time local database setup (PostgreSQL installed on the machine, no Docker).
 --
 -- Creates a dedicated login role `majlis` (with CREATEDB, needed for Prisma's shadow database during
 -- `prisma migrate dev`) and a database `majlis_fund` owned by it. Safe to run more than once.

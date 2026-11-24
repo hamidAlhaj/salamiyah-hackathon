@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import {
   Children,
@@ -13,9 +15,12 @@ import { getCampaign, getLedger } from '@/lib/api/campaigns';
 import { orNotFound } from '@/lib/api/client';
 import { formatNumber } from '@/shared';
 
+/** The Athar mark (docs/brand/athar-icon.png) as a data URI for the image renderer. */
+const MARK = `data:image/png;base64,${readFileSync(join(process.cwd(), 'public/brand/athar-icon.png')).toString('base64')}`;
+
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
-export const alt = 'Majlis Fund campaign: illustration and verified funding progress';
+export const alt = 'Athar campaign: illustration and verified funding progress';
 
 /** The light cover palette as fixed colours (the image has no theme). */
 const PAINT: CoverPaint = {
@@ -77,23 +82,10 @@ export default async function CampaignOgImage({ params }: { params: Promise<{ sl
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-          <svg width="64" height="64" viewBox="0 0 48 48">
-            <rect width="48" height="48" rx="12" fill="#18734b" />
-            <g fill="none" stroke="#fff" strokeWidth="2.2" strokeLinejoin="round">
-              <rect x="13" y="13" width="22" height="22" rx="1.5" />
-              <rect x="13" y="13" width="22" height="22" rx="1.5" transform="rotate(45 24 24)" />
-            </g>
-            <path
-              d="M9 25h8l2.5-5 4 10 3-7 1.5 2H39"
-              fill="none"
-              stroke="#fff"
-              strokeWidth="2.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {/* eslint-disable-next-line @next/next/no-img-element -- rendered by ImageResponse, not the browser */}
+          <img src={MARK} width={64} height={64} alt="" />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 34, letterSpacing: 1 }}>Majlis Fund</div>
+            <div style={{ fontSize: 34, letterSpacing: 1 }}>Athar</div>
             <div style={{ fontSize: 22, color: '#acd9c5' }}>Salamiyah Local Council</div>
           </div>
         </div>

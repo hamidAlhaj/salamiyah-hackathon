@@ -1,7 +1,7 @@
 {
-  "name": "majlis-fund-api",
+  "name": "athar-api",
   "version": "0.1.0",
-  "description": "Majlis Fund — NestJS API (Salamiyah medical crowdfunding, hackathon PoC)",
+  "description": "Athar — NestJS API (Salamiyah medical crowdfunding, hackathon PoC)",
   "private": true,
   "license": "UNLICENSED",
   "engines": {

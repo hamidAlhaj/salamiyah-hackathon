@@ -741,7 +741,7 @@ async function main() {
   const css = face(400, '400Regular/IBMPlexSansArabic_400Regular.ttf') + face(600, '600SemiBold/IBMPlexSansArabic_600SemiBold.ttf') + face(700, '700Bold/IBMPlexSansArabic_700Bold.ttf');
   const browser = await chromium.launch({ channel: 'chrome' });
   const page = await browser.newPage({ deviceScaleFactor: 2 });
-  const tmp = path.join(require('os').tmpdir(), 'majlis-diagram.html');
+  const tmp = path.join(require('os').tmpdir(), 'athar-diagram.html');
   for (const n of names) {
     const s = fs.readFileSync(path.join(outDir, `${n}.svg`), 'utf8');
     fs.writeFileSync(tmp, `<!doctype html><html><head><meta charset="utf-8"><style>${css}html,body{margin:0;background:#fff}svg{display:block}</style></head><body>${s}</body></html>`);

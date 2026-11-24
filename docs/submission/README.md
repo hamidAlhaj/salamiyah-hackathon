@@ -1,7 +1,5 @@
 # Submission documents — «أثر» / Athar
 
-The app UI still shows the earlier working name «مجلس فند»; rename in progress.
-
 The four Word files required by the B4F submission guide (pages 2–3), with the guide's exact name patterns:
 
 | File | Limit | Pages (Word) |
@@ -15,8 +13,7 @@ The four Word files required by the B4F submission guide (pages 2–3), with the
 
 ## Filled in (2026-11-23)
 
-- Project and team name: «أثر» / Athar, in the file names and inside the documents (the briefs and the analysis
-  overview add that the app UI still shows «مجلس فند» while the rename is in progress).
+- Project and team name: «أثر» / Athar, in the file names and inside the documents.
 - Members, roles and contributions from the team leader. English names = GitHub display names; usernames = the
   repository's collaborators (GitHub REST API). Yousef has no GitHub display name: "Yousef Yousef" follows the
   username `Yousef2001yousef`. Nawar (`nawarhasan55`) has a pending collaborator invitation.

@@ -138,7 +138,7 @@ const docs = [
 ];
 
 fs.mkdirSync(pdfDir, { recursive: true });
-const work = fs.mkdtempSync(path.join(os.tmpdir(), 'majlis-docx-'));
+const work = fs.mkdtempSync(path.join(os.tmpdir(), 'athar-docx-'));
 const ps1 = path.join(__dirname, 'html-to-docx.ps1');
 let failed = false;
 for (const [name, ascii, html, maxPages] of docs) {

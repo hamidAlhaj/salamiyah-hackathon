@@ -1,7 +1,6 @@
 # Postman collection — Athar API
 
-Project and team: «أثر» / Athar. The app UI and the Swagger title still show the earlier working name «مجلس فند»
-(`Majlis Fund API`); rename in progress.
+Project and team: «أثر» / Athar.
 
 `salamiyah-hackathon.postman_collection.json` — **Postman Collection v2.1**, every endpoint of the NestJS API
 (**103 endpoints in 17 folders** + 6 demo logins), grouped by domain in the same order as the README

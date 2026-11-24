@@ -4,7 +4,7 @@ import type { Config } from 'tailwindcss';
 const cssVar = (name: string) => `rgb(var(${name}) / <alpha-value>)`;
 
 /**
- * Majlis Fund design tokens (adopted from the Sanad theme, rebranded). Pages use these names,
+ * Athar design tokens (adopted from the Sanad theme, rebranded). Pages use these names,
  * never literal palette colours for neutrals. Per-theme values live in src/app/globals.css.
  */
 const config: Config = {

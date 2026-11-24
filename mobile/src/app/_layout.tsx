@@ -1,23 +1,23 @@
-import '@/i18n';
+import "@/i18n";
 import {
   IBMPlexSansArabic_400Regular,
   IBMPlexSansArabic_500Medium,
   IBMPlexSansArabic_700Bold,
-} from '@expo-google-fonts/ibm-plex-sans-arabic';
-import { NotoKufiArabic_700Bold } from '@expo-google-fonts/noto-kufi-arabic';
-import { useFonts } from 'expo-font';
-import { Link, Stack, useFocusEffect } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, View } from 'react-native';
-import { restoreLanguage, setLanguage, useLang } from '@/i18n';
-import Svg, { Path } from 'react-native-svg';
-import { api } from '@/lib/api';
-import { AuthProvider, useAuth } from '@/lib/auth';
-import { AppText } from '@/ui/components';
-import { fonts, usePalette } from '@/ui/theme';
+} from "@expo-google-fonts/ibm-plex-sans-arabic";
+import { NotoKufiArabic_700Bold } from "@expo-google-fonts/noto-kufi-arabic";
+import { useFonts } from "expo-font";
+import { Link, Stack, useFocusEffect } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Alert, Image, Pressable, View } from "react-native";
+import { restoreLanguage, setLanguage, useLang } from "@/i18n";
+import Svg, { Path } from "react-native-svg";
+import { api } from "@/lib/api";
+import { AuthProvider, useAuth } from "@/lib/auth";
+import { AppText } from "@/ui/components";
+import { fonts, usePalette } from "@/ui/theme";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -27,40 +27,50 @@ function HeaderActions() {
   const lang = useLang();
   const c = usePalette();
   const toggle = async () => {
-    const needsRestart = await setLanguage(lang === 'ar' ? 'en' : 'ar');
-    if (needsRestart) Alert.alert(t('appName'), t('restartForDirection'));
+    const needsRestart = await setLanguage(lang === "ar" ? "en" : "ar");
+    if (needsRestart) Alert.alert(t("appName"), t("restartForDirection"));
   };
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t('languageLabel')}
+        accessibilityLabel={t("languageLabel")}
         testID="language-toggle"
         onPress={() => void toggle()}
         style={{ paddingHorizontal: 8, paddingVertical: 6 }}
       >
         <AppText size="sm" weight="medium" style={{ color: c.panelInk }}>
-          {t('language')}
+          {t("language")}
         </AppText>
       </Pressable>
       <Link
         href="/transparency"
         testID="nav-transparency"
-        accessibilityLabel={t('transparency.nav')}
+        accessibilityLabel={t("transparency.nav")}
         style={{ paddingHorizontal: 6, paddingVertical: 6 }}
       >
-        <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={c.panelInk} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <Svg
+          width={22}
+          height={22}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={c.panelInk}
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
           <Path d="M4 20h16M7 16v-5M12 16V6M17 16v-8" />
         </Svg>
       </Link>
       {user && <BellButton />}
       <Link
-        href={user ? '/donations' : '/login'}
-        testID={user ? 'nav-donations' : 'nav-login'}
+        href={user ? "/donations" : "/login"}
+        testID={user ? "nav-donations" : "nav-login"}
         style={{ paddingHorizontal: 8, paddingVertical: 6 }}
       >
         <AppText size="sm" weight="bold" style={{ color: c.panelInk }}>
-          {user ? t('myDonations') : t('login')}
+          {user ? t("myDonations") : t("login")}
         </AppText>
       </Link>
     </View>
@@ -78,7 +88,7 @@ function BellButton() {
   useFocusEffect(
     useCallback(() => {
       let alive = true;
-      void api<{ unread: number }>('/notifications/unread-count')
+      void api<{ unread: number }>("/notifications/unread-count")
         .then((r) => alive && setUnread(r.unread))
         .catch(() => undefined);
       return () => {
@@ -90,36 +100,75 @@ function BellButton() {
     <Link
       href="/notifications"
       testID="nav-notifications"
-      accessibilityLabel={unread > 0 ? t('notifications.bellUnread', { count: unread }) : t('notifications.bell')}
+      accessibilityLabel={
+        unread > 0
+          ? t("notifications.bellUnread", { count: unread })
+          : t("notifications.bell")
+      }
       style={{ paddingHorizontal: 6, paddingVertical: 6 }}
     >
       <View>
-        <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={c.panelInk} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <Svg
+          width={22}
+          height={22}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={c.panelInk}
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
           <Path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" />
         </Svg>
         {unread > 0 && (
           <View
             testID="notification-badge"
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: -6,
               end: -8,
               minWidth: 18,
               height: 18,
               borderRadius: 9,
               paddingHorizontal: 4,
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
               backgroundColor: c.panelInk,
             }}
           >
-            <AppText size="xs" weight="bold" style={{ color: c.panel, fontSize: 12, lineHeight: 16 }}>
-              {unread > 9 ? '9+' : String(unread)}
+            <AppText
+              size="xs"
+              weight="bold"
+              style={{ color: c.panel, fontSize: 12, lineHeight: 16 }}
+            >
+              {unread > 9 ? "9+" : String(unread)}
             </AppText>
           </View>
         )}
       </View>
     </Link>
+  );
+}
+
+/** The Athar mark (docs/brand/athar-icon.png) and the Arabic wordmark «أثر», as on the web header. */
+function HeaderLogo() {
+  const c = usePalette();
+  return (
+    <View
+      style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+      accessibilityRole="header"
+      accessibilityLabel="أثر"
+    >
+      <Image
+        source={require("../../assets/brand/athar-icon.png")}
+        style={{ width: 28, height: 28 }}
+        accessibilityIgnoresInvertColors
+      />
+      <AppText display size="lg" style={{ color: c.panelInk }}>
+        أثر
+      </AppText>
+    </View>
   );
 }
 
@@ -137,15 +186,31 @@ function AppStack() {
     >
       <Stack.Screen
         name="index"
-        options={{ title: t('appName'), headerRight: () => <HeaderActions /> }}
+        options={{
+          title: t("appName"),
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <HeaderActions />,
+        }}
       />
-      <Stack.Screen name="campaign/[slug]" options={{ title: '' }} />
-      <Stack.Screen name="pledge/[campaignId]" options={{ title: t('pledge.title') }} />
-      <Stack.Screen name="receipt/[pledgeId]" options={{ title: t('receipt.title') }} />
-      <Stack.Screen name="donations" options={{ title: t('myDonations') }} />
-      <Stack.Screen name="notifications" options={{ title: t('notifications.title') }} />
-      <Stack.Screen name="login" options={{ title: t('login') }} />
-      <Stack.Screen name="transparency" options={{ title: t('transparency.title') }} />
+      <Stack.Screen name="campaign/[slug]" options={{ title: "" }} />
+      <Stack.Screen
+        name="pledge/[campaignId]"
+        options={{ title: t("pledge.title") }}
+      />
+      <Stack.Screen
+        name="receipt/[pledgeId]"
+        options={{ title: t("receipt.title") }}
+      />
+      <Stack.Screen name="donations" options={{ title: t("myDonations") }} />
+      <Stack.Screen
+        name="notifications"
+        options={{ title: t("notifications.title") }}
+      />
+      <Stack.Screen name="login" options={{ title: t("login") }} />
+      <Stack.Screen
+        name="transparency"
+        options={{ title: t("transparency.title") }}
+      />
     </Stack>
   );
 }

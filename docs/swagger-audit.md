@@ -1,6 +1,6 @@
 # Swagger audit — Athar API (`/api/docs`)
 
-Project and team: «أثر» / Athar. The Swagger title served by the app is still `Majlis Fund API` (the earlier working name «مجلس فند»); rename in progress.
+Project and team: «أثر» / Athar. Swagger title: `Athar API`.
 
 Read-only audit of the OpenAPI document served by the API (`http://localhost:4000/api/docs`, JSON at `/api/docs-json`, snapshot `docs/postman/tools/openapi.snapshot.json`, taken 2026-11-23 from `main`) against the controller sources. **No backend file was changed.** Regenerate with `node docs/tools/swagger-audit.cjs` after fixing.
 

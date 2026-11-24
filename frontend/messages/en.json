@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Majlis Fund",
+    "title": "Athar",
     "description": "Local donation campaigns with an open ledger: orphan sponsorship, home renovation, medical aid — Local Council, Salamiyah"
   },
   "nav": {
-    "brand": "Majlis Fund",
+    "brand": "Athar",
     "campaigns": "Campaigns",
     "track": "Track a request",
     "login": "Log in",
@@ -85,7 +85,7 @@
     "notAccepting": "This campaign is not accepting donations right now.",
     "funded": "Target reached",
     "completed": "Completed",
-    "shareText": "Support “{title}” on Majlis Fund — {percent}% of the target is verified.",
+    "shareText": "Support “{title}” on Athar — {percent}% of the target is verified.",
     "pendingNote": "Includes transfers with uploaded receipts and collection-point totals; not counted until finance verification.",
     "demo": "Simulated",
     "demoBadge": "Demo",
@@ -599,7 +599,7 @@
       "title": "PayPal",
       "signedIn": "Demo PayPal account",
       "payTo": "Pay to",
-      "merchant": "Majlis Fund (demo)",
+      "merchant": "Athar (demo)",
       "approve": "Approve and pay {amount}"
     },
     "transfer": {
@@ -1384,7 +1384,7 @@
     "newWindow": "(opens in a new window)"
   },
   "install": {
-    "title": "Install Majlis Fund on your phone",
+    "title": "Install Athar on your phone",
     "body": "Open campaigns and your donations with one tap from the home screen.",
     "action": "Install",
     "dismiss": "Not now"

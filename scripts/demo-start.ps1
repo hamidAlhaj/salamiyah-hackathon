@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Starts the Majlis Fund demo on the LAN: API (4000), web production build (3000) and Expo (8081),
+  Starts the Athar demo on the LAN: API (4000), web production build (3000) and Expo (8081),
   each in its own PowerShell window. See DEMO.md (pre-demo checklist) before running it.
 
 .DESCRIPTION
@@ -80,17 +80,17 @@ if ($Reset) { Invoke-Step $api 'npm run demo:reset' }
 # 4. API
 if (-not $SkipBuild) { Invoke-Step $api 'npm run build' }
 $origins = "http://localhost:3000,http://localhost:8081,http://${LanIp}:3000,http://${LanIp}:8081"
-Start-Window 'Majlis API :4000' $api "`$env:WEB_ORIGIN='$origins'; `$env:PUBLIC_WEB_URL='http://${LanIp}:3000'; node dist/main"
+Start-Window 'Athar API :4000' $api "`$env:WEB_ORIGIN='$origins'; `$env:PUBLIC_WEB_URL='http://${LanIp}:3000'; node dist/main"
 
 # 5. Web (production build on all interfaces)
 if (-not $SkipBuild) { Invoke-Step $web 'npm run build' }
-Start-Window 'Majlis Web :3000' $web "`$env:SESSION_COOKIE_SECURE='false'; `$env:SITE_URL='http://${LanIp}:3000'; npm start -- -H 0.0.0.0"
+Start-Window 'Athar Web :3000' $web "`$env:SESSION_COOKIE_SECURE='false'; `$env:SITE_URL='http://${LanIp}:3000'; npm start -- -H 0.0.0.0"
 
 # 6. Expo (donor app)
-Start-Window 'Majlis Expo :8081' $mobile "`$env:REACT_NATIVE_PACKAGER_HOSTNAME='$LanIp'; npx expo start --port 8081"
+Start-Window 'Athar Expo :8081' $mobile "`$env:REACT_NATIVE_PACKAGER_HOSTNAME='$LanIp'; npx expo start --port 8081"
 
 Write-Host ''
 Write-Host "Projector / PC : http://localhost:3000" -ForegroundColor Green
 Write-Host "Phones (Wi-Fi) : http://${LanIp}:3000  (collector: /dashboard/collector)" -ForegroundColor Green
-Write-Host "Expo Go        : scan the QR code in the 'Majlis Expo :8081' window" -ForegroundColor Green
+Write-Host "Expo Go        : scan the QR code in the 'Athar Expo :8081' window" -ForegroundColor Green
 Write-Host "Stop           : close the three windows, then check: Get-NetTCPConnection -LocalPort 3000,4000,8081 -State Listen"

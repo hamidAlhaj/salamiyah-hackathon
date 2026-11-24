@@ -8,8 +8,8 @@ import type { MetadataRoute } from 'next';
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/',
-    name: 'مجلس فند: تبرعات المجلس المحلي في السلمية',
-    short_name: 'مجلس فند',
+    name: 'أثر: تبرعات المجلس المحلي في السلمية',
+    short_name: 'أثر',
     description:
       'منصة المجلس المحلي في السلمية لحملات التبرع: كفالة أيتام وترميم منازل ومساعدات طبية بحساب مفتوح.',
     lang: 'ar',

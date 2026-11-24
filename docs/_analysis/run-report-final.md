@@ -77,3 +77,41 @@ Contract first: `docs/fund-contract.md`. Then:
   receipt) and expected the roof campaign to become FUNDED although 250,000 of council cash is still reserved; the
   spec now uses its own image and checks the «اكتملت هذه الحملة» notice. On this machine a failing Playwright run
   does not exit by itself (browser close hangs); the hung runs were stopped by hand and rerun.
+
+**Step 3 result:** merged into `main` (fast-forward) and pushed as `1d16e10`
+`feat(api): general council fund with surplus allocation on web and mobile`.
+
+## Part B — final rename to «أثر» / Athar with the new logo · branch `p28-athar-rename`
+
+- **Brand files** (`docs/brand/`, 12 files) copied to `frontend/public/brand/` and `mobile/assets/brand/`.
+- **Web:** `Logo` = the ripple mark (`/brand/athar-icon.svg`) + wordmark «أثر» (header, login brand panel, receipt);
+  `app/icon.svg` and `app/apple-icon.png` = the Athar icon (the old `apple-icon.tsx` star renderer removed); PWA
+  install icons render the Athar PNG (maskable on the brand green); manifest name «أثر: تبرعات المجلس المحلي في
+  السلمية», short name «أثر»; OG image shows the Athar mark and "Athar"; the offline page has the mark inline (works
+  without the network). The old eight-point-star logo mark is gone from the UI; the decorative `StarLattice` pattern on
+  the green panels stays (it is not the logo).
+- **Mobile:** `app.json` name «أثر», slug `athar`, scheme `athar`, icon / iOS icon / web favicon = Athar icon,
+  Android adaptive icon (Athar icon on `#15803D`), splash = `athar-logo.png` on white and `athar-logo-dark.png` on
+  `#0B3D2A` in dark mode; the home screen header shows the mark + «أثر».
+- **Text:** web messages ar/en, mobile i18n, page metadata, `siteName`, Swagger title `Athar API` (and the startup
+  log), the service-worker cache (`athar-offline-v1`; old caches are deleted on activate), theme / install-banner
+  storage keys (`athar-theme`, `athar-install-dismissed`), CSV file name, demo-start window titles, README, DEMO.md,
+  CLAUDE.md, package names (`athar-api`, `athar-web`, `athar-mobile`, `athar-e2e`, also in each lockfile's own name
+  fields) and everything under `docs/` (Word files, system map AR/EN + PDFs, diagram tools, Postman name and README,
+  Swagger audit, compliance checklist, submission README). The "app UI still shows the earlier name" notes were
+  removed. `docs/_analysis/README.md` says: "Earlier working names: Majlis Fund, Madad — final name: Athar / أثر".
+- **Internal, unchanged, not visible to users:** the database `majlis_fund` and its role `majlis` (`.env`,
+  `.env.example`, `dev-db-setup.sql`, the seed-safety check), the shared demo password `Majlis@2026`, and the case
+  tracking prefix `MF-YYYY-XXXXX` (stored data, the track page format and the tests depend on it). The study guide
+  lives on the separate `docs-study` branch and was not changed here.
+- **Grep** (`majlis fund|مجلس فند|madad|مدد`, case-insensitive) over backend/, frontend/, mobile/, docs/, e2e/,
+  scripts/, README.md, DEMO.md, CLAUDE.md — excluding docs/_analysis, docs/analysis, node_modules, .next, dist and
+  lockfiles: **no match**. The only remaining mention is the line in `docs/_analysis/README.md`.
+- **Rebuilt:** Postman from the live API (title `Athar API`, 103 = 103 controllers), Swagger audit, diagrams, system
+  map (EN 9 / AR 9 pages), Word files with `--team-en Athar --team-ar أثر`: briefs **1 + 1** page, analysis **5 + 5**.
+- **Screenshots** in `docs/screenshots/athar/`: web home light/dark, login light/dark, web home on a phone, and the
+  mobile home (Expo web, phone viewport).
+- **Checks on the branch:** backend lint ✔, 32 suites / **401 tests** ✔, build ✔ · frontend lint ✔ (0 warnings),
+  **55 tests** ✔, `next build` ✔ · mobile `tsc --noEmit` ✔, `expo lint` ✔, `expo config` resolves the new icon and
+  splash · e2e after `demo:reset` and an API restart: **44 passed, 1 skipped** (LAN test), 0 failed, exit 0.
+- All servers started for this run (API, web, Expo web) were stopped; the local database was left freshly reset.

@@ -1,7 +1,7 @@
-// Majlis Fund service worker: only an offline fallback page. Pages and data always come from the
+// Athar service worker: only an offline fallback page. Pages and data always come from the
 // network (donation figures, pending cash and receipts must never be stale), so nothing else is
 // cached. Adapted from the sanad-crowdfunding reference.
-const CACHE = 'majlis-fund-offline-v1';
+const CACHE = 'athar-offline-v1';
 const OFFLINE_URL = '/offline.html';
 
 self.addEventListener('install', (event) => {

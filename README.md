@@ -1,4 +1,4 @@
-# Majlis Fund (مجلس فند) — Donation Automation for the Local Council in Salamiyah
+# Athar (أثر) — Donation Automation for the Local Council in Salamiyah
 
 Hackathon proof of concept (official idea, Team 4) for the Local Council of Salamiyah, Syria: a simple web platform
 (plus a donor mobile app) to manage and document local donation campaigns transparently. The council creates campaigns
@@ -161,9 +161,9 @@ appears under the login form **only** when `backend/.env` has all three of `GOOG
 and `GOOGLE_CALLBACK_URL`; otherwise the button is hidden and the Google API routes answer 404
 `google_sign_in_disabled`. No keys are committed; you create the OAuth client yourself:
 
-1. Open <https://console.cloud.google.com/>, create (or pick) a project, e.g. "Majlis Fund demo".
+1. Open <https://console.cloud.google.com/>, create (or pick) a project, e.g. "Athar demo".
 2. **Google Auth Platform → Branding / Audience** (older consoles: *APIs & Services → OAuth consent screen*):
-   user type **External**, app name «مجلس فند» / Majlis Fund, your support and developer email. Scopes: only
+   user type **External**, app name «أثر» / Athar, your support and developer email. Scopes: only
    `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile` (non-sensitive). Leave the publishing status on
    **Testing** and add every Gmail address that will try it as a **test user** (only they can sign in while testing).
 3. **Clients → Create client** (older: *Credentials → Create credentials → OAuth client ID*), application type
@@ -222,9 +222,9 @@ reload once from the Expo Go menu: Arabic right-to-left takes effect after a res
 Windows Firewall blocks the phone until you allow the dev ports on the local network. Run once in an **administrator**
 PowerShell:
 ```powershell
-New-NetFirewallRule -DisplayName "Majlis Fund dev (API 4000, Metro 8081)" -Direction Inbound -Protocol TCP -LocalPort 4000,8081 -RemoteAddress LocalSubnet -Action Allow -Profile Private,Public
+New-NetFirewallRule -DisplayName "Athar dev (API 4000, Metro 8081)" -Direction Inbound -Protocol TCP -LocalPort 4000,8081 -RemoteAddress LocalSubnet -Action Allow -Profile Private,Public
 ```
-Remove it after the hackathon: `Remove-NetFirewallRule -DisplayName "Majlis Fund dev (API 4000, Metro 8081)"`.
+Remove it after the hackathon: `Remove-NetFirewallRule -DisplayName "Athar dev (API 4000, Metro 8081)"`.
 For the LAN demo, phones also open the web app on port 3000: see the checklist in [DEMO.md](DEMO.md).
 
 ### 7. Install the collector app (PWA)

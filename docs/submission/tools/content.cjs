@@ -44,7 +44,7 @@ const brief = {
     teamHead: ['الاسم', 'الدور', 'المساهمة الرئيسية', 'GitHub'],
     links: [
       ['رابط المستودع', REPO],
-      ['رابط العرض التجريبي', 'لا يوجد رابط عام؛ العرض حي على الشبكة المحلية (DEMO.md). واجهة التطبيق ما زالت تعرض الاسم السابق «مجلس فند»؛ تغيير الاسم قيد التنفيذ.'],
+      ['رابط العرض التجريبي', 'لا يوجد رابط عام؛ العرض حي على الشبكة المحلية (DEMO.md).'],
     ],
   },
   en: {
@@ -70,7 +70,7 @@ const brief = {
     teamHead: ['Name', 'Role', 'Main contribution', 'GitHub'],
     links: [
       ['Repository', REPO],
-      ['Demo URL', 'No public URL; live demo on the local network (DEMO.md). The app UI still shows the earlier working name «مجلس فند»; rename in progress.'],
+      ['Demo URL', 'No public URL; live demo on the local network (DEMO.md).'],
     ],
   },
 };
@@ -86,7 +86,7 @@ const analysis = {
       ['p', '<b>الهدف:</b> أتمتة دورة التبرع كاملة (حملة ← تبرع ← تحقق ← إيصال ← صرف ← شفافية) لتعزيز الثقة بين المجتمع والمجلس.'],
       ['p', '<b>الفئة المستهدفة:</b> المجلس وموظفوه، المتبرعون محلياً وفي المغترب، المكيّون في نقاط الجمع، والمجتمع.'],
       ['p', '<b>النطاق (Scope):</b> حملات ضمن فئات بيانات (طبية، كفالة أيتام، ترميم، وفئات يضيفها المدير) بمبلغ مستهدف؛ التبرع بحوالة وإيصال، بمحفظة إلكترونية محاكاة («Demo»)، أو نقداً عند المكي؛ إشعارات فورية؛ تحقق مالي وإيصال رسمي مع QR؛ تسجيل الصرف مع إثبات؛ لوحة شفافية؛ مستفيدون برموز مجهولة؛ إدارة المستخدمين والنقاط والمشافي والحسابات؛ تطبيق موبايل للمتبرع.'],
-      ['p', '<b>خارج النطاق (Out of Scope):</b> بوابة دفع حقيقية، واجهة WhatsApp Business، السلال الغذائية والتعليم، الاعتماد المشترك، تحويلات الآغا خان، والمطابقة الشهرية. كل أرقام الحسابات والبيانات وهمية للعرض. واجهة التطبيق ما زالت تعرض الاسم السابق «مجلس فند»؛ تغيير الاسم قيد التنفيذ.'],
+      ['p', '<b>خارج النطاق (Out of Scope):</b> بوابة دفع حقيقية، واجهة WhatsApp Business، السلال الغذائية والتعليم، الاعتماد المشترك، تحويلات الآغا خان، والمطابقة الشهرية. كل أرقام الحسابات والبيانات وهمية للعرض.'],
       ['h', '2. الأدوار (Actors / User Roles)'],
       ['table', ['الدور', 'ما يفعله في النظام'], [
         ['المتبرع (DONOR)', 'يتصفح الحملات، يتبرع بكل الطرق، يستلم الإشعارات والإيصال الرسمي، يتابع تبرعاته.'],
@@ -175,7 +175,7 @@ const analysis = {
       ['p', '<b>Goal:</b> automate the whole donation cycle (campaign → donation → verification → receipt → spending → transparency) to strengthen trust between the community and the council.'],
       ['p', '<b>Target audience:</b> the council and its staff, local and diaspora donors, the Mukhis at collection points, and the community.'],
       ['p', '<b>Scope:</b> campaigns in data-driven categories (medical, orphan sponsorship, home renovation, admin-defined) with a target amount; giving by transfer + receipt, simulated e-wallet («Demo») or cash via the Mukhi; instant notifications; finance verification and official receipt with QR; spending with proof; transparency dashboard; anonymised beneficiaries; management of users, points, hospitals and accounts; a donor mobile app.'],
-      ['p', '<b>Out of scope:</b> a real payment gateway, the WhatsApp Business API, food baskets and education, joint approval, Aga Khan transfers and monthly reconciliation. All account numbers and data are fictional for the demo. The app UI still shows the earlier working name «مجلس فند»; rename in progress.'],
+      ['p', '<b>Out of scope:</b> a real payment gateway, the WhatsApp Business API, food baskets and education, joint approval, Aga Khan transfers and monthly reconciliation. All account numbers and data are fictional for the demo.'],
       ['h', '2. Actors / User Roles'],
       ['table', ['Role', 'What it does in the system'], [
         ['Donor (DONOR)', 'Browses campaigns, gives on every path, receives notifications and the official receipt, tracks their donations.'],

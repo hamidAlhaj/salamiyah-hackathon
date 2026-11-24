@@ -118,7 +118,7 @@ async function main() {
   for (const lang of ['en', 'ar']) {
     const md = fs.readFileSync(path.join(mapDir, `system-map-${lang}.md`), 'utf8');
     const html = `<!doctype html><html lang="${lang}" dir="${lang === 'ar' ? 'rtl' : 'ltr'}"><head><meta charset="utf-8"><style>${css(lang === 'ar')}</style></head><body>${toHtml(md, mapDir)}</body></html>`;
-    const tmp = path.join(os.tmpdir(), `majlis-system-map-${lang}.html`);
+    const tmp = path.join(os.tmpdir(), `athar-system-map-${lang}.html`);
     fs.writeFileSync(tmp, html);
     await page.goto(`file:///${tmp.replace(/\\/g, '/')}`);
     await page.evaluate(() => document.fonts.ready);

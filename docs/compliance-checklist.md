@@ -1,6 +1,6 @@
 # Compliance checklist — B4F final submission guide (9 pages)
 
-Project and team: **«أثر» / Athar**. The app UI still shows the earlier working name «مجلس فند»; rename in progress.
+Project and team: **«أثر» / Athar**.
 
 Source: «B4F Hackathon — متطلبات توثيق وتسليم المشروع النهائي» (official student guide, 9 pages). Deadline: **Tuesday
 24 November 2026, 16:00 (Damascus)**. State on branch `docs-submission`, 2026-11-23.
@@ -24,7 +24,7 @@ needs their accounts) · **needs human** = a decision, a name or an account only
 | Team members: name, role, main contribution | table with the five members, roles and contributions given by the team leader | done |
 | GitHub username of every member | @hamidAlhaj · @RamiAlshaar · @Badr-pixel-netizen · @Yousef2001yousef · @nawarhasan55 (repo collaborators via the GitHub API; Nawar's invitation is still pending) | done — Nawar must accept the invitation |
 | English spelling of the members' names | GitHub display names: Hamid Alhaj, Rami Alshaar, Badr Aljerf, Nawar Hasan; Yousef has no display name, so "Yousef Yousef" follows the username | done (Yousef: confirm) |
-| Repository link and demo link | repo URL filled; demo: "no public URL, live demo on the local network (DEMO.md)", plus the note that the app UI still shows «مجلس فند» | done (add a URL if one appears) |
+| Repository link and demo link | repo URL filled; demo: "no public URL, live demo on the local network (DEMO.md)" | done (add a URL if one appears) |
 | Team name in the file names | «أثر» / Athar in the file names and the documents (`build-docx.cjs --team-en Athar --team-ar أثر`) | done |
 | Contributions written in the brief must match the Git history | `main` has one author (`hamidAlhaj`); `RamiAlshaar` created `codex/b4f-session-20261123` but most of its commits are authored "Codex", not his account | **TODO-team** (each member commits their own work from their account: security report, PowerPoint, frontend, mobile testing) |
 

@@ -131,7 +131,6 @@ live LAN demo". Page counts re-checked by Word: **briefs 1 + 1, analysis 5 + 5**
   titles (architecture, use cases, backend map), Postman collection name/description, `docs/postman/README.md`,
   swagger audit title, compliance checklist, submission README. `build-docx.cjs` now defaults to Athar / أثر.
 - Note added wherever the running app is referenced (briefs' demo line, analysis overview, system map §1, Postman
-  description and README, swagger audit, checklist, submission README): the app UI (and the Swagger title
-  `Majlis Fund API`) still shows the earlier working name «مجلس فند»; rename in progress.
+  description and README, swagger audit, checklist, submission README): the app UI and the Swagger title still showed the earlier working name (replaced since by «أثر» / Athar).
 - Not changed: historical reports (`docs/_analysis`, `docs/analysis`, the review on `review-2026-11-23`), screenshots,
   `openapi.snapshot.json` (a copy of what the app serves). No file outside `docs/` touched.

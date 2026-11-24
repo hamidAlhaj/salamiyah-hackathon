@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(await res.text(), {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': 'attachment; filename="majlis-fund-transparency.csv"',
+      'Content-Disposition': 'attachment; filename="athar-transparency.csv"',
       'Cache-Control': 'no-store',
     },
   });

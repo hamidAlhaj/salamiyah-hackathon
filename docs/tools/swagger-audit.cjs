@@ -137,7 +137,7 @@ const clean = rows.filter((r) => !r.missing.length).length;
 const md = [];
 md.push('# Swagger audit — Athar API (`/api/docs`)');
 md.push('');
-md.push('Project and team: «أثر» / Athar. The Swagger title served by the app is still `Majlis Fund API` (the earlier working name «مجلس فند»); rename in progress.');
+md.push('Project and team: «أثر» / Athar. Swagger title: `Athar API`.');
 md.push('');
 md.push(
   `Read-only audit of the OpenAPI document served by the API (\`http://localhost:4000/api/docs\`, JSON at \`/api/docs-json\`, snapshot \`docs/postman/tools/openapi.snapshot.json\`, taken ${new Date().toISOString().slice(0, 10)} from \`main\`) against the controller sources. **No backend file was changed.** Regenerate with \`node docs/tools/swagger-audit.cjs\` after fixing.`,

@@ -7,7 +7,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 
 export type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'majlis-fund-theme';
+const STORAGE_KEY = 'athar-theme';
 const SWITCH_CLASS = 'theme-switching';
 
 /**

@@ -53,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: t('title'), template: `%s · ${t('title')}` },
     description: t('description'),
     // Installed from the home screen (PWA): the name under the icon on iOS.
-    appleWebApp: { capable: true, title: 'مجلس فند', statusBarStyle: 'default' },
+    appleWebApp: { capable: true, title: 'أثر', statusBarStyle: 'default' },
   };
 }
 

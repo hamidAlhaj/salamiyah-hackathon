@@ -11,7 +11,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const DISMISS_KEY = 'majlis-install-dismissed';
+const DISMISS_KEY = 'athar-install-dismissed';
 const DISMISS_DAYS = 30;
 
 function dismissedRecently(): boolean {
@@ -25,7 +25,7 @@ function dismissedRecently(): boolean {
 
 /**
  * Donor install prompt: when the browser offers to install the site (secure origins only), guests and
- * donors see one small banner to add «مجلس فند» to the home screen. Staff never see it. Hidden for 30
+ * donors see one small banner to add «أثر» to the home screen. Staff never see it. Hidden for 30
  * days after "Not now"; nothing renders until the browser fires the event.
  */
 export function InstallPrompt() {
