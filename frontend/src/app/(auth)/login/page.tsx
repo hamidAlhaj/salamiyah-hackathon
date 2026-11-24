@@ -81,6 +81,12 @@ export default async function LoginPage({
           <p className="mt-2 text-muted">{t('subtitle')}</p>
           {isGoogleLoginNotice(google) && <GoogleNotice notice={google} />}
           <LoginForm next={safeNext} />
+          <p className="mt-5 text-center text-sm text-muted">
+            {t('noAccount')}{' '}
+            <Link href="/register" className="font-semibold text-brand-700 underline-offset-4 hover:underline">
+              {t('registerLink')}
+            </Link>
+          </p>
           {withGoogle && <GoogleSignIn next={safeNext} />}
           <p className="mt-8 text-sm text-muted lg:hidden">{t('donorHint')}</p>
         </div>

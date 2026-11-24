@@ -44,6 +44,32 @@ export async function loginAction(_prevState: FormState, formData: FormData): Pr
   redirect((typeof next === 'string' && safeNextPath(next)) || '/dashboard');
 }
 
+export async function registerAction(_prevState: FormState, formData: FormData): Promise<FormState> {
+  const t = await getTranslations('auth');
+  const fullName = readString(formData, 'fullName', 120);
+  const phone = readString(formData, 'phone', 40);
+  const rawPassword = formData.get('password');
+  const password = typeof rawPassword === 'string' ? rawPassword.slice(0, 72) : '';
+  const localeValue = formData.get('locale');
+  const locale = localeValue === 'en' ? 'en' : 'ar';
+
+  if (fullName.length < 3 || !phone || password.length < 8) {
+    return { error: t('registerRequired') };
+  }
+
+  try {
+    const { accessToken } = await authApi.register({ fullName, phone, password, locale });
+    await setSessionToken(accessToken);
+  } catch (err) {
+    if (err instanceof ApiError && err.statusCode === 409) return { error: t('phoneTaken') };
+    if (err instanceof ApiError && err.statusCode < 500) return { error: t('registerInvalid') };
+    return { error: t('unavailable') };
+  }
+
+  safeRevalidate('/');
+  redirect('/dashboard');
+}
+
 export async function logoutAction() {
   // Stateless JWT (no refresh token): logging out is deleting the cookie.
   await clearSessionToken();
