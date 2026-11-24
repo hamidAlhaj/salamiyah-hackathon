@@ -1,9 +1,9 @@
 import { useColorScheme } from 'react-native';
 
 /**
- * The web design tokens (frontend/src/app/globals.css + tailwind.config.ts) as React Native colours:
- * Salamiyah green for the brand, saffron (`give`) only for donate actions and funding progress.
- * Light and dark follow the phone's setting.
+ * Exact web design tokens from frontend/src/app/globals.css and tailwind.config.ts, adapted to React
+ * Native colours. Light and dark follow the phone's setting; `give` is reserved for donations and
+ * funding progress.
  */
 export interface Palette {
   page: string;
@@ -40,28 +40,28 @@ export interface Palette {
 }
 
 const light: Palette = {
-  page: '#eef2ef',
-  surface: '#f9fbf9',
-  surfaceMuted: '#e4eae5',
-  border: '#d3dcd5',
-  track: '#cbd5cd',
-  control: '#7b8a80',
-  ink: '#16231d',
-  muted: '#4f5f56',
-  accent: '#135b3c',
-  accentStrong: '#114a32',
-  accentSoft: '#dceee5',
+  page: '#FFFFFF',
+  surface: '#FFFFFF',
+  surfaceMuted: '#EBF2EE',
+  border: '#E3EAE5',
+  track: '#DDE7E1',
+  control: '#6E8278',
+  ink: '#182420',
+  muted: '#4A5A54',
+  accent: '#0F6B2F',
+  accentStrong: '#0B5224',
+  accentSoft: '#E6F2EC',
   danger: '#a3271c',
   dangerSoft: '#f5ded6',
   warning: '#85460b',
   warningSoft: '#f4e3c1',
-  panel: '#0f3d2a',
-  panelInk: '#e4f2eb',
-  give: '#d96f1a',
-  giveInk: '#ffffff',
-  givePending: '#fdba74',
+  panel: '#0B3D2A',
+  panelInk: '#E6F2EC',
+  give: '#B45512',
+  giveInk: '#FFFFFF',
+  givePending: '#FED7AA',
   demo: '#9aa59f',
-  seriesSpent: '#18734b',
+  seriesSpent: '#0F6B2F',
   coverSky: '#dceee5',
   coverInk: '#135b3c',
   coverMid: '#1f8a5b',
@@ -77,8 +77,8 @@ const dark: Palette = {
   control: '#71837a',
   ink: '#ecf2ee',
   muted: '#a0b0a7',
-  accent: '#79bf9f',
-  accentStrong: '#acd9c5',
+  accent: '#6BCFA5',
+  accentStrong: '#ACD9C5',
   accentSoft: '#163628',
   danger: '#fca5a5',
   dangerSoft: '#3d1b19',
@@ -86,11 +86,11 @@ const dark: Palette = {
   warningSoft: '#3d2d10',
   panel: '#0a291d',
   panelInk: '#d6ece1',
-  give: '#ef8a2b',
+  give: '#F6A34A',
   giveInk: '#1a0f05',
-  givePending: '#b45512',
+  givePending: '#8F4211',
   demo: '#5d6b64',
-  seriesSpent: '#46a27a',
+  seriesSpent: '#6BCFA5',
   coverSky: '#163628',
   coverInk: '#79bf9f',
   coverMid: '#1f8a5b',
