@@ -15,8 +15,8 @@ import { getCampaign, getLedger } from '@/lib/api/campaigns';
 import { orNotFound } from '@/lib/api/client';
 import { formatNumber } from '@/shared';
 
-/** The Athar mark (docs/brand/athar-icon.png) as a data URI for the image renderer. */
-const MARK = `data:image/png;base64,${readFileSync(join(process.cwd(), 'public/brand/athar-icon.png')).toString('base64')}`;
+/** The Athar app icon (docs/brand/v2/athar-icon-green.png) as a data URI for the image renderer. */
+const MARK = `data:image/png;base64,${readFileSync(join(process.cwd(), 'public/brand/athar-icon-green.png')).toString('base64')}`;
 
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';

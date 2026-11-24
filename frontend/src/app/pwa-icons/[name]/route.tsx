@@ -16,8 +16,13 @@ export function generateStaticParams() {
   return Object.keys(ICONS).map((name) => ({ name }));
 }
 
-/** The Athar mark (docs/brand/athar-icon.png), embedded as a data URI for the image renderer. */
-const MARK = `data:image/png;base64,${readFileSync(join(process.cwd(), 'public/brand/athar-icon.png')).toString('base64')}`;
+/** Athar app icons (docs/brand), embedded as data URIs for the image renderer. */
+const dataUri = (file: string) =>
+  `data:image/png;base64,${readFileSync(join(process.cwd(), 'public/brand', file)).toString('base64')}`;
+/** The green app icon (rounded tile) for the regular icons. */
+const TILE = dataUri('athar-icon-green.png');
+/** The white-word logo without its tile, for the full-bleed maskable icon. */
+const MARK = dataUri('athar-icon-dark.png');
 
 export async function GET(_request: Request, { params }: { params: Promise<{ name: string }> }) {
   const icon = ICONS[(await params).name];
@@ -31,12 +36,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ nam
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        // Maskable icons need a full-bleed background; the mark carries its own rounded tile.
-        background: icon.maskable ? '#15803D' : 'transparent',
+        // Maskable icons need a full-bleed background (the tile colour) with the logo in the safe zone.
+        background: icon.maskable ? '#0B3D2A' : 'transparent',
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- rendered by ImageResponse, not the browser */}
-      <img src={MARK} width={mark} height={mark} alt="" />
+      <img src={icon.maskable ? MARK : TILE} width={mark} height={mark} alt="" />
     </div>,
     { width: icon.size, height: icon.size },
   );

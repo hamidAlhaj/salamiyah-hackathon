@@ -55,7 +55,7 @@ export default async function ReceiptPage({ params }: Props) {
           <StarLattice className="absolute inset-0 -z-10 h-full w-full print:hidden" />
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <LogoMark className="h-11 w-11" />
+              <LogoMark tone="onDark" className="h-14 w-14" />
               <div>
                 <p className="text-sm text-panel-ink/85 print:text-black">{t('council')}</p>
                 <h1 className="font-display text-xl font-bold">{t('title')}</h1>

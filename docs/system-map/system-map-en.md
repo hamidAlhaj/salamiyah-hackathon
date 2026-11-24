@@ -1,3 +1,5 @@
+![Athar logo](../brand/v2/athar-logo.svg)
+
 # Athar — System Construction Map
 
 A guide to the system we built for the Local Council of Salamiyah: its pieces, how they connect, the order we built

@@ -151,23 +151,18 @@ function BellButton() {
   );
 }
 
-/** The Athar mark (docs/brand/athar-icon.png) and the Arabic wordmark «أثر», as on the web header. */
+/**
+ * The Athar logo v2 (the word «أثر» in a gold ring) in its white-word variant
+ * (docs/brand/derived/athar-icon-dark.png), on the deep-green header in both themes.
+ */
 function HeaderLogo() {
-  const c = usePalette();
   return (
-    <View
-      style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-      accessibilityRole="header"
-      accessibilityLabel="أثر"
-    >
+    <View accessibilityRole="header" accessibilityLabel="أثر">
       <Image
-        source={require("../../assets/brand/athar-icon.png")}
-        style={{ width: 28, height: 28 }}
+        source={require("../../assets/brand/athar-icon-dark.png")}
+        style={{ width: 44, height: 44 }}
         accessibilityIgnoresInvertColors
       />
-      <AppText display size="lg" style={{ color: c.panelInk }}>
-        أثر
-      </AppText>
     </View>
   );
 }

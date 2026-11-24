@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/v2/athar-logo-dark.svg">
+    <img src="docs/brand/v2/athar-logo.svg" alt="Athar (أثر) logo" width="260">
+  </picture>
+</p>
+
 # Athar (أثر) — Donation Automation for the Local Council in Salamiyah
 
 Hackathon proof of concept (official idea, Team 4) for the Local Council of Salamiyah, Syria: a simple web platform

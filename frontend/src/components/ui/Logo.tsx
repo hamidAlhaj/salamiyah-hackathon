@@ -1,33 +1,39 @@
-/* eslint-disable @next/next/no-img-element -- a small static SVG mark, no image optimisation needed */
+/* eslint-disable @next/next/no-img-element -- small static SVG logos, no image optimisation needed */
 /**
- * Athar («أثر») brand: the ripple mark (a drop and its widening rings: every donation leaves a trace)
- * on the green tile, from docs/brand/athar-icon.svg (served from /brand/). The mark reads on light
- * and dark surfaces alike; the wordmark follows the text colour.
+ * Athar («أثر») brand, final logo v2 (docs/brand/v2, served from /brand/): the word «أثر» in green
+ * inside a gold ring with leaves and an open hand. The logo carries the wordmark itself.
+ * - `auto`: green word on light surfaces, the white-word variant in dark mode (`dark:` class).
+ * - `onDark`: always the white-word variant, for the deep-green brand panels (login, receipt);
+ *   prints with the green word.
  */
-export function LogoMark({ className = 'h-9 w-9' }: { className?: string }) {
-  return <img src="/brand/athar-icon.svg" alt="" aria-hidden="true" className={className} />;
+export function LogoMark({
+  className = 'h-11 w-11',
+  tone = 'auto',
+}: {
+  className?: string;
+  tone?: 'auto' | 'onDark';
+}) {
+  const light = tone === 'auto' ? 'dark:hidden' : 'hidden print:block';
+  const dark = tone === 'auto' ? 'hidden dark:block' : 'print:hidden';
+  return (
+    <span className={`inline-flex shrink-0 ${className}`} aria-hidden="true">
+      <img src="/brand/athar-icon.svg" alt="" className={`h-full w-full ${light}`} />
+      <img src="/brand/athar-icon-dark.svg" alt="" className={`h-full w-full ${dark}`} />
+    </span>
+  );
 }
 
-/** Mark + Kufi wordmark «أثر». The wordmark is always Arabic (lang="ar"), whatever the UI language. */
+/** The brand logo at header (`md`) or panel (`lg`) size. Wrap it in a link with the brand name. */
 export function Logo({
   size = 'md',
+  tone = 'auto',
   className = '',
-  wordmarkClassName = '',
 }: {
   size?: 'md' | 'lg';
+  tone?: 'auto' | 'onDark';
   className?: string;
-  /** e.g. `hidden sm:inline` to show only the mark on narrow headers. */
-  wordmarkClassName?: string;
 }) {
   return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <LogoMark className={size === 'lg' ? 'h-12 w-12' : 'h-9 w-9'} />
-      <span
-        lang="ar"
-        className={`whitespace-nowrap font-display font-bold leading-none ${size === 'lg' ? 'text-3xl' : 'text-xl'} ${wordmarkClassName}`}
-      >
-        أثر
-      </span>
-    </span>
+    <LogoMark tone={tone} className={`${size === 'lg' ? 'h-24 w-24' : 'h-12 w-12'} ${className}`} />
   );
 }

@@ -115,3 +115,34 @@ Contract first: `docs/fund-contract.md`. Then:
   **55 tests** ✔, `next build` ✔ · mobile `tsc --noEmit` ✔, `expo lint` ✔, `expo config` resolves the new icon and
   splash · e2e after `demo:reset` and an API restart: **44 passed, 1 skipped** (LAN test), 0 failed, exit 0.
 - All servers started for this run (API, web, Expo web) were stopped; the local database was left freshly reset.
+
+## Logo v2 — final Athar logo (branch `p29-logo-v2`)
+
+- **Brand files:** the final set is in `docs/brand/v2/` (14 files, SVG + PNG). The earlier ripple set moved to
+  `docs/brand/old/` (not deleted). `docs/brand/derived/` holds the files rendered from the v2 SVGs with the installed
+  Chrome (no new dependency, colours unchanged): `athar-icon-dark` (the green app icon without its tile: gold + white
+  word on transparent), `athar-icon-green-square` (iOS), `athar-adaptive-foreground` (Android safe zone) and the
+  180 px apple icon. `docs/brand/README.md` lists every file and where it is used.
+- **Web:** header = `athar-icon.svg` (green word) in light mode and `athar-icon-dark.svg` (white word) in dark mode
+  via `dark:` classes; the logo carries the word «أثر», so the separate text wordmark was dropped and the link keeps
+  the brand name as its accessible name. Login brand panel and receipt header (deep green in both themes) use the
+  white-word logo (green word when printed). Favicon `app/icon.svg` = `athar-icon-green.svg`; `app/apple-icon.png`
+  180 px; PWA icons 192/512 from `athar-icon-green.png`, maskable 512 = white-word logo in the safe zone on
+  `#0B3D2A`; OG image mark = `athar-icon-green.png`; offline page inlines `athar-icon-green.svg`; the service-worker
+  cache became `athar-offline-v2` so installed clients fetch the new offline page.
+- **Mobile:** `icon` and web favicon = `athar-icon-green.png`, iOS icon = the square-corner variant, Android
+  adaptive icon = `athar-adaptive-foreground.png` on `#0B3D2A`, splash = `athar-logo-white-bg.png` on white and
+  `athar-logo-dark.png` on `#0B3D2A` in dark mode (`npx expo config` resolves all of them); the header shows the
+  white-word logo (44 px) on the deep-green header bar.
+- **Docs:** README opens with the logo (`<picture>`: `athar-logo.svg`, dark-mode `athar-logo-dark.svg`); system map
+  EN/AR covers show `athar-logo.svg` (`build-pdf.cjs` renders `/brand/` images frameless), PDFs still **9 + 9**
+  pages. The Word files and the Postman collection never showed or referenced a logo, so they were not rebuilt:
+  page counts stay **1, 1, 5, 5**.
+- **Checked:** header logo sharp at 1280 px and at 375 px (2× DPR) in light and dark; favicon readable at 16 and
+  32 px on light and dark tab strips; `/icon.svg`, `/apple-icon.png`, `/pwa-icons/*`, `/offline.html` and the
+  campaign OG image all serve 200. Screenshots in `docs/screenshots/athar/` overwritten (web home light/dark, login
+  light/dark, web home at 375 px light + new dark, mobile home).
+- **Checks on the branch:** backend lint ✔, 32 suites / **401 tests** ✔, build ✔ · frontend lint ✔, **55 tests** ✔,
+  `next build` ✔ · mobile `tsc --noEmit` ✔, `expo lint` ✔ · e2e after `demo:reset` and an API restart: **44 passed,
+  1 skipped** (LAN test), 0 failed, exit 0. All servers started (API, web, Expo web) were stopped; the database was
+  reset again afterwards.

@@ -50,7 +50,12 @@ function toHtml(md, baseDir) {
       flush();
       const m = /^!\[([^\]]*)\]\(([^)]+)\)/.exec(l);
       const src = 'file:///' + path.resolve(baseDir, m[2]).replace(/\\/g, '/');
-      out.push(`<figure><img src="${src}" alt="${esc(m[1])}"><figcaption>${esc(m[1])}</figcaption></figure>`);
+      // The brand logo on the cover: no frame, no caption.
+      out.push(
+        /\/brand\//.test(m[2])
+          ? `<p class="logo"><img src="${src}" alt="${esc(m[1])}"></p>`
+          : `<figure><img src="${src}" alt="${esc(m[1])}"><figcaption>${esc(m[1])}</figcaption></figure>`,
+      );
     } else if (/^\|/.test(l)) {
       flush();
       const rows = [];
@@ -104,6 +109,7 @@ th{background:#e7f2eb}tr{page-break-inside:avoid}
 figure{margin:6pt 0 10pt;text-align:center;page-break-inside:avoid}
 img{max-width:100%;max-height:112mm;border:1px solid #dfe7e2;border-radius:4px}
 figcaption{font-size:8.5pt;color:#55655c}
+.logo{text-align:center;margin:0 0 6pt}.logo img{height:30mm;border:0;border-radius:0}
 .pb{page-break-after:always}
 blockquote{margin:6pt 0;padding:5pt 9pt;background:#fcf1dc;border-${rtl ? 'right' : 'left'}:3px solid #8a5d0c;font-size:9.5pt}
 `;

@@ -25,6 +25,7 @@ export default async function LoginPage({
 }) {
   const { next, google } = await searchParams;
   const t = await getTranslations('auth');
+  const tNav = await getTranslations('nav');
   const points = t.raw('panelPoints') as string[];
   const safeNext = typeof next === 'string' ? safeNextPath(next) : undefined;
   // Sign in with Google appears only when backend/.env configures it (and on the callback host).
@@ -39,8 +40,8 @@ export default async function LoginPage({
       {/* Brand panel: compact band on phones, full height beside the form on wide screens. */}
       <aside className="relative isolate overflow-hidden bg-panel px-6 py-7 text-panel-ink sm:px-10 lg:flex lg:flex-col lg:justify-between lg:py-12">
         <StarLattice className="absolute inset-0 -z-10 h-full w-full" />
-        <Link href="/" className="inline-flex rounded-xl text-white">
-          <Logo size="lg" />
+        <Link href="/" className="inline-flex rounded-xl text-white" aria-label={tNav('brand')}>
+          <Logo size="lg" tone="onDark" />
         </Link>
         <div className="mt-6 hidden max-w-md lg:block">
           <h2 className="font-display text-3xl font-bold leading-snug text-white">

@@ -28,8 +28,8 @@ export function SiteHeader({ bell }: { bell?: React.ReactNode }) {
       </a>
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:gap-3 sm:px-6">
         <Link href="/" className="rounded-xl text-ink" aria-label={t('brand')}>
-          {/* Phones show only the mark; the link keeps the brand name as its accessible name. */}
-          <Logo wordmarkClassName="hidden sm:inline" />
+          {/* The logo carries the word «أثر»; the link keeps the brand name as its accessible name. */}
+          <Logo />
         </Link>
 
         <nav aria-label={t('main')} className="ms-4 hidden items-center gap-1 md:flex">
