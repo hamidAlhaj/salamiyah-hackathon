@@ -9,7 +9,7 @@ module.exports = {
   overrides: [
     {
       // The shared enums declare a const and a type with the same name on purpose (byte-identical
-      // copy of api/src/common/shared).
+      // copy of backend/src/common/shared).
       files: ['src/shared/**/*.ts'],
       rules: { '@typescript-eslint/no-redeclare': 'off' },
     },

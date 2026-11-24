@@ -4,12 +4,14 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Switch, TextInput, View } from 'react-native';
 import type {
+  AllocationPreview,
   CampaignLedger,
   CreatePledgeResult,
   Currency,
   PaymentAccount,
   PledgeView,
   PublicCollectionPoint,
+  SurplusChoice,
 } from '@/shared';
 import { useLang } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
@@ -18,6 +20,9 @@ import { AppText, Button, Card, Chip, DemoBadge, Notice, styles } from '@/ui/com
 import { fonts, radius, type, usePalette } from '@/ui/theme';
 
 type Path = 'demo' | 'transfer' | 'cash';
+
+/** The donor's answer to the surplus notice (docs/fund-contract.md); empty within the need. */
+type Allocation = { surplusChoice?: SurplusChoice; expectedCampaignShare?: string };
 
 const PRESETS: Record<Currency, number[]> = {
   SYP: [25_000, 50_000, 100_000, 250_000],
@@ -31,7 +36,7 @@ const DEMO_OTP = '246810';
  * account + reference → receipt photo, or cash at a collection point → reference.
  */
 export default function DonateScreen() {
-  const { campaignId } = useLocalSearchParams<{ campaignId: string }>();
+  const { campaignId, amount: amountParam } = useLocalSearchParams<{ campaignId: string; amount?: string }>();
   const { t } = useTranslation();
   const lang = useLang();
   const c = usePalette();
@@ -42,13 +47,16 @@ export default function DonateScreen() {
 
   const [path, setPath] = useState<Path | null>(null);
   const [method, setMethod] = useState<PaymentAccount | null>(null);
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(
+    typeof amountParam === 'string' && /^[1-9][0-9]{0,11}$/.test(amountParam) ? amountParam : '',
+  );
   const [anonymous, setAnonymous] = useState(false);
   const [pointId, setPointId] = useState<string | null>(null);
   const [transfer, setTransfer] = useState<CreatePledgeResult | null>(null);
   const [done, setDone] = useState<PledgeView | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ preview: AllocationPreview; go: (a: Allocation) => void } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -109,6 +117,30 @@ export default function DonateScreen() {
     }
   };
 
+  /** Asks the server how the amount would be split before any pledge (same API as the web). */
+  const donate = async (go: (a: Allocation) => void) => {
+    setBusy(true);
+    setError(null);
+    try {
+      const preview = await api<AllocationPreview>(`/campaigns/${campaignId}/allocation`, {
+        auth: false,
+        query: { amount, lang },
+      });
+      if (preview.state === 'WITHIN') go({});
+      else setNotice({ preview, go });
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const choose = (choice: SurplusChoice) => {
+    if (!notice) return;
+    const { preview, go } = notice;
+    setNotice(null);
+    go({ surplusChoice: choice, expectedCampaignShare: preview.campaignShare });
+  };
+
   const choosePath = (p: Path) => {
     setPath(p);
     setMethod(methodsFor[p].length === 1 ? methodsFor[p][0] : null);
@@ -141,6 +173,11 @@ export default function DonateScreen() {
               {done.isDemo && <DemoBadge />}
             </View>
           </View>
+          {Number(done.fundShare) > 0 && (
+            <AppText size="sm" tone="muted" testID="done-split">
+              {t('fund.splitLine', { fund: m(done.fundShare) })}
+            </AppText>
+          )}
         </Card>
         <Button title={t('pledge.backToCampaign')} onPress={() => router.back()} />
         <Button title={t('myDonations')} variant="secondary" onPress={() => router.replace('/donations')} />
@@ -243,7 +280,15 @@ export default function DonateScreen() {
       {/* 3. Finish */}
       <View style={{ gap: 10 }}>
         <StepTitle n={3} title={t('pledge.stepFinish')} />
-        {!ready ? (
+        {notice ? (
+          <AllocationCard
+            preview={notice.preview}
+            m={m}
+            busy={busy}
+            onChoose={choose}
+            onCancel={() => setNotice(null)}
+          />
+        ) : !ready ? (
           <Notice tone="muted">{t('pledge.chooseFirst')}</Notice>
         ) : path === 'demo' && method ? (
           <DemoPanel
@@ -252,9 +297,13 @@ export default function DonateScreen() {
             busy={busy}
             error={error}
             onPay={() =>
-              void submit(
-                () => api<PledgeView>('/pledges/demo', { method: 'POST', body: { ...body, method: method.method } }),
-                setDone,
+              void donate(
+                (a) =>
+                  void submit(
+                    () =>
+                      api<PledgeView>('/pledges/demo', { method: 'POST', body: { ...body, ...a, method: method.method } }),
+                    setDone,
+                  ),
               )
             }
           />
@@ -270,10 +319,16 @@ export default function DonateScreen() {
                 loading={busy}
                 testID="transfer-create"
                 onPress={() =>
-                  void submit(
-                    () =>
-                      api<CreatePledgeResult>('/pledges', { method: 'POST', body: { ...body, method: method.method } }),
-                    setTransfer,
+                  void donate(
+                    (a) =>
+                      void submit(
+                        () =>
+                          api<CreatePledgeResult>('/pledges', {
+                            method: 'POST',
+                            body: { ...body, ...a, method: method.method },
+                          }),
+                        setTransfer,
+                      ),
                   )
                 }
               />
@@ -321,13 +376,16 @@ export default function DonateScreen() {
                 testID="cash-confirm"
                 onPress={() => {
                   if (!pointId) return setError(t('pledge.choosePoint'));
-                  void submit(
-                    () =>
-                      api<PledgeView>('/pledges/cash', {
-                        method: 'POST',
-                        body: { ...body, collectionPointId: pointId },
-                      }),
-                    setDone,
+                  void donate(
+                    (a) =>
+                      void submit(
+                        () =>
+                          api<PledgeView>('/pledges/cash', {
+                            method: 'POST',
+                            body: { ...body, ...a, collectionPointId: pointId },
+                          }),
+                        setDone,
+                      ),
                   );
                 }}
               />
@@ -336,6 +394,73 @@ export default function DonateScreen() {
         ) : null}
       </View>
     </ScrollView>
+  );
+}
+
+/**
+ * The surplus notice: shown before any pledge when the amount is more than the campaign still needs.
+ * Cancel and "browse" create no record (docs/fund-contract.md).
+ */
+function AllocationCard({
+  preview,
+  m,
+  busy,
+  onChoose,
+  onCancel,
+}: {
+  preview: AllocationPreview;
+  m: (v: string) => string;
+  busy: boolean;
+  onChoose: (choice: SurplusChoice) => void;
+  onCancel: () => void;
+}) {
+  const { t } = useTranslation();
+  const complete = preview.state === 'COMPLETE';
+  const values = { remaining: m(preview.remaining ?? '0'), offered: m(preview.offered), surplus: m(preview.surplus) };
+  return (
+    <Card testID="allocation-notice">
+      <AppText display size="lg" accessibilityRole="header">
+        {complete ? t('allocation.completeTitle') : t('allocation.surplusTitle')}
+      </AppText>
+      <AppText size="sm" accessibilityLiveRegion="polite">
+        {complete ? t('allocation.completeBody', values) : t('allocation.surplusBody', values)}
+      </AppText>
+      {complete ? (
+        <>
+          {preview.fund && (
+            <Button
+              title={t('allocation.toFund')}
+              variant="give"
+              testID="allocation-to-fund"
+              onPress={() =>
+                router.replace({
+                  pathname: '/pledge/[campaignId]',
+                  params: { campaignId: preview.fund!.id, amount: String(Math.trunc(Number(preview.offered))) },
+                })
+              }
+            />
+          )}
+          <Button title={t('allocation.browse')} variant="secondary" onPress={() => router.replace('/')} />
+        </>
+      ) : (
+        <>
+          <Button
+            title={t('allocation.split', values)}
+            variant="give"
+            loading={busy}
+            testID="allocation-split"
+            onPress={() => onChoose('SPLIT')}
+          />
+          <Button
+            title={t('allocation.onlyRemaining', values)}
+            variant="secondary"
+            testID="allocation-remaining"
+            onPress={() => onChoose('REMAINING_ONLY')}
+          />
+        </>
+      )}
+      <Button title={t('allocation.cancel')} variant="secondary" testID="allocation-cancel" onPress={onCancel} />
+    </Card>
   );
 }
 

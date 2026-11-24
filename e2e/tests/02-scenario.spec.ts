@@ -20,7 +20,7 @@ async function shot(page: Page, name: string) {
 }
 
 // Opted-in alert donors: the demo donor + 2 fictional numbers (or 1 + the count of
-// DEMO_WHATSAPP_NUMBERS when it is set in api/.env).
+// DEMO_WHATSAPP_NUMBERS when it is set in backend/.env).
 const ALERT_DONORS = Number(process.env.E2E_ALERT_DONORS ?? 3);
 const ORPHAN_CODES = Array.from({ length: 12 }, (_, i) => `B-04${12 + i}`);
 const NEW_ORPHAN_TITLE = 'كفالة 12 يتيماً لعام 2027';
@@ -28,7 +28,7 @@ const thisYear = new Date().getFullYear();
 
 const state: { orphanSlug?: string; incubatorSlug?: string; transferRef?: string } = {};
 
-test('seed is fresh (run `npm run demo:reset` in api/ first)', async ({ request }) => {
+test('seed is fresh (run `npm run demo:reset` in backend/ first)', async ({ request }) => {
   const stats = await transparency(request);
   expect(stats.totals.verifiedAmount, 'reset the demo database first').toBe('39600000.00');
   expect(stats.campaigns.total).toBe(7);

@@ -1,4 +1,4 @@
-# Majlis Fund (مجلس فند) — Salamiyah Medical Crowdfunding · Hackathon PoC
+# Athar (أثر) — Salamiyah Medical Crowdfunding · Hackathon PoC
 
 Read this file before any task.
 
@@ -51,20 +51,20 @@ rules live here and in `docs/_analysis/01-reference-b4f.md`.
   approval, Aga Khan transfers, monthly reconciliation.
 
 ## Repository
-- `api/` NestJS · `web/` Next.js · `mobile/` Expo. Three separate npm projects, each with its own package-lock.json.
+- `backend/` NestJS · `frontend/` Next.js · `mobile/` Expo. Three separate npm projects, each with its own package-lock.json.
 - `e2e/` (test tool only, P16): Playwright smoke + demo scenario, own package.json pinning `@playwright/test`; runs
-  against running servers on the installed Chrome. Not an app project: never import it from api/web/mobile.
-- No shared packages. Enums/types are copied into `api/src/common/shared`, `web/src/shared`, `mobile/src/shared`;
+  against running servers on the installed Chrome. Not an app project: never import it from backend/web/mobile.
+- No shared packages. Enums/types are copied into `backend/src/common/shared`, `frontend/src/shared`, `mobile/src/shared`;
   change all three plus `schema.prisma` together (the api enum-sync test must pass). Campaign categories are data, not a
   shared enum.
 - npm only (no pnpm, no turbo, no workspaces). Node 24.12.0 (`.nvmrc`, `engines`).
 - Database: the **locally installed PostgreSQL** (Windows service, port 5432). **No Docker.**
-  Role + database are created once with `api/prisma/dev-db-setup.sql` (see README).
+  Role + database are created once with `backend/prisma/dev-db-setup.sql` (see README).
 
 ## Pinned versions (exact; never upgrade or add a major without a team decision)
-- api: NestJS 10.4.22, @nestjs/jwt 10.2.0, @nestjs/passport 10.0.3, passport-jwt 4.0.1, bcrypt 5.1.1,
+- backend: NestJS 10.4.22, @nestjs/jwt 10.2.0, @nestjs/passport 10.0.3, passport-jwt 4.0.1, bcrypt 5.1.1,
   Prisma + @prisma/client 5.22.0, class-validator 0.14.4, Jest 29.7.0, ts-jest 29.4.14, TypeScript 5.9.3
-- web: Next 15.5.24, React 19.3.0, Tailwind 3.4.19, @reduxjs/toolkit 2.13.0, react-redux 9.3.0, Vitest 3.2.7
+- frontend: Next 15.5.24, React 19.3.0, Tailwind 3.4.19, @reduxjs/toolkit 2.13.0, react-redux 9.3.0, Vitest 3.2.7
 - ESLint 8.57.1 with legacy `.eslintrc` everywhere. Prettier: singleQuote, trailingComma all.
 - mobile: Expo SDK 58 (react 19.3.0, react-native 0.88.1), TypeScript 5.9.3.
 - Additions beyond b4f are listed in README ("Additions beyond b4f"), each pinned exactly; add new ones there first.
@@ -132,7 +132,7 @@ collection points only). FINANCE_VERIFIER also records expenditures.
 ## Seed and demo data
 - All seed data (campaigns of every type, beneficiaries, expenditures, hospitals, collection points, collectors, donors,
   cases, payment accounts) is **fictional**.
-- Real team WhatsApp numbers for the live demo live **only** in `api/.env` as `DEMO_WHATSAPP_NUMBERS="+963…,+963…"`.
+- Real team WhatsApp numbers for the live demo live **only** in `backend/.env` as `DEMO_WHATSAPP_NUMBERS="+963…,+963…"`.
   The seed reads it and falls back to fictional numbers when empty. Never commit, log or print real numbers.
 
 ## Naming
@@ -155,11 +155,11 @@ collection points only). FINANCE_VERIFIER also records expenditures.
   Campaign covers are illustrations, never photos of beneficiaries.
 
 ## Commands
-- DB (once): `psql -U postgres -h localhost -p 5432 -v app_password="..." -f api/prisma/dev-db-setup.sql`
-- api: `npm run start:dev` · `npm run lint` · `npm test` · `npm run build` · `npx prisma migrate dev` · `npm run seed` ·
+- DB (once): `psql -U postgres -h localhost -p 5432 -v app_password="..." -f backend/prisma/dev-db-setup.sql`
+- backend: `npm run start:dev` · `npm run lint` · `npm test` · `npm run build` · `npx prisma migrate dev` · `npm run seed` ·
   `npm run demo:reset` (migrate reset + deterministic demo seed, local DB only)
 - e2e: `npm ci` · `npx playwright test` (after `demo:reset`, with api + web running; reset again afterwards). Demo: `DEMO.md`
-- web: `npm run dev` · `npm run lint` · `npm test` · `npm run build`
+- frontend: `npm run dev` · `npm run lint` · `npm test` · `npm run build`
 - mobile: `npx expo start` · `npx tsc --noEmit` · `npx expo lint` · `npx expo install --check`
 - Done = lint + tests + build green in every touched project, and the affected screens checked in a browser/phone.
 

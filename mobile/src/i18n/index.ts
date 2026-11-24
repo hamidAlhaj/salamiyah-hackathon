@@ -4,7 +4,7 @@ import { I18nManager, Platform } from 'react-native';
 import { getItem, setItem } from '@/lib/storage';
 
 const ar = {
-  appName: 'مجلس فند',
+  appName: 'أثر',
   council: 'المجلس المحلي في السلمية',
   myDonations: 'تبرعاتي',
   login: 'دخول',
@@ -103,7 +103,7 @@ const ar = {
     proofKept: 'الإثبات محفوظ لدى المجلس',
     updates: 'آخر التحديثات',
     share: 'شارك عبر واتساب',
-    shareText: 'ساهم في «{{title}}» عبر مجلس فند — {{percent}}% من الهدف تحقق. {{url}}',
+    shareText: 'ساهم في «{{title}}» عبر أثر — {{percent}}% من الهدف تحقق. {{url}}',
   },
   auth: {
     loginTitle: 'تسجيل الدخول',
@@ -185,7 +185,7 @@ const ar = {
     cardCvc: 'رمز التحقق',
     pay: 'ادفع {{amount}}',
     paypalAccount: 'حساب PayPal تجريبي',
-    paypalTo: 'إلى: صندوق مجلس فند (تجريبي)',
+    paypalTo: 'إلى: صندوق أثر (تجريبي)',
     paypalApprove: 'وافق وادفع {{amount}}',
     showAccount: 'اعرض حساب التحويل ورقم المرجع',
     accountTitle: 'حوّل إلى هذا الحساب',
@@ -225,8 +225,30 @@ const ar = {
     VISA: 'Visa',
     CASH: 'نقداً',
   },
+  fund: {
+    cta: 'تبرّع لصندوق المجلس العام',
+    noTarget: 'لا هدف مالي للصندوق: يستقبل التبرعات المباشرة وفائض الحملات المكتملة بموافقة المتبرع.',
+    instead: 'تبرّع لصندوق المجلس العام بدلاً منها',
+    splitLine: 'منها {{fund}} لصندوق المجلس العام',
+  },
+  allocation: {
+    surplusTitle: 'اكتملت الحملة تقريباً',
+    surplusBody:
+      'المتبقي من احتياج الحملة {{remaining}}، وأنت تتبرع بـ{{offered}}. هل تريد الاحتفاظ بالباقي ({{surplus}}) أم التبرع به لصندوق المجلس العام؟',
+    onlyRemaining: 'تبرّع بالمتبقي فقط ({{remaining}})',
+    split: 'كامل المبلغ: {{remaining}} للحملة و{{surplus}} للصندوق',
+    cancel: 'إلغاء',
+    completeTitle: 'اكتملت هذه الحملة',
+    completeBody:
+      'لم يبقَ احتياج لهذه الحملة. يمكنك التبرع بالمبلغ نفسه ({{offered}}) لصندوق المجلس العام أو اختيار حملة أخرى.',
+    toFund: 'تبرّع لصندوق المجلس العام بدلاً منها',
+    browse: 'تصفح حملات أخرى',
+  },
   errors: {
     generic: 'حدث خطأ. حاول مرة أخرى.',
+    campaign_complete: 'اكتملت هذه الحملة. يمكنك التبرع لصندوق المجلس العام أو لحملة أخرى.',
+    surplus_choice_required: 'المبلغ أكبر من المتبقي للحملة: اختر ماذا نفعل بالباقي.',
+    allocation_changed: 'تغيّر المتبقي للحملة بسبب تبرع آخر. راجع التقسيم الجديد ثم أكّد.',
     notFound: 'لم نجد هذه الحملة.',
     campaign_not_accepting_pledges: 'الحملة لا تستقبل تبرعات حالياً.',
     duplicate_receipt: 'هذا الإيصال مرفوع مسبقاً لتعهد آخر.',
@@ -236,14 +258,14 @@ const ar = {
     payment_method_unavailable: 'طريقة الدفع هذه غير متاحة حالياً.',
     collection_point_unavailable: 'نقطة الجمع هذه غير متاحة.',
     receipt_not_applicable: 'لا يحتاج هذا التبرع إلى إيصال.',
-    phone_required: 'أضف رقم هاتفك أولاً من «ملفي» على موقع مجلس فند، ليصلك تأكيد التبرع والإيصال على واتساب.',
+    phone_required: 'أضف رقم هاتفك أولاً من «ملفي» على موقع أثر، ليصلك تأكيد التبرع والإيصال على واتساب.',
   },
 };
 
 type Messages = typeof ar;
 
 const en: Messages = {
-  appName: 'Majlis Fund',
+  appName: 'Athar',
   council: 'Salamiyah Local Council',
   myDonations: 'My donations',
   login: 'Log in',
@@ -342,7 +364,7 @@ const en: Messages = {
     proofKept: 'Proof kept by the council',
     updates: 'Latest updates',
     share: 'Share on WhatsApp',
-    shareText: 'Support “{{title}}” on Majlis Fund — {{percent}}% of the goal is verified. {{url}}',
+    shareText: 'Support “{{title}}” on Athar — {{percent}}% of the goal is verified. {{url}}',
   },
   auth: {
     loginTitle: 'Log in',
@@ -424,7 +446,7 @@ const en: Messages = {
     cardCvc: 'CVC',
     pay: 'Pay {{amount}}',
     paypalAccount: 'Demo PayPal account',
-    paypalTo: 'To: Majlis Fund (demo)',
+    paypalTo: 'To: Athar (demo)',
     paypalApprove: 'Approve and pay {{amount}}',
     showAccount: 'Show the transfer account and reference',
     accountTitle: 'Transfer to this account',
@@ -464,8 +486,30 @@ const en: Messages = {
     VISA: 'Visa',
     CASH: 'Cash',
   },
+  fund: {
+    cta: 'Donate to the general council fund',
+    noTarget: 'The fund has no target: it receives direct donations and, with the donor’s consent, surplus from completed campaigns.',
+    instead: 'Donate to the general council fund instead',
+    splitLine: '{{fund}} of it to the general council fund',
+  },
+  allocation: {
+    surplusTitle: 'This campaign is almost complete',
+    surplusBody:
+      'The campaign still needs {{remaining}} and you are giving {{offered}}. Keep the rest ({{surplus}}), or give it to the general council fund?',
+    onlyRemaining: 'Give only the remaining {{remaining}}',
+    split: 'Full amount: {{remaining}} to the campaign, {{surplus}} to the fund',
+    cancel: 'Cancel',
+    completeTitle: 'This campaign is complete',
+    completeBody:
+      'The campaign needs nothing more. You can give the same amount ({{offered}}) to the general council fund or choose another campaign.',
+    toFund: 'Donate to the general council fund instead',
+    browse: 'Browse other campaigns',
+  },
   errors: {
     generic: 'Something went wrong. Please try again.',
+    campaign_complete: 'This campaign is complete. You can give to the general council fund or another campaign.',
+    surplus_choice_required: 'The amount is more than the campaign still needs: choose what to do with the rest.',
+    allocation_changed: 'Another donation changed what the campaign still needs. Check the new split, then confirm.',
     notFound: 'We could not find this campaign.',
     campaign_not_accepting_pledges: 'This campaign is not accepting donations right now.',
     duplicate_receipt: 'This receipt was already uploaded for another pledge.',
@@ -476,7 +520,7 @@ const en: Messages = {
     collection_point_unavailable: 'This collection point is not available.',
     receipt_not_applicable: 'This donation does not need a receipt.',
     phone_required:
-      'Add your phone number first in "My profile" on the Majlis Fund website, so the confirmation and receipt reach you on WhatsApp.',
+      'Add your phone number first in "My profile" on the Athar website, so the confirmation and receipt reach you on WhatsApp.',
   },
 };
 

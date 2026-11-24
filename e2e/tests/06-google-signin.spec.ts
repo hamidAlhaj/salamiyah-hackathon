@@ -6,24 +6,24 @@ import { API_URL, SLUGS } from './helpers';
 
 /**
  * P22 Sign in with Google, on a fresh `npm run demo:reset` with Google NOT configured (no GOOGLE_*
- * keys in api/.env, the default):
+ * keys in backend/.env, the default):
  * - the login page shows no Google button and the Google routes are off (404 / login notice);
  * - the seeded Google donor without a phone is refused on every donate endpoint (`phone_required`),
  *   sees the "add your phone" notice instead of the donate flow, adds a phone on «ملفي», and can
  *   then donate. Real Google cannot run here, so that donor's session is signed locally with the
- *   API's JWT_SECRET (read from E2E_JWT_SECRET or api/.env, never printed): the same token the API
+ *   API's JWT_SECRET (read from E2E_JWT_SECRET or backend/.env, never printed): the same token the API
  *   issues after a Google sign-in.
  */
 test.describe.configure({ mode: 'serial' });
 
-/** Seeded in api/prisma/seed.ts (GOOGLE_DEMO_DONOR_ID): DONOR, Google-linked, no phone, no password. */
+/** Seeded in backend/prisma/seed.ts (GOOGLE_DEMO_DONOR_ID): DONOR, Google-linked, no phone, no password. */
 const GOOGLE_DONOR_ID = '22222222-0000-4000-8000-000000000022';
 /** Fictional number the test saves on the profile (not used by the seed). */
 const NEW_PHONE = '0999000222';
 
 function jwtSecret(): string {
   if (process.env.E2E_JWT_SECRET) return process.env.E2E_JWT_SECRET;
-  const env = readFileSync(join(__dirname, '..', '..', 'api', '.env'), 'utf8');
+  const env = readFileSync(join(__dirname, '..', '..', 'backend', '.env'), 'utf8');
   const match = env.match(/^JWT_SECRET\s*=\s*"?([^"\r\n]+)"?/m);
   if (!match) throw new Error('JWT_SECRET not found (set E2E_JWT_SECRET)');
   return match[1];
@@ -47,7 +47,7 @@ test('Google not configured: no button, the Google routes are off', async ({
   request,
 }) => {
   const config = await (await request.get(`${API_URL}/auth/google/enabled`)).json();
-  test.skip(config.enabled === true, 'Google is configured in api/.env');
+  test.skip(config.enabled === true, 'Google is configured in backend/.env');
   expect(config).toEqual({ enabled: false, callbackOrigin: null });
 
   const start = await request.get(`${API_URL}/auth/google?state=${'S'.repeat(43)}`, {

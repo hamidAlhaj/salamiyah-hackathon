@@ -76,6 +76,8 @@ export interface PublicCampaign {
   slug: string;
   category: PublicCampaignCategory;
   isOngoing: boolean;
+  /** The general council fund: no target, never completed (docs/fund-contract.md). */
+  isGeneralFund: boolean;
   title: string;
   summary: string;
   coverKey: string | null;
@@ -132,6 +134,12 @@ export interface PledgeView {
   method: PaymentMethod;
   status: PledgeStatus;
   isDemo: boolean;
+  /** amount = campaignShare + fundShare + heldAmount (docs/fund-contract.md). */
+  campaignShare: string;
+  /** Surplus share for the general council fund. */
+  fundShare: string;
+  /** Verified money waiting for the donor's decision (the campaign was already full). */
+  heldAmount: string;
   isAnonymousDisplay: boolean;
   officialReceiptNo: string | null;
   rejectionReason: string | null;
@@ -164,6 +172,9 @@ export interface OfficialReceipt {
   /** The donor account's code (D-XXXXXX); null for council and collector entries without an account. */
   donorCode: string | null;
   amount: string;
+  /** amount = campaignShare + fundShare + held money (docs/fund-contract.md). */
+  campaignShare: string;
+  fundShare: string;
   currency: Currency;
   method: PaymentMethod;
   methodLabel: string;
@@ -358,4 +369,20 @@ export interface TransparencyStats {
   };
   recentExpenditures: TransparencyExpenditure[];
   recentDonations: TransparencyDonation[];
+}
+
+/** GET /campaigns/:id/allocation?amount=: how a donation would be split before any pledge exists. */
+export interface AllocationPreview {
+  campaignId: string;
+  currency: Currency;
+  /** false for the general fund and ongoing programmes: no remaining need, no surplus. */
+  capped: boolean;
+  offered: string;
+  /** null when the campaign is not capped. */
+  remaining: string | null;
+  campaignShare: string;
+  surplus: string;
+  /** WITHIN: normal flow · SURPLUS: ask the donor · COMPLETE: nothing left, offer the fund. */
+  state: 'WITHIN' | 'SURPLUS' | 'COMPLETE';
+  fund: { id: string; slug: string; title: string } | null;
 }

@@ -177,15 +177,23 @@ export default function CampaignScreen() {
           <AppText display size="lg">
             {t('campaign.account')}
           </AppText>
-          <FundingBar
-            target={ledger.targetAmount}
-            verified={ledger.verifiedAmount}
-            pending={ledger.pendingAmount}
-            demo={ledger.demoAmount}
-            legend
-          />
+          {cp.isGeneralFund ? (
+            <AppText size="sm" tone="muted" testID="fund-no-target">
+              {t('fund.noTarget')}
+            </AppText>
+          ) : (
+            <FundingBar
+              target={ledger.targetAmount}
+              verified={ledger.verifiedAmount}
+              pending={ledger.pendingAmount}
+              demo={ledger.demoAmount}
+              legend
+            />
+          )}
           <View>
-            <LedgerRow label={t('campaign.target')} value={m(ledger.targetAmount)} k="target" raw={ledger.targetAmount} />
+            {!cp.isGeneralFund && (
+              <LedgerRow label={t('campaign.target')} value={m(ledger.targetAmount)} k="target" raw={ledger.targetAmount} />
+            )}
             <LedgerRow label={t('campaign.verified')} value={m(ledger.verifiedAmount)} k="verified" raw={ledger.verifiedAmount} strong />
             <LedgerRow label={t('campaign.pending')} value={m(ledger.pendingAmount)} k="pending" raw={ledger.pendingAmount} />
             <LedgerRow label={t('campaign.demo')} value={m(ledger.demoAmount)} k="demo" raw={ledger.demoAmount} demo />
@@ -206,7 +214,15 @@ export default function CampaignScreen() {
           {cp.acceptsPledges ? (
             <Button title={t('campaign.donateNow')} variant="give" onPress={donate} testID="donate-button" />
           ) : (
-            <Notice tone="muted">{t('campaign.notAccepting')}</Notice>
+            <>
+              <Notice tone="muted">{t('campaign.notAccepting')}</Notice>
+              <Button
+                title={t('fund.instead')}
+                variant="secondary"
+                testID="fund-instead"
+                onPress={() => router.push('/campaign/general-fund')}
+              />
+            </>
           )}
           <Button title={t('campaign.share')} variant="secondary" onPress={share} />
         </Card>

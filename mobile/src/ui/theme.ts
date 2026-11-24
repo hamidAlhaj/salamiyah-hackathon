@@ -1,7 +1,7 @@
 import { useColorScheme } from 'react-native';
 
 /**
- * The web design tokens (web/src/app/globals.css + tailwind.config.ts) as React Native colours:
+ * The web design tokens (frontend/src/app/globals.css + tailwind.config.ts) as React Native colours:
  * Salamiyah green for the brand, saffron (`give`) only for donate actions and funding progress.
  * Light and dark follow the phone's setting.
  */

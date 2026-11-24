@@ -1,4 +1,4 @@
-import { Link, useFocusEffect } from 'expo-router';
+import { Link, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, RefreshControl, ScrollView, View } from 'react-native';
@@ -74,6 +74,13 @@ export default function CampaignsScreen() {
           {t('browse.intro')}
         </AppText>
       </View>
+      {/* A donation without a specific campaign (docs/fund-contract.md). */}
+      <Button
+        title={t('fund.cta')}
+        variant="give"
+        testID="home-fund-cta"
+        onPress={() => router.push('/campaign/general-fund')}
+      />
       {offline && <Notice tone="danger">{t('offline')}</Notice>}
       <ScrollView
         horizontal

@@ -5,7 +5,7 @@ import { type Palette, usePalette } from './theme';
 
 /*
  * Campaign covers are illustrations, never photos of people (CLAUDE.md). The same flat vignettes as
- * web/src/components/campaigns/CampaignCover.tsx, one per COVER_KEYS entry, drawn with the theme
+ * frontend/src/components/campaigns/CampaignCover.tsx, one per COVER_KEYS entry, drawn with the theme
  * palette so they follow light and dark mode. Unknown keys fall back to the general cover.
  */
 

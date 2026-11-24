@@ -1,21 +1,33 @@
 {
   "expo": {
-    "name": "مجلس فند",
-    "slug": "majlis-fund",
+    "name": "أثر",
+    "slug": "athar",
     "version": "0.1.0",
     "orientation": "portrait",
-    "scheme": "majlisfund",
+    "icon": "./assets/brand/athar-icon-green.png",
+    "scheme": "athar",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#eef2ef",
     "android": {
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/athar-adaptive-foreground.png",
+        "backgroundColor": "#0B3D2A"
+      }
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0f3d2a"
+          "image": "./assets/brand/athar-logo-white-bg.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF",
+          "dark": {
+            "image": "./assets/brand/athar-logo-dark.png",
+            "backgroundColor": "#0B3D2A"
+          }
         }
       ],
       [
@@ -36,6 +48,12 @@
     ],
     "experiments": {
       "reactCompiler": true
+    },
+    "ios": {
+      "icon": "./assets/brand/athar-icon-green-square.png"
+    },
+    "web": {
+      "favicon": "./assets/brand/athar-icon-green.png"
     }
   }
 }

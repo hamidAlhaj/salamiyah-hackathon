@@ -63,3 +63,10 @@ export const OUTBOX_TEMPLATES = [
   'campaign.urgent',
 ] as const;
 export type OutboxTemplate = (typeof OUTBOX_TEMPLATES)[number];
+
+/** The donor's choice when a donation exceeds a campaign's remaining need (docs/fund-contract.md). */
+export const SURPLUS_CHOICES = ['SPLIT', 'REMAINING_ONLY'] as const;
+export type SurplusChoice = (typeof SURPLUS_CHOICES)[number];
+
+/** Slug of the general council fund («صندوق المجلس العام»), the one campaign with isGeneralFund. */
+export const GENERAL_FUND_SLUG = 'general-fund';

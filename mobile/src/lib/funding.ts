@@ -1,6 +1,6 @@
 /**
  * Widths (in % of the target) of the three funding segments, stacked and clamped to 100.
- * Same rule as web/src/components/campaigns/funding.ts: verified, then pending, then demo.
+ * Same rule as frontend/src/components/campaigns/funding.ts: verified, then pending, then demo.
  */
 export interface FundingSegments {
   verified: number;

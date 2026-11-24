@@ -9,7 +9,7 @@ import {
 /** The API the web server talks to (read-only checks of the expected demo numbers). */
 export const API_URL = process.env.E2E_API_URL ?? 'http://localhost:4000';
 
-/** Fixed demo logins from api/prisma/seed.ts (fictional numbers, one shared demo password). */
+/** Fixed demo logins from backend/prisma/seed.ts (fictional numbers, one shared demo password). */
 export const PASSWORD = 'Majlis@2026';
 export const USERS = {
   admin: { phone: '0900000001', role: 'ADMIN' },

@@ -1,0 +1,388 @@
+/** أشكال الردود العامة من الـAPI (تستهلكها الويب والموبايل). المبالغ نصوص عشرية. */
+import type { OutboxTemplate } from './constants';
+import type {
+  CampaignStatus,
+  BeneficiaryKind,
+  CaseCategory,
+  CollectionPointType,
+  Currency,
+  OutboundStatus,
+  PayeeType,
+  PaymentMethod,
+  PaymentMethodKind,
+  PledgeChannel,
+  PledgeStatus,
+  Priority,
+  Role,
+} from './enums';
+
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface CurrentUser {
+  id: string;
+  fullName: string;
+  /**
+   * +963… for every account, except a donor who signed in with Google and has not added a phone
+   * yet (null). Donating is refused with `phone_required` until it is set.
+   */
+  phone: string | null;
+  role: Role;
+  locale: 'ar' | 'en';
+  /** D-XXXXXX: the donor's own reference (shown in «تبرعاتي» and on official receipts). */
+  donorCode: string | null;
+  /** Consent to WhatsApp receipts and alerts (sent from the council phone). */
+  whatsappOptIn: boolean;
+  /** The account is linked to a Google sign-in. */
+  googleLinked: boolean;
+}
+
+/** Body of POST /auth/login and POST /auth/register. One 8h access token, no refresh token. */
+export interface AuthResponse {
+  accessToken: string;
+  user: CurrentUser;
+}
+
+/**
+ * GET /auth/google/enabled. `enabled` is true only when GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and
+ * GOOGLE_CALLBACK_URL are all set; `callbackOrigin` is the origin of the callback URL (not a
+ * secret), so the web shows the button only on the host Google redirects back to.
+ */
+export interface GoogleSignInConfig {
+  enabled: boolean;
+  callbackOrigin: string | null;
+}
+
+/** A campaign category as the public sees it (categories are data, see CampaignCategory). */
+export interface PublicCampaignCategory {
+  id: string;
+  code: string;
+  name: string;
+  icon: string;
+}
+
+/** GET /categories: an active category with its description (behaviour flags stay internal). */
+export interface PublicCategory extends PublicCampaignCategory {
+  description: string | null;
+  sortOrder: number;
+}
+
+export interface PublicCampaign {
+  id: string;
+  slug: string;
+  category: PublicCampaignCategory;
+  isOngoing: boolean;
+  /** The general council fund: no target, never completed (docs/fund-contract.md). */
+  isGeneralFund: boolean;
+  title: string;
+  summary: string;
+  coverKey: string | null;
+  area: string | null;
+  /** Medical cases only: the case category (surgery, medication, …). */
+  caseCategory: CaseCategory | null;
+  priority: Priority;
+  status: CampaignStatus;
+  currency: Currency;
+  targetAmount: string;
+  /** Real, verified money only. */
+  verifiedAmount: string;
+  /** تعهدات بإيصال أو حصيلة نقاط جمع بانتظار التحقق. */
+  pendingAmount: string;
+  /** Simulated payments («Demo»): shown separately, never part of verifiedAmount. */
+  demoAmount: string;
+  spentAmount: string;
+  hospitalName: string | null;
+  acceptsPledges: boolean;
+  isAnonymousCase: boolean;
+  publishedAt: string | null;
+  donorsCount: number;
+  beneficiariesCount: number;
+}
+
+export interface CampaignUpdateView {
+  id: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface PublicCampaignDetail extends PublicCampaign {
+  fileNo: string | null;
+  updates: CampaignUpdateView[];
+}
+
+export interface PaymentInstructions {
+  method: PaymentMethod;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  note: string;
+}
+
+export interface PledgeView {
+  id: string;
+  referenceNo: string;
+  campaignId: string;
+  campaignSlug: string;
+  campaignTitle: string;
+  amount: string;
+  currency: Currency;
+  channel: PledgeChannel;
+  method: PaymentMethod;
+  status: PledgeStatus;
+  isDemo: boolean;
+  /** amount = campaignShare + fundShare + heldAmount (docs/fund-contract.md). */
+  campaignShare: string;
+  /** Surplus share for the general council fund. */
+  fundShare: string;
+  /** Verified money waiting for the donor's decision (the campaign was already full). */
+  heldAmount: string;
+  isAnonymousDisplay: boolean;
+  officialReceiptNo: string | null;
+  rejectionReason: string | null;
+  /** Cash pledges: the collection point the donor chose (shown to the collector with the reference). */
+  collectionPoint: Pick<PublicCollectionPoint, 'name' | 'area' | 'type'> | null;
+  createdAt: string;
+  verifiedAt: string | null;
+}
+
+/** GET /collection-points/active: where a donor can hand over cash (active points only). */
+export interface PublicCollectionPoint {
+  id: string;
+  name: string;
+  type: CollectionPointType;
+  area: string;
+}
+
+export interface CreatePledgeResult {
+  pledge: PledgeView;
+  instructions: PaymentInstructions[];
+}
+
+/**
+ * GET /official-receipts/:no: a verified donation's public receipt. Never the donor's phone or any
+ * beneficiary identity; `donorName` is '' for «فاعل خير». `url` is the public page the QR encodes.
+ */
+export interface OfficialReceipt {
+  receiptNo: string;
+  donorName: string;
+  /** The donor account's code (D-XXXXXX); null for council and collector entries without an account. */
+  donorCode: string | null;
+  amount: string;
+  /** amount = campaignShare + fundShare + held money (docs/fund-contract.md). */
+  campaignShare: string;
+  fundShare: string;
+  currency: Currency;
+  method: PaymentMethod;
+  methodLabel: string;
+  channel: PledgeChannel;
+  campaignTitle: string;
+  campaignSlug: string;
+  category: PublicCampaignCategory;
+  /** Cash handed over at a collection point: where (name and type only). */
+  collectionPoint: { name: string; type: CollectionPointType } | null;
+  status: 'VERIFIED';
+  verifiedAt: string;
+  url: string;
+  /** The QR code of `url` as an inline SVG (generated on the server). */
+  qrSvg: string;
+}
+
+/**
+ * The campaign account ledger. verified = real verified money; demo is shown separately and never part
+ * of verified, spent or remaining; remaining = verified − spent.
+ */
+export interface CampaignLedger {
+  campaignId: string;
+  currency: Currency;
+  targetAmount: string;
+  verifiedAmount: string;
+  pendingAmount: string;
+  demoAmount: string;
+  spentAmount: string;
+  remainingAmount: string;
+  donorsCount: number;
+  beneficiariesCount: number;
+}
+
+/** A receiving account shown to donors (all account data is fake for the hackathon). */
+export interface PaymentAccount {
+  method: PaymentMethod;
+  kind: PaymentMethodKind;
+  label: string;
+  accountName: string | null;
+  accountNumber: string | null;
+  instructions: string | null;
+  note: string | null;
+  /** 'campaign' when this campaign overrides the default account for the method. */
+  source: 'default' | 'campaign';
+  allowsReceiptUpload: boolean;
+  /** Simulated instant payment («Demo» badge, never counted as verified). */
+  allowsDemoCheckout: boolean;
+}
+
+/** An anonymised beneficiary as the public sees it: never a name, phone or national ID. */
+export interface PublicBeneficiary {
+  code: string;
+  kind: BeneficiaryKind;
+  area: string | null;
+  monthlyAmount: string | null;
+  since: string;
+}
+
+/** An in-app notification. `link` is a web path; the mobile app maps it to its own screen. */
+export interface NotificationView {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  link: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+/** A WhatsApp outbox row for ADMIN: `openUrl` is the prefilled wa.me link (one tap to send). */
+export interface OutboxItem {
+  id: string;
+  template: OutboxTemplate;
+  status: OutboundStatus;
+  phone: string;
+  recipientName: string | null;
+  body: string;
+  link: string | null;
+  openUrl: string | null;
+  createdAt: string;
+  openedAt: string | null;
+}
+
+/** A collection point assigned to the signed-in COLLECTOR, with how many cash pledges wait there. */
+export interface CollectorPoint extends PublicCollectionPoint {
+  pendingCount: number;
+}
+
+/**
+ * A cash pledge as the collector sees it at their own points. `donorName` is null for «فاعل خير»
+ * (anonymous donors and box totals); the donor's phone is never shown.
+ */
+export interface CollectorPledge {
+  id: string;
+  referenceNo: string;
+  amount: string;
+  currency: Currency;
+  campaignTitle: string;
+  donorName: string | null;
+  status: PledgeStatus;
+  channel: PledgeChannel;
+  collectionPoint: PublicCollectionPoint | null;
+  createdAt: string;
+  /** When the collector confirmed receipt or recorded the amount (handed over to the council). */
+  handedOverAt: string | null;
+}
+
+/**
+ * One row of a campaign's public spending timeline. A beneficiary payment shows the beneficiary's
+ * code only (`payeeLabel` is null); `proof` is set only when the proof was published at upload.
+ */
+export interface PublicExpenditure {
+  id: string;
+  paidAt: string;
+  payeeType: PayeeType;
+  payeeLabel: string | null;
+  beneficiaryCode: string | null;
+  amount: string;
+  currency: Currency;
+  description: string;
+  periodMonth: string | null;
+  proof: { mimeType: string } | null;
+}
+
+/** Where verified money came in: online/transfer, cash at a collection point, or the council office. */
+export type TransparencyChannel = 'TRANSFER' | 'COLLECTION_POINT' | 'COUNCIL';
+
+/** Platform totals in one currency. Demo money is reported apart and never added. */
+export interface TransparencyTotals {
+  currency: Currency;
+  targetAmount: string;
+  verifiedAmount: string;
+  pendingAmount: string;
+  spentAmount: string;
+  remainingAmount: string;
+  /** spent ÷ verified × 100, one decimal ("0.0" when nothing is verified). */
+  spentPercent: string;
+  /** Simulated payments (DEMO_MODE only): shown in their own note, never part of any total. */
+  demoAmount: string;
+}
+
+export interface TransparencyCategory {
+  code: string;
+  name: string;
+  icon: string;
+  campaignsCount: number;
+  targetAmount: string;
+  verifiedAmount: string;
+  spentAmount: string;
+  remainingAmount: string;
+  beneficiariesCount: number;
+}
+
+export interface TransparencyMonth {
+  /** YYYY-MM */
+  month: string;
+  verifiedAmount: string;
+  spentAmount: string;
+}
+
+export interface TransparencyExpenditure extends PublicExpenditure {
+  campaign: { id: string; slug: string; title: string; categoryIcon: string };
+}
+
+export interface TransparencyDonation {
+  amount: string;
+  currency: Currency;
+  verifiedAt: string;
+  category: { code: string; name: string; icon: string };
+  campaign: { slug: string; title: string };
+  /** The donor's first name when they chose to be shown; null = «فاعل خير». */
+  displayName: string | null;
+}
+
+/** GET /stats/transparency: public aggregates only, never an identity. */
+export interface TransparencyStats {
+  generatedAt: string;
+  /** Totals in the primary currency (every breakdown below uses it). */
+  totals: TransparencyTotals;
+  /** Any other campaign currency, totalled apart and never converted. */
+  otherCurrencies: TransparencyTotals[];
+  campaigns: { active: number; funded: number; completed: number; total: number };
+  categories: TransparencyCategory[];
+  channels: { channel: TransparencyChannel; amount: string; count: number }[];
+  payeeTypes: { payeeType: PayeeType; amount: string; count: number }[];
+  /** The last 12 calendar months, oldest first: verified money (by verification date) vs spending. */
+  monthly: TransparencyMonth[];
+  beneficiaries: {
+    /** Distinct beneficiaries with an active link to a public campaign (codes only, no identities). */
+    total: number;
+    byKind: { kind: BeneficiaryKind; count: number }[];
+  };
+  recentExpenditures: TransparencyExpenditure[];
+  recentDonations: TransparencyDonation[];
+}
+
+/** GET /campaigns/:id/allocation?amount=: how a donation would be split before any pledge exists. */
+export interface AllocationPreview {
+  campaignId: string;
+  currency: Currency;
+  /** false for the general fund and ongoing programmes: no remaining need, no surplus. */
+  capped: boolean;
+  offered: string;
+  /** null when the campaign is not capped. */
+  remaining: string | null;
+  campaignShare: string;
+  surplus: string;
+  /** WITHIN: normal flow · SURPLUS: ask the donor · COMPLETE: nothing left, offer the fund. */
+  state: 'WITHIN' | 'SURPLUS' | 'COMPLETE';
+  fund: { id: string; slug: string; title: string } | null;
+}
