@@ -97,7 +97,7 @@ const ENT = {
   Document: ['مستند', ['PK id', 'UQ storageKey', 'FK caseId → Case', 'FK uploadedById → User', 'sha256 · mimeType · sizeBytes']],
   Hospital: ['المشفى', ['PK id', 'nameAr · nameEn · city', 'isPrivate · isActive']],
   CampaignUpdate: ['تحديث الحملة', ['PK id', 'FK campaignId → Campaign', 'FK authorId → User', 'bodyAr · bodyEn']],
-  Campaign: ['الحملة', ['PK id', 'UQ slug', 'FK categoryId → CampaignCategory', 'FK caseId → Case (UQ, 1:1)', 'FK hospitalId → Hospital', 'FK createdById → User', 'targetAmount · verifiedAmount', 'spentAmount · status', 'isGeneralFund (one fund)']],
+  Campaign: ['الحملة', ['PK id', 'UQ slug', 'FK categoryId → CampaignCategory', 'FK caseId → Case (UQ, optional)', 'FK hospitalId → Hospital', 'FK createdById → User', 'targetAmount · verifiedAmount', 'spentAmount · status', 'isGeneralFund (one fund)']],
   Expenditure: ['الصرف', ['PK id', 'FK campaignId → Campaign', 'FK hospitalId → Hospital', 'FK beneficiaryId → Beneficiary', 'FK proofDocumentId → Document', 'FK recordedById → User', 'UQ (campaignId, beneficiaryId, periodMonth)', 'payeeType · amount · proofPublic']],
   Case: ['الحالة الطبية', ['PK id', 'UQ trackingNo', 'FK beneficiaryId → Beneficiary', 'FK hospitalId → Hospital', 'FK submittedById → User', 'FK reviewedById → User', 'status · priority · approvedAmount']],
   BeneficiaryNote: ['ملاحظة على مستفيد', ['PK id', 'FK beneficiaryId → Beneficiary', 'FK authorId → User', 'kind · body']],
@@ -140,7 +140,7 @@ diagrams.erd = () => {
   const H = y + 40;
   let b = '';
   b += text(W / 2, 40, 'Entity-relationship diagram (backend/prisma/schema.prisma) · مخطط الكيانات والعلاقات', { size: 24, weight: 700, fill: C.greenDark });
-  b += text(W / 2, 64, '21 models · every PK is a UUID (@default(uuid()) @db.Uuid) · money = Decimal(14,2) · 1 — N shown on each relation', { size: 13, fill: C.muted });
+  b += text(W / 2, 64, '21 models · every PK is a UUID (@default(uuid()) @db.Uuid) · money = Decimal(14,2) · cardinalities shown for drawn relations', { size: 13, fill: C.muted });
 
   const P = (n, side, t = 0.5) => {
     const p = pos[n];
@@ -160,7 +160,7 @@ diagrams.erd = () => {
   rel([P('Campaign', 'bottom', 0.9), P('CampaignBeneficiary', 'top', 0.2)], '1', 'N');
   const ch1 = pos.Campaign.y - 18;
   const ch2 = pos.Campaign.y - 34;
-  rel([P('Campaign', 'top', 0.85), [P('Campaign', 'top', 0.85)[0], ch1], [P('Case', 'top', 0.5)[0], ch1], P('Case', 'top', 0.5)], '1', '1', { color: C.red });
+  rel([P('Campaign', 'top', 0.85), [P('Campaign', 'top', 0.85)[0], ch1], [P('Case', 'top', 0.5)[0], ch1], P('Case', 'top', 0.5)], '0..1', '0..1', { color: C.red });
   rel([P('Campaign', 'top', 0.7), [P('Campaign', 'top', 0.7)[0], ch2], [P('Hospital', 'bottom', 0.15)[0], ch2], P('Hospital', 'bottom', 0.15)], 'N', '1');
   rel([P('Expenditure', 'top', 0.85), P('Hospital', 'bottom', 0.05)], 'N', '1');
   rel([P('Expenditure', 'top', 0.4), P('Document', 'bottom', 0.4)], 'N', '1');
@@ -220,8 +220,8 @@ diagrams.erd = () => {
   b += `<text x="${lx + 16}" y="${ly + 52}" font-size="12" font-weight="700" fill="${C.give}">PK</text>` + text(lx + 46, ly + 52, 'primary key (UUID) · المفتاح الأساسي', { size: 12, anchor: 'start', dir: 'ltr' });
   b += `<text x="${lx + 16}" y="${ly + 74}" font-size="12" font-weight="700" fill="${C.blue}">FK</text>` + text(lx + 46, ly + 74, 'foreign key → target model (explicit onDelete in the schema) · مفتاح أجنبي', { size: 12, anchor: 'start', dir: 'ltr' });
   b += `<text x="${lx + 16}" y="${ly + 96}" font-size="12" font-weight="700" fill="${C.green}">UQ</text>` + text(lx + 46, ly + 96, 'unique (single or composite) · قيد فريد', { size: 12, anchor: 'start', dir: 'ltr' });
-  b += text(lx + 16, ly + 120, 'Relations to User (16 FKs: donor, recordedBy, reviewer, author, actor, …) are listed inside each box as "→ User" instead of drawn, to keep the diagram readable.', { size: 12, anchor: 'start', fill: C.muted });
-  b += text(lx + 1054, ly + 140, 'العلاقات مع User مكتوبة داخل كل كيان (→ User) بدل رسمها. الخط الأحمر = علاقة 1:1 بين الحملة والحالة الطبية.', { size: 12, anchor: 'end', dir: 'rtl', fill: C.muted });
+  b += text(lx + 16, ly + 120, 'Relations to User (15 FKs: donor, recordedBy, reviewer, author, actor, …) are listed inside each box as "→ User" instead of drawn, to keep the diagram readable.', { size: 12, anchor: 'start', fill: C.muted });
+  b += text(lx + 1054, ly + 140, 'العلاقات مع User مكتوبة داخل كل كيان (→ User) بدل رسمها. الخط الأحمر يبيّن الربط الاختياري بين الحملة والحالة الطبية.', { size: 12, anchor: 'end', dir: 'rtl', fill: C.muted });
   return svg(W, H, b, 'ERD');
 };
 

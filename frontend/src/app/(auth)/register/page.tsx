@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Logo } from '@/components/ui/Logo';
 import { StarLattice } from '@/components/ui/StarLattice';
 import { emailRegistrationConfig } from '@/lib/api/auth';
+import { safeNextPath } from '@/lib/next-path';
 import { EmailRegisterForm } from './EmailRegisterForm';
 import { RegisterForm } from './RegisterForm';
 
@@ -17,12 +18,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ method?: string }>;
+  searchParams: Promise<{ method?: string; next?: string | string[] }>;
 }) {
   const t = await getTranslations('auth');
   const tNav = await getTranslations('nav');
   const points = t.raw('panelPoints') as string[];
-  const viaEmail = (await searchParams).method === 'email';
+  const { method, next } = await searchParams;
+  const viaEmail = method === 'email';
+  const safeNext = typeof next === 'string' ? safeNextPath(next) : undefined;
   const emailEnabled = viaEmail
     ? (await emailRegistrationConfig().catch(() => ({ enabled: false }))).enabled
     : false;
@@ -72,16 +75,19 @@ export default async function RegisterPage({
           <p className="mt-2 text-muted">
             {t(viaEmail ? 'emailRegisterSubtitle' : 'registerSubtitle')}
           </p>
-          {viaEmail ? <EmailRegisterForm enabled={emailEnabled} /> : <RegisterForm />}
+          {viaEmail ? <EmailRegisterForm enabled={emailEnabled} /> : <RegisterForm next={safeNext} />}
           <Link
-            href={viaEmail ? '/register' : '/register?method=email'}
+            href={{
+              pathname: '/register',
+              query: { ...(viaEmail ? {} : { method: 'email' }), ...(safeNext ? { next: safeNext } : {}) },
+            }}
             className="mt-4 self-center text-sm font-semibold text-accent underline-offset-4 hover:underline"
           >
             {t(viaEmail ? 'registerWithPhone' : 'registerWithEmail')}
           </Link>
           {viaEmail && (
             <Link
-              href="/login"
+              href={safeNext ? { pathname: '/login', query: { next: safeNext } } : '/login'}
               className="mt-3 self-center text-sm text-accent underline-offset-4 hover:underline"
             >
               {t('loginLink')}

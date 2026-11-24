@@ -16,21 +16,20 @@ target amount. Donors browse campaigns and give by transfer, local e-wallet (sim
 cash at a collection point, and get an instant notification confirming receipt. A public transparency view shows the
 total collected, the amounts spent with proof, and the beneficiaries — by anonymous code only, never their identities.
 
-> **Status:** hackathon release `v1.0-hackathon` (P01–P22): backend, frontend (public pages, staff workspace, admin setup,
-> collector PWA, transparency dashboard, optional Google sign-in) and the Expo donor app, with a deterministic demo seed,
-> the judges' walkthrough in [DEMO.md](DEMO.md) (Arabic) and a Playwright suite for it in `e2e/`. The build log is
-> `docs/_analysis/overnight-report.md`; the plan is `docs/_analysis/05-execution-plan.md` §7.
+> **Hackathon demo:** use the seeded accounts and the [Arabic walkthrough](DEMO.md) to try the web workspaces and the
+> Expo donor app. The [submission documents](docs/submission/) include the Arabic and English project brief and
+> analysis and design study. The [database ERD](docs/diagrams/erd.svg) is also available separately.
 
 ## Team Members
 
-Team 4 — «أثر» / Athar. Roles and contributions match the Project Brief (`docs/submission/`) and the Git history.
+Team 4 — «أثر» / Athar. The roles and contributions below describe the team's work.
 
 | Name | Role | Main contribution | GitHub |
 |---|---|---|---|
 | حميد الدين الحاج · Hamid Alhaj | Team Leader, Mobile & Backend | Led the project; built the NestJS backend, the database and the React Native mobile app | [@hamidAlhaj](https://github.com/hamidAlhaj) |
-| رامي الشعار · Rami Alshaar | Backend & Frontend, Security Tester | Backend security testing (OWASP ZAP scan, XSS, SQL/NoSQL injection, rate limiting, auth checks) and the web redesign | [@RamiAlshaar](https://github.com/RamiAlshaar) |
-| بدر الجرف · Badr Aljerf | Frontend, Presentation | Frontend work (donor registration page, mobile restyle) and the final presentation | [@Badr-pixel-netizen](https://github.com/Badr-pixel-netizen) |
-| يوسف يوسف · Yousef Yousef | Frontend | Next.js frontend pages and UI (email and password registration) | [@Yousef2001yousef](https://github.com/Yousef2001yousef) |
+| رامي الشعار · Rami Alshaar | Backend & Frontend, Security Tester | Backend security testing and the web redesign | [@RamiAlshaar](https://github.com/RamiAlshaar) |
+| بدر الجرف · Badr Aljerf | Frontend, Presentation | Donor registration page, mobile restyle and the final presentation | [@Badr-pixel-netizen](https://github.com/Badr-pixel-netizen) |
+| يوسف يوسف · Yousef Yousef | Frontend | Next.js frontend and email and password registration | [@Yousef2001yousef](https://github.com/Yousef2001yousef) |
 | نوار حسن · Nawar Hasan | Mobile | React Native mobile app screens and device testing | [@nawarhasan55](https://github.com/nawarhasan55) |
 
 ## Tech Stack
@@ -69,9 +68,8 @@ Team 4 — «أثر» / Athar. Roles and contributions match the Project Brief (
 
 ## Backend API Overview
 
-Every endpoint, grouped by domain like the Postman folders (`docs/postman/`); full request and response
-schemas in Swagger at `http://localhost:4000/api/docs`. 🔒 = `Authorization: Bearer <token>` (role checked in the
-service); the others are public.
+Every endpoint is grouped by domain to match the Postman folders. 🔒 marks endpoints that require
+`Authorization: Bearer <token>`. The backend also checks role and resource permissions.
 
 | Domain | Endpoints |
 |---|---|
@@ -95,10 +93,12 @@ service); the others are public.
 
 ## API Documentation (Swagger · Postman)
 
-- **Swagger UI:** `http://localhost:4000/api/docs` (built with `@nestjs/swagger`): every endpoint with its DTOs,
-  request bodies, responses, Bearer authentication and the main error codes. Raw OpenAPI JSON: `/api/docs-json`.
-- **Postman collection (v2.1):** [`docs/postman/salamiyah-hackathon.postman_collection.json`](docs/postman/). It uses the variables `{{baseUrl}}` and `{{token}}` (no hard-coded values, no real
-  secrets); the "Auth → Login" request stores the token automatically. Folders follow the domains of the table above.
+- **Swagger UI:** `http://localhost:4000/api/docs` documents the routes, request DTOs and Bearer authentication.
+  Raw OpenAPI JSON is at `/api/docs-json`. The [Swagger audit](docs/swagger-audit.md) lists missing response schemas
+  and error codes.
+- **Postman collection (v2.1):** the [collection JSON](docs/postman/salamiyah-hackathon.postman_collection.json)
+  contains 106 routes and uses `{{baseUrl}}` and `{{token}}`. The Auth → Login request stores the token automatically.
+  [Postman setup and examples](docs/postman/README.md).
 
 ## Repository layout
 
@@ -109,11 +109,10 @@ mobile/   Expo SDK 58 donor app                     (own package.json / package-
 e2e/      Playwright smoke + demo scenario          (own package.json / package-lock.json, dev tool only)
 scripts/  demo-start.ps1 (starts api, web and Expo for the LAN demo)
 DEMO.md   the judges' walkthrough (Arabic): roles, logins, clicks, expected numbers, checklist
-docs/     input/ (source PDFs, brief, idea, meeting) · analysis/ · _analysis/ (reports 01–06, overnight report) · screenshots/ · tools/
+docs/     submission/ (Word and PDF) · diagrams/ · postman/ · system-map/ · input/
 ```
 
-Three separate npm projects (plus the `e2e/` test tool): no workspaces, no shared packages, no Docker. Rules for contributors and Claude Code are in
-[CLAUDE.md](CLAUDE.md).
+Backend, frontend, mobile, and the Playwright suite each have their own package and npm lockfile.
 
 ## Environment Variables
 
@@ -205,6 +204,8 @@ npm ci
 npm run dev
 ```
 Open `http://localhost:3000`. Collector pages are mobile-first and installable from the phone browser (PWA).
+When a donor starts from a campaign and registers by phone, the web and mobile apps return them to that campaign's
+donation form.
 
 `SESSION_COOKIE_SECURE` (in `frontend/.env`) sets the `Secure` flag of the HttpOnly session cookie. Empty = on in production,
 off in development. For the **LAN demo** (a production build served over plain HTTP at `http://<LAN-IP>:3000`) set it
@@ -220,7 +221,10 @@ EMAIL_REGISTRATION_FROM="Athar <signup@your-verified-domain.example>"
 EMAIL_REGISTRATION_ORIGIN="http://localhost:3000"
 ```
 
-Verify the sender domain in Resend before testing. HTTP is accepted only for `localhost` during local development; use the public HTTPS website origin for recipients on other devices. Choose **Register with email** on `/register` and request a verification link. It expires after 30 minutes. Open it to enter a name and password, then log in with the email address and password. Donors add a phone in their profile before donating. Phone registration and Google sign-in use their existing setup.
+Verify the sender domain in Resend before testing. Use `http://localhost:3000` locally or the public HTTPS website
+origin for recipients on other devices. Choose **Register with email** on `/register` and request a verification link.
+It expires after 30 minutes. Open it to enter a name and password. The web accepts the verified email and password.
+Add a phone in the web profile before donating or using phone and password to sign in to the mobile app.
 
 ### 5a. Sign in with Google (optional, off by default)
 Phone + password stays the main login (staff, collectors, older donors) and is unchanged. "Continue with Google"
@@ -347,16 +351,18 @@ With the backend (4000) and the frontend (3000) running, the Playwright suite lo
 campaign with public proofs, a verifiable receipt, no beneficiary identity or phone on any public page or endpoint) and
 runs the 7-step demo scenario. The scenario changes the data: run `npm run demo:reset` again afterwards. Options:
 `E2E_WEB_URL` / `E2E_API_URL` (defaults `http://localhost:3000` / `:4000`), `E2E_LAN_URL=http://<LAN-IP>:3000` (checks the
-LAN login), `E2E_ALERT_DONORS` (1 + the count of `DEMO_WHATSAPP_NUMBERS`, default 3), `E2E_SCREENSHOTS=1` (writes
-`docs/screenshots/p16/`).
+LAN login), `E2E_ALERT_DONORS` (1 + the count of `DEMO_WHATSAPP_NUMBERS`, default 3), and `E2E_SCREENSHOTS=1` (saves
+optional captures under `e2e/artifacts/screenshots/`).
 
 ## Demo URL and mobile app
 
 - **Demo URL:** not deployed — the hackathon demo runs locally on the council laptop
   (web `http://localhost:3000`, API `http://localhost:4000`, Swagger `http://localhost:4000/api/docs`); phones on the
   same Wi-Fi open the LAN address (see [DEMO.md](DEMO.md)).
-- **Mobile APK / Expo link:** run `cd mobile && npx expo start` and scan the QR code with **Expo Go** (Android / iOS),
-  or press `a` for an Android emulator. No signed APK is published for the hackathon.
+- **Mobile APK / Expo link:** a shareable Expo link or APK is still pending. For a local demo, open `mobile/`, run
+  `npx expo start`, and scan the local QR code with **Expo Go** (Android / iOS) or press `a` for an Android emulator.
+  Expo Web is also available with `npm run web`. Set `EXPO_PUBLIC_API_URL` for the device and allow the Expo Web origin
+  in the backend's `WEB_ORIGIN` when using a browser.
 
 ## Known Limitations
 
@@ -418,11 +424,12 @@ Libraries used here that the b4f reference does not have. Each one is pinned to 
 
 ## Docs
 
-### Credits
-
-- Hero photo: [View from Shmemis Castle](https://commons.wikimedia.org/wiki/File:View_from_Shmemis_Castle.jpg) by Jdowny via Wikimedia Commons, [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) (cropped).
 - `docs/input/`: council PoC proposal (**primary requirement source**), full system specification, team brief (ar/en),
   original idea, meeting recording.
-- `docs/analysis/`: meeting transcript and summary, earlier requirements/architecture drafts (historical).
-- `docs/_analysis/`: reports 01–06 and `overnight-report.md` (what each prompt built and checked). `05-execution-plan.md`
-  is the build plan; its "Decision updates" sections are binding.
+- `docs/submission/`: bilingual project briefs, analysis and design studies, and PDF copies.
+- `docs/diagrams/`: architecture, use cases, ERD, and donation flow.
+- [B4F submission checklist](docs/compliance-checklist.md).
+
+## Credits
+
+- Hero photo by Jdowny, cropped from [View from Shmemis Castle](https://commons.wikimedia.org/wiki/File:View_from_Shmemis_Castle.jpg), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).

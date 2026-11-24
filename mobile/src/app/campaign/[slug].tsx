@@ -106,7 +106,8 @@ export default function CampaignScreen() {
   const { campaign: cp, ledger, accounts, beneficiaries } = data;
   const m = (v: string) => money(v, ledger.currency, lang);
   // The pledge screens (P10 extends them) need a donor session first.
-  const donate = () => router.push(user ? `/pledge/${cp.id}` : '/login');
+  const donate = () =>
+    router.push(user ? `/pledge/${cp.id}` : { pathname: '/login', params: { campaignId: cp.id } });
   const share = () =>
     void Linking.openURL(
       whatsappShareUrl(

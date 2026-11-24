@@ -385,7 +385,7 @@
     "/auth/login": {
       "post": {
         "operationId": "AuthController_login",
-        "summary": "Log in with phone and password",
+        "summary": "Log in with a phone number or donor email, and password",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -410,6 +410,71 @@
           },
           "401": {
             "description": "invalid_credentials"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/email-registration/enabled": {
+      "get": {
+        "operationId": "AuthController_emailRegistrationEnabled",
+        "summary": "Whether email registration can send verification links",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/email-registration/start": {
+      "post": {
+        "operationId": "AuthController_startEmailRegistration",
+        "summary": "Request a donor registration link by email",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartEmailRegistrationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/email-registration/complete": {
+      "post": {
+        "operationId": "AuthController_completeEmailRegistration",
+        "summary": "Verify the link, set a password, and create a donor session",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteEmailRegistrationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
           }
         },
         "tags": [
@@ -3397,7 +3462,7 @@
           "phone": {
             "type": "string",
             "nullable": true,
-            "description": "null only for a Google sign-in donor who has not added a phone yet"
+            "description": "null for a donor who signed up with email or Google and has yet to add a phone"
           },
           "role": {
             "type": "string",
@@ -3462,14 +3527,59 @@
         "properties": {
           "phone": {
             "type": "string",
-            "example": "0944123456"
+            "example": "0944123456",
+            "description": "Provide either phone or email"
+          },
+          "email": {
+            "type": "string",
+            "description": "Donor email verified during signup"
           },
           "password": {
             "type": "string"
           }
         },
         "required": [
-          "phone",
+          "password"
+        ]
+      },
+      "StartEmailRegistrationDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en"
+            ],
+            "default": "ar"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "CompleteEmailRegistrationDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token sent to the verified email address"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 72
+          }
+        },
+        "required": [
+          "token",
+          "fullName",
           "password"
         ]
       },

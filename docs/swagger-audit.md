@@ -2,25 +2,25 @@
 
 Project and team: «أثر» / Athar. Swagger title: `Athar API`.
 
-Read-only audit of the OpenAPI document served by the API (`http://localhost:4000/api/docs`, JSON at `/api/docs-json`, snapshot `docs/postman/tools/openapi.snapshot.json`, taken 2026-11-23 from `main`) against the controller sources. **No backend file was changed.** Regenerate with `node docs/tools/swagger-audit.cjs` after fixing.
+Read-only audit of the OpenAPI document served by the API (`http://localhost:4000/api/docs`, JSON at `/api/docs-json`, snapshot `docs/postman/tools/openapi.snapshot.json`, taken 2026-11-24 from `main`) against the controller sources. **No backend file was changed.** Regenerate with `node docs/tools/swagger-audit.cjs` after fixing.
 
 ## Summary
 
 | | |
 |---|---|
-| Endpoints in Swagger | **103** (= 101 controller routes, see `docs/postman/tools/compare-endpoints.cjs`) |
+| Endpoints in Swagger | **106** (compare with controller routes using `docs/postman/tools/compare-endpoints.cjs`) |
 | Tags | 19, every endpoint tagged |
-| Summary (`@ApiOperation`) | 101/103 |
+| Summary (`@ApiOperation`) | 104/106 |
 | Bearer auth shown on protected endpoints | 81 protected, all with the lock (`@ApiBearerAuth()` at class level) |
-| Request bodies with a DTO schema | 40 (all bodies) |
-| Success responses with a schema | 13/103 (file/redirect responses counted as fine) |
-| Endpoints with no gap | **3/103** |
-| **Gaps (endpoint × missing item)** | **384** |
+| Request bodies with a DTO schema | 42 (all bodies) |
+| Success responses with a schema | 13/106 (file/redirect responses counted as fine) |
+| Endpoints with no gap | **3/106** |
+| **Gaps (endpoint × missing item)** | **389** |
 
 | Gap kind | Count | Fix |
 |---|---|---|
-| schema | 87 | success response without a schema → response DTO class + `@ApiOkResponse/@ApiCreatedResponse({ type })` |
-| 400 | 82 | validation error not documented |
+| schema | 90 | success response without a schema → response DTO class + `@ApiOkResponse/@ApiCreatedResponse({ type })` |
+| 400 | 84 | validation error not documented |
 | 401 | 81 | missing token not documented |
 | 403 | 75 | role refusal not documented |
 | 404 | 49 | not found not documented |
@@ -56,7 +56,7 @@ Gaps per controller file:
 | `backend/src/audit/audit.controller.ts` | 14 |
 | `backend/src/verifications/verifications.controller.ts` | 14 |
 | `backend/src/users/users.controller.ts` | 13 |
-| `backend/src/auth/auth.controller.ts` | 7 |
+| `backend/src/auth/auth.controller.ts` | 12 |
 | `backend/src/stats/stats.controller.ts` | 5 |
 
 ## Per endpoint
@@ -98,13 +98,16 @@ Gaps per controller file:
 
 | Endpoint | Handler | Documented | Missing → add |
 |---|---|---|---|
-| `POST /auth/register` | `backend/src/auth/auth.controller.ts:42` | tag `auth` · summary · public · body `RegisterDto` · responses 200/409 | documented 200 but the handler returns 201: use `@ApiCreatedResponse` or add `@HttpCode(200)`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe) |
-| `POST /auth/login` | `backend/src/auth/auth.controller.ts:51` | tag `auth` · summary · public · body `LoginDto` · responses 200/401 | `@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe) |
-| `GET /auth/google/enabled` | `backend/src/auth/auth.controller.ts:61` | tag `auth` · summary · public · responses 200 | ✔ complete |
-| `GET /auth/google` | `backend/src/auth/auth.controller.ts:74` | tag `auth` · summary · public · query state · responses 302/400/404 | ✔ complete |
-| `GET /auth/google/callback` | `backend/src/auth/auth.controller.ts:90` | tag `auth` · summary · public · query code · responses 200/401/403/404/409 | `@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe) |
-| `GET /auth/me` | `backend/src/auth/auth.controller.ts:116` | tag `auth` · summary · Bearer · responses 200 | `@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level) |
-| `PATCH /auth/me/phone` | `backend/src/auth/auth.controller.ts:123` | tag `auth` · summary · Bearer · body `UpdatePhoneDto` · responses 200/403/409 | `@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level) |
+| `POST /auth/register` | `backend/src/auth/auth.controller.ts:46` | tag `auth` · summary · public · body `RegisterDto` · responses 200/409 | documented 200 but the handler returns 201: use `@ApiCreatedResponse` or add `@HttpCode(200)`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe) |
+| `POST /auth/login` | `backend/src/auth/auth.controller.ts:55` | tag `auth` · summary · public · body `LoginDto` · responses 200/401 | `@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe) |
+| `GET /auth/email-registration/enabled` | `backend/src/auth/auth.controller.ts:65` | tag `auth` · summary · public · responses 200 | response schema: `@ApiOkResponse({ type: <Response>Dto })` |
+| `POST /auth/email-registration/start` | `backend/src/auth/auth.controller.ts:71` | tag `auth` · summary · public · body `StartEmailRegistrationDto` · responses 202 | response schema: `@ApiOkResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe) |
+| `POST /auth/email-registration/complete` | `backend/src/auth/auth.controller.ts:79` | tag `auth` · summary · public · body `CompleteEmailRegistrationDto` · responses 201 | response schema: `@ApiCreatedResponse({ type: <Response>Dto })`<br>`@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe) |
+| `GET /auth/google/enabled` | `backend/src/auth/auth.controller.ts:86` | tag `auth` · summary · public · responses 200 | ✔ complete |
+| `GET /auth/google` | `backend/src/auth/auth.controller.ts:99` | tag `auth` · summary · public · query state · responses 302/400/404 | ✔ complete |
+| `GET /auth/google/callback` | `backend/src/auth/auth.controller.ts:115` | tag `auth` · summary · public · query code · responses 200/401/403/404/409 | `@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe) |
+| `GET /auth/me` | `backend/src/auth/auth.controller.ts:141` | tag `auth` · summary · Bearer · responses 200 | `@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level) |
+| `PATCH /auth/me/phone` | `backend/src/auth/auth.controller.ts:148` | tag `auth` · summary · Bearer · body `UpdatePhoneDto` · responses 200/403/409 | `@ApiBadRequestResponse({ type: ErrorResponseDto })` (validation / ParseUUIDPipe)<br>`@ApiUnauthorizedResponse({ type: ErrorResponseDto })` (best once at class level) |
 
 ### categories
 
@@ -270,7 +273,9 @@ Not an error, but `@ApiProperty({ example })` makes "Try it out" and the generat
 | `RegisterDto` | password |
 | `MeResponse` | id, fullName, phone |
 | `AuthResponseDto` | accessToken |
-| `LoginDto` | password |
+| `LoginDto` | email, password |
+| `StartEmailRegistrationDto` | email |
+| `CompleteEmailRegistrationDto` | token, fullName, password |
 | `CreateCategoryDto` | descriptionAr, descriptionEn, sortOrder |
 | `UpdateCategoryDto` | nameAr, nameEn, descriptionAr, descriptionEn, sortOrder |
 | `CreateCampaignDto` | categoryId, titleEn, summaryAr, summaryEn |

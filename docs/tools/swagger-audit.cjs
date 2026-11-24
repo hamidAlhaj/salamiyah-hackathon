@@ -147,7 +147,7 @@ md.push('## Summary');
 md.push('');
 md.push(`| | |`);
 md.push(`|---|---|`);
-md.push(`| Endpoints in Swagger | **${total}** (= 101 controller routes, see \`docs/postman/tools/compare-endpoints.cjs\`) |`);
+md.push(`| Endpoints in Swagger | **${total}** (compare with controller routes using \`docs/postman/tools/compare-endpoints.cjs\`) |`);
 md.push(`| Tags | ${new Set(rows.map((r) => r.tag)).size}, every endpoint tagged |`);
 md.push(`| Summary (\`@ApiOperation\`) | ${rows.filter((r) => !r.missing.some((x) => x.includes('ApiOperation'))).length}/${total} |`);
 md.push(`| Bearer auth shown on protected endpoints | ${rows.filter((r) => r.documented.includes('Bearer')).length} protected, all with the lock (\`@ApiBearerAuth()\` at class level) |`);

@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, Switch, TextInput, View } from 'react-native';
@@ -16,6 +16,7 @@ export default function LoginScreen() {
   const lang = useLang();
   const c = usePalette();
   const { login, register, logout } = useAuth();
+  const { campaignId } = useLocalSearchParams<{ campaignId?: string }>();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -55,7 +56,9 @@ export default function LoginScreen() {
         setStaff(true);
         return;
       }
-      if (router.canGoBack()) router.back();
+      if (typeof campaignId === 'string' && /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(campaignId)) {
+        router.replace({ pathname: '/pledge/[campaignId]', params: { campaignId } });
+      } else if (router.canGoBack()) router.back();
       else router.replace('/');
     } catch (e) {
       if (e instanceof ApiError && e.code === 'phone_taken') setError(t('auth.phoneTaken'));

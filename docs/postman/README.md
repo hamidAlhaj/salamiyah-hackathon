@@ -3,13 +3,13 @@
 Project and team: «أثر» / Athar.
 
 `salamiyah-hackathon.postman_collection.json` — **Postman Collection v2.1**, every endpoint of the NestJS API
-(**103 endpoints in 17 folders** + 6 demo logins), grouped by domain in the same order as the README
+(**106 endpoints in 17 folders** + 6 demo logins), grouped by domain in the same order as the README
 "Backend API Overview".
 
 | Folder | Endpoints |
 |---|---|
 | Health | 1 |
-| Auth (+ Demo logins) | 7 (+6) |
+| Auth (+ Demo logins) | 10 (+6) |
 | Categories | 5 |
 | Campaigns | 10 |
 | Payment methods & receiving accounts | 7 |
@@ -28,7 +28,7 @@ Project and team: «أثر» / Athar.
 
 ## Import and use
 
-1. Start the API (README §3–§4): `cd api`, `npm run demo:reset`, then `npm run start:dev`. It listens on
+1. Start the API (README §3–§4): `cd backend`, seed the demo database, then run `npm run start:dev`. It listens on
    `http://localhost:4000`; Swagger is at `http://localhost:4000/api/docs`.
 2. Postman → **Import** → choose `docs/postman/salamiyah-hackathon.postman_collection.json`.
 3. Collection → **Variables**: `baseUrl` defaults to `http://localhost:4000` (use `http://<LAN-IP>:4000` from another

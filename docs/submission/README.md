@@ -11,12 +11,11 @@ The four Word files required by the B4F submission guide (pages 2–3), with the
 
 `pdf/` holds the PDF that Word exported from each file, to check the page count, RTL and the diagrams.
 
-## Filled in (2026-11-23)
+## Submission details
 
 - Project and team name: «أثر» / Athar, in the file names and inside the documents.
-- Members, roles and contributions from the team leader. English names = GitHub display names; usernames = the
-  repository's collaborators (GitHub REST API). Yousef has no GitHub display name: "Yousef Yousef" follows the
-  username `Yousef2001yousef`. Nawar (`nawarhasan55`) has a pending collaborator invitation.
+- Team members, roles and contributions match the team table in the root README. See the submission checklist
+  for Git attribution and reviewer access.
 - Demo URL: no public URL; the briefs point to the live LAN demo (`DEMO.md`).
 - Text lives in `tools/content.cjs`; diagrams come from `docs/diagrams/*.png`.
 

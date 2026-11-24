@@ -7,7 +7,7 @@ import { Field } from '@/components/ui/Field';
 import { FormError, SubmitButton } from '@/components/ui/FormParts';
 import { registerAction, type FormState } from '@/lib/actions/auth';
 
-export function RegisterForm() {
+export function RegisterForm({ next }: { next?: string }) {
   const t = useTranslations('auth');
   const locale = useLocale();
   const [state, formAction] = useActionState(registerAction, {} satisfies FormState);
@@ -17,6 +17,7 @@ export function RegisterForm() {
       <form action={formAction} className="mt-8 space-y-5" noValidate>
         <FormError message={state.error} />
         <input type="hidden" name="locale" value={locale} />
+        {next && <input type="hidden" name="next" value={next} />}
         <Field label={t('fullName')} name="fullName" autoComplete="name" maxLength={120} required />
         <Field
           label={t('phone')}
@@ -43,7 +44,10 @@ export function RegisterForm() {
       </form>
       <p className="mt-5 text-center text-sm text-muted">
         {t('alreadyAccount')}{' '}
-        <Link href="/login" className="font-semibold text-brand-700 underline-offset-4 hover:underline">
+        <Link
+          href={next ? { pathname: '/login', query: { next } } : '/login'}
+          className="font-semibold text-accent underline-offset-4 hover:underline"
+        >
           {t('loginLink')}
         </Link>
       </p>

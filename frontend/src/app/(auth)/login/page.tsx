@@ -83,7 +83,10 @@ export default async function LoginPage({
           <LoginForm next={safeNext} />
           <p className="mt-5 text-center text-sm text-muted">
             {t('noAccount')}{' '}
-            <Link href="/register" className="font-semibold text-accent underline-offset-4 hover:underline">
+            <Link
+              href={safeNext ? { pathname: '/register', query: { next: safeNext } } : '/register'}
+              className="font-semibold text-accent underline-offset-4 hover:underline"
+            >
               {t('registerLink')}
             </Link>
           </p>

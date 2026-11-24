@@ -111,9 +111,14 @@ function analysisHtml(lang) {
   const c = analysis[lang];
   const d = lang === 'ar' ? 'rtl' : 'ltr';
   let h = `<h1 dir="${d}">${esc(c.title)}</h1>` + para(lang, esc(fill(c.sub)), 'sub');
+  const sectionBreak = `<br clear="all" style="page-break-before:always;mso-break-type:section-break">`;
   for (const b of c.blocks) {
     const [kind] = b;
-    if (kind === 'h') h += `<h2 dir="${d}">${esc(b[1])}</h2>`;
+    if (kind === 'erd-heading') {
+      // Keep the ERD heading, summary and figure together on the landscape page.
+      h += `</div>${sectionBreak}<div class="WordSection2" dir="${d}">`;
+    }
+    if (kind === 'h' || kind === 'erd-heading') h += `<h2 dir="${d}">${esc(b[1])}</h2>`;
     else if (kind === 'p') h += para(lang, rich(b[1]));
     else if (kind === 'table') h += table(lang, b[1], b[2]);
     else if (kind === 'ol') h += list(lang, b[1], true);
@@ -122,9 +127,7 @@ function analysisHtml(lang) {
       const actorLabel = lang === 'ar' ? 'الفاعلون' : 'Actors';
       h += para(lang, `<b>${esc(b[1])}</b> — ${esc(actorLabel)}: ${esc(b[2])}`, 'uc') + list(lang, b[3], true);
     } else if (kind === 'img' && b[1] === 'erd.png') {
-      // The ERD gets its own landscape page (Word section) so its field names stay readable when printed.
-      const brk = `<br clear="all" style="page-break-before:always;mso-break-type:section-break">`;
-      h += `</div>${brk}<div class="WordSection2" dir="${d}">${img(b[1], b[2], 1000)}</div>${brk}<div class="WordSection3" dir="${d}">`;
+      h += `${img(b[1], b[2], 820)}</div>${sectionBreak}<div class="WordSection3" dir="${d}">`;
     } else if (kind === 'img') h += img(b[1], b[2], 620);
   }
   return page(lang, h, { size: 10 });

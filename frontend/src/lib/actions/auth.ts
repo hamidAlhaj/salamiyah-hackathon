@@ -123,7 +123,8 @@ export async function registerAction(
   }
 
   safeRevalidate('/');
-  redirect('/dashboard');
+  const next = formData.get('next');
+  redirect((typeof next === 'string' && safeNextPath(next)) || '/dashboard');
 }
 
 export async function logoutAction() {

@@ -18,7 +18,7 @@ const SHOTS = process.env.E2E_SCREENSHOTS === '1';
 async function shot(page: Page, name: string) {
   if (!SHOTS) return;
   await page.screenshot({
-    path: join(__dirname, '..', '..', 'docs', 'screenshots', 'p19', `${name}.png`),
+    path: join(__dirname, '..', 'artifacts', 'screenshots', 'p19', `${name}.png`),
     fullPage: true,
   });
 }

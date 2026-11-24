@@ -266,7 +266,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phone\": \"0944123456\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "raw": "{\n  \"phone\": \"0944123456\",\n  \"email\": \"<email>\",\n  \"password\": \"{{demoPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -283,7 +283,137 @@
                 "login"
               ]
             },
-            "description": "Log in with phone and password\n\nPublic endpoint (no token).\n\nDocumented errors: 401. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_login"
+            "description": "Log in with a phone number or donor email, and password\n\nPublic endpoint (no token).\n\nDocumented errors: 401. Error body: { statusCode, message, error, path, timestamp }.\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_login"
+          },
+          "response": []
+        },
+        {
+          "name": "Whether email registration can send verification links",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/email-registration/enabled",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "email-registration",
+                "enabled"
+              ]
+            },
+            "description": "Whether email registration can send verification links\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_emailRegistrationEnabled"
+          },
+          "response": []
+        },
+        {
+          "name": "Request a donor registration link by email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"<email>\",\n  \"locale\": \"ar\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/email-registration/start",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "email-registration",
+                "start"
+              ]
+            },
+            "description": "Request a donor registration link by email\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_startEmailRegistration"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify the link, set a password, and create a donor session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 2xx', function () { pm.response.to.be.success; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<token>\",\n  \"fullName\": \"<fullName>\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/email-registration/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "email-registration",
+                "complete"
+              ]
+            },
+            "description": "Verify the link, set a password, and create a donor session\n\nPublic endpoint (no token).\n\nSwagger: {{baseUrl}}/api/docs#/auth/AuthController_completeEmailRegistration"
           },
           "response": []
         },
