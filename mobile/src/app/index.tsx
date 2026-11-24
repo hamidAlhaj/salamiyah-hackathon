@@ -176,7 +176,7 @@ function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
       <Pressable
         accessibilityRole="link"
         testID={`campaign-card-${campaign.slug}`}
-        style={({ pressed }) => [cardSurface, { opacity: pressed ? 0.92 : 1 }]}
+        style={cardSurface}
       >
         <View style={{ overflow: 'hidden', borderStartStartRadius: radius.lg - 1, borderStartEndRadius: radius.lg - 1 }}>
           <CampaignCover coverKey={campaign.coverKey} height={132} />

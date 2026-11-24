@@ -120,7 +120,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={fg} />
       ) : (
-        <AppText weight="bold" style={{ color: fg }}>
+        <AppText weight="bold" style={{ color: fg, textAlign: 'center' }}>
           {title}
         </AppText>
       )}
@@ -147,6 +147,7 @@ export function Chip({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
+      aria-pressed={selected}
       testID={testID}
       onPress={onPress}
       style={({ pressed }) => [
@@ -306,6 +307,7 @@ export const styles = StyleSheet.create({
   button: {
     minHeight: 48,
     paddingHorizontal: 18,
+    paddingVertical: 8,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',

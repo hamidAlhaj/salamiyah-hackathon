@@ -205,6 +205,7 @@ export default function DonateScreen() {
               key={p}
               accessibilityRole="radio"
               accessibilityState={{ checked: active }}
+              aria-checked={active}
               onPress={() => choosePath(p)}
               testID={`path-${p}`}
               style={[{
@@ -346,6 +347,7 @@ export default function DonateScreen() {
                       key={p.id}
                       accessibilityRole="radio"
                       accessibilityState={{ checked: pointId === p.id }}
+                      aria-checked={pointId === p.id}
                       onPress={() => setPointId(p.id)}
                       testID={`point-${p.id}`}
                       style={[
