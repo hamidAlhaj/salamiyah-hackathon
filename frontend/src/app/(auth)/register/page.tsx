@@ -5,6 +5,8 @@ import { LanguageSwitch } from '@/components/layout/LanguageSwitch';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Logo } from '@/components/ui/Logo';
 import { StarLattice } from '@/components/ui/StarLattice';
+import { emailRegistrationConfig } from '@/lib/api/auth';
+import { EmailRegisterForm } from './EmailRegisterForm';
 import { RegisterForm } from './RegisterForm';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,10 +14,18 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('registerTitle') };
 }
 
-export default async function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ method?: string }>;
+}) {
   const t = await getTranslations('auth');
   const tNav = await getTranslations('nav');
   const points = t.raw('panelPoints') as string[];
+  const viaEmail = (await searchParams).method === 'email';
+  const emailEnabled = viaEmail
+    ? (await emailRegistrationConfig().catch(() => ({ enabled: false }))).enabled
+    : false;
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
@@ -59,8 +69,24 @@ export default async function RegisterPage() {
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           <h1 className="font-display text-3xl font-bold">{t('registerTitle')}</h1>
-          <p className="mt-2 text-muted">{t('registerSubtitle')}</p>
-          <RegisterForm />
+          <p className="mt-2 text-muted">
+            {t(viaEmail ? 'emailRegisterSubtitle' : 'registerSubtitle')}
+          </p>
+          {viaEmail ? <EmailRegisterForm enabled={emailEnabled} /> : <RegisterForm />}
+          <Link
+            href={viaEmail ? '/register' : '/register?method=email'}
+            className="mt-4 self-center text-sm font-semibold text-accent underline-offset-4 hover:underline"
+          >
+            {t(viaEmail ? 'registerWithPhone' : 'registerWithEmail')}
+          </Link>
+          {viaEmail && (
+            <Link
+              href="/login"
+              className="mt-3 self-center text-sm text-accent underline-offset-4 hover:underline"
+            >
+              {t('loginLink')}
+            </Link>
+          )}
           <p className="mt-8 text-sm text-muted lg:hidden">{t('donorHint')}</p>
         </div>
       </main>

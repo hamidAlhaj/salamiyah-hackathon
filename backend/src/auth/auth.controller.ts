@@ -18,13 +18,16 @@ import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-use
 import type { AuthResponse } from '../common/shared';
 import {
   AuthResponseDto,
+  CompleteEmailRegistrationDto,
   GoogleSignInConfigDto,
   LoginDto,
   MeResponse,
   RegisterDto,
+  StartEmailRegistrationDto,
   UpdatePhoneDto,
 } from './auth.dto';
 import { AuthService } from './auth.service';
+import { EmailRegistrationService } from './email-registration.service';
 import { GoogleAuthGuard } from './google-auth.guard';
 import { googlePublicConfig } from './google.config';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -37,6 +40,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly config: ConfigService,
+    private readonly emailRegistration: EmailRegistrationService,
   ) {}
 
   @Post('register')
@@ -51,11 +55,32 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Log in with phone and password' })
+  @ApiOperation({ summary: 'Log in with a phone number or donor email, and password' })
   @ApiOkResponse({ type: AuthResponseDto })
   @ApiUnauthorizedResponse({ description: 'invalid_credentials' })
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
+  }
+
+  @Get('email-registration/enabled')
+  @ApiOperation({ summary: 'Whether email registration can send verification links' })
+  emailRegistrationEnabled() {
+    return { enabled: this.emailRegistration.enabled() };
+  }
+
+  @Post('email-registration/start')
+  @HttpCode(202)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Request a donor registration link by email' })
+  startEmailRegistration(@Body() dto: StartEmailRegistrationDto) {
+    return this.emailRegistration.start(dto);
+  }
+
+  @Post('email-registration/complete')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Verify the link, set a password, and create a donor session' })
+  completeEmailRegistration(@Body() dto: CompleteEmailRegistrationDto) {
+    return this.emailRegistration.complete(dto);
   }
 
   @Get('google/enabled')

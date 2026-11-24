@@ -22,7 +22,7 @@ describe('LoginForm', () => {
 
   it('labels both fields in Arabic and keeps the phone and password left-to-right', () => {
     renderForm();
-    expect(screen.getByLabelText('رقم الهاتف')).toHaveAttribute('dir', 'ltr');
+    expect(screen.getByLabelText('رقم الهاتف أو البريد الإلكتروني')).toHaveAttribute('dir', 'ltr');
     expect(screen.getByLabelText('كلمة المرور')).toHaveAttribute('type', 'password');
   });
 
@@ -30,7 +30,9 @@ describe('LoginForm', () => {
     loginAction.mockResolvedValue({ error: 'رقم الهاتف أو كلمة المرور غير صحيحة.' });
     renderForm();
 
-    fireEvent.change(screen.getByLabelText('رقم الهاتف'), { target: { value: '0944123456' } });
+    fireEvent.change(screen.getByLabelText('رقم الهاتف أو البريد الإلكتروني'), {
+      target: { value: '0944123456' },
+    });
     fireEvent.change(screen.getByLabelText('كلمة المرور'), { target: { value: 'wrong-pass' } });
     fireEvent.click(screen.getByRole('button', { name: 'دخول' }));
 

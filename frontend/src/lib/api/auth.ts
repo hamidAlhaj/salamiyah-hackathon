@@ -3,12 +3,34 @@ import { cache } from 'react';
 import type { AuthResponse, CurrentUser, GoogleSignInConfig } from '@/shared';
 import { apiFetch, apiRedirectLocation } from './client';
 
-export function login(phone: string, password: string) {
-  return apiFetch<AuthResponse>('/auth/login', { method: 'POST', body: { phone, password } });
+export function login(identifier: string, password: string) {
+  const account = identifier.includes('@') ? { email: identifier } : { phone: identifier };
+  return apiFetch<AuthResponse>('/auth/login', { method: 'POST', body: { ...account, password } });
 }
 
-export function register(body: { fullName: string; phone: string; password: string; locale: 'ar' | 'en' }) {
+export function register(body: {
+  fullName: string;
+  phone: string;
+  password: string;
+  locale: 'ar' | 'en';
+}) {
   return apiFetch<AuthResponse>('/auth/register', { method: 'POST', body });
+}
+
+export function emailRegistrationConfig() {
+  return apiFetch<{ enabled: boolean }>('/auth/email-registration/enabled');
+}
+
+export function startEmailRegistration(body: { email: string; locale: 'ar' | 'en' }) {
+  return apiFetch<{ accepted: true }>('/auth/email-registration/start', { method: 'POST', body });
+}
+
+export function completeEmailRegistration(body: {
+  token: string;
+  fullName: string;
+  password: string;
+}) {
+  return apiFetch<AuthResponse>('/auth/email-registration/complete', { method: 'POST', body });
 }
 
 /** Memoised per request: the root layout, (app) layout and page share one GET /auth/me. */

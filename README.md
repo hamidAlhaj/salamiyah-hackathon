@@ -46,7 +46,7 @@ service); the others are public.
 | Domain | Endpoints |
 |---|---|
 | Health (1) | `GET /health` |
-| Auth (7) | `POST /auth/register` · `POST /auth/login` · `GET /auth/google/enabled` · `GET /auth/google` · `GET /auth/google/callback` · `GET /auth/me` 🔒 · `PATCH /auth/me/phone` 🔒 |
+| Auth (10) | `POST /auth/register` · `POST /auth/login` · `GET /auth/email-registration/enabled` · `POST /auth/email-registration/start` · `POST /auth/email-registration/complete` · `GET /auth/google/enabled` · `GET /auth/google` · `GET /auth/google/callback` · `GET /auth/me` 🔒 · `PATCH /auth/me/phone` 🔒 |
 | Categories (5) | `GET /categories` · `POST /categories` 🔒 · `GET /categories/all` 🔒 · `PATCH /categories/:id` 🔒 · `DELETE /categories/:id` 🔒 |
 | Campaigns (10) | `GET /campaigns` · `POST /campaigns` 🔒 · `GET /campaigns/:slug` · `GET /campaigns/:id/ledger` · `GET /campaigns/:id/transparency` · `GET /campaigns/staff/all` 🔒 · `GET /campaigns/staff/:id` 🔒 · `PATCH /campaigns/:id` 🔒 · `PATCH /campaigns/:id/status` 🔒 · `POST /campaigns/:id/updates` 🔒 |
 | Payment methods & receiving accounts (7) | `GET /payment-methods` · `GET /campaigns/:id/payment-accounts` · `GET /payment-methods/config` 🔒 · `PATCH /payment-methods/config/:method` 🔒 · `GET /campaigns/:id/payment-accounts/overrides` 🔒 · `PUT /campaigns/:id/payment-accounts/:method` 🔒 · `DELETE /campaigns/:id/payment-accounts/:method` 🔒 |
@@ -161,6 +161,18 @@ Open `http://localhost:3000`. Collector pages are mobile-first and installable f
 `SESSION_COOKIE_SECURE` (in `frontend/.env`) sets the `Secure` flag of the HttpOnly session cookie. Empty = on in production,
 off in development. For the **LAN demo** (a production build served over plain HTTP at `http://<LAN-IP>:3000`) set it
 to `"false"`, otherwise phones drop the cookie and login fails. Never set it to `"false"` behind HTTPS.
+
+### Email and password registration on the web
+
+To enable email delivery, put these values in the backend's local environment and restart the API.
+
+```dotenv
+RESEND_API_KEY="<Resend sending key>"
+EMAIL_REGISTRATION_FROM="Athar <signup@your-verified-domain.example>"
+EMAIL_REGISTRATION_ORIGIN="http://localhost:3000"
+```
+
+Use the public HTTPS website origin for recipients on other devices. Choose **Register with email** on `/register` and request a verification link. It expires after 30 minutes. Open it to enter a name and password, then log in with the email address and password. Donors add a phone in their profile before donating. Phone registration and Google sign-in use their existing setup.
 
 ### 5a. Sign in with Google (optional, off by default)
 Phone + password stays the main login (staff, collectors, older donors) and is unchanged. "Continue with Google"

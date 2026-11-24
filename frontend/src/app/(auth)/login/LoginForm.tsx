@@ -17,13 +17,13 @@ export function LoginForm({ next }: { next?: string }) {
       <FormError message={state.error} />
       {next && <input type="hidden" name="next" value={next} />}
       <Field
-        label={t('phone')}
+        label={t('phoneOrEmail')}
         name="phone"
-        type="tel"
-        inputMode="tel"
+        type="text"
         autoComplete="username"
         dir="ltr"
-        hint={t('phoneHint')}
+        autoCapitalize="none"
+        spellCheck={false}
         required
       />
       <Field

@@ -4,6 +4,7 @@ import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController, AuthMeController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { EmailRegistrationService } from './email-registration.service';
 import { GoogleAuthGuard } from './google-auth.guard';
 import { GoogleAuthService } from './google-auth.service';
 import { googleSettings } from './google.config';
@@ -31,6 +32,7 @@ import { ProfileService } from './profile.service';
   controllers: [AuthController, AuthMeController],
   providers: [
     AuthService,
+    EmailRegistrationService,
     JwtStrategy,
     JwtAuthGuard,
     ProfileService,

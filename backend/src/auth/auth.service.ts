@@ -35,12 +35,23 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<AuthResponse> {
-    const user = await this.prisma.user.findUnique({ where: { phone: dto.phone } });
+    const { phone, email, password } = dto;
+    if (
+      (!phone && !email) ||
+      (phone && email) ||
+      (email && Buffer.byteLength(password, 'utf8') > 72)
+    ) {
+      throw new UnauthorizedException('invalid_credentials');
+    }
+    const user = await this.prisma.user.findUnique({
+      where: email ? { email } : { phone },
+    });
     // Same error for every failure so the response never reveals whether the phone exists.
     if (
       !user?.passwordHash ||
       !user.isActive ||
-      !(await bcrypt.compare(dto.password, user.passwordHash))
+      (email && user.role !== 'DONOR') ||
+      !(await bcrypt.compare(password, user.passwordHash))
     ) {
       throw new UnauthorizedException('invalid_credentials');
     }
