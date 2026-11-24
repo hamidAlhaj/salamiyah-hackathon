@@ -37,7 +37,7 @@ function HeaderActions() {
         accessibilityLabel={t("languageLabel")}
         testID="language-toggle"
         onPress={() => void toggle()}
-        style={{ paddingHorizontal: 8, paddingVertical: 6 }}
+        style={{ minHeight: 44, minWidth: 44, justifyContent: "center", alignItems: "center", paddingHorizontal: 8 }}
       >
         <AppText size="sm" weight="medium" style={{ color: c.panelInk }}>
           {t("language")}
@@ -47,7 +47,7 @@ function HeaderActions() {
         href="/transparency"
         testID="nav-transparency"
         accessibilityLabel={t("transparency.nav")}
-        style={{ paddingHorizontal: 6, paddingVertical: 6 }}
+        style={{ padding: 11 }}
       >
         <Svg
           width={22}
@@ -67,7 +67,7 @@ function HeaderActions() {
       <Link
         href={user ? "/donations" : "/login"}
         testID={user ? "nav-donations" : "nav-login"}
-        style={{ paddingHorizontal: 8, paddingVertical: 6 }}
+        style={{ paddingHorizontal: 8, paddingVertical: 10 }}
       >
         <AppText size="sm" weight="bold" style={{ color: c.panelInk }}>
           {user ? t("myDonations") : t("login")}
@@ -105,7 +105,7 @@ function BellButton() {
           ? t("notifications.bellUnread", { count: unread })
           : t("notifications.bell")
       }
-      style={{ paddingHorizontal: 6, paddingVertical: 6 }}
+      style={{ padding: 11 }}
     >
       <View>
         <Svg
@@ -140,7 +140,7 @@ function BellButton() {
             <AppText
               size="xs"
               weight="bold"
-              style={{ color: c.panel, fontSize: 12, lineHeight: 16 }}
+              style={{ color: c.panel, lineHeight: 16 }}
             >
               {unread > 9 ? "9+" : String(unread)}
             </AppText>
