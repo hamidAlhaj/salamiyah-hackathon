@@ -47,7 +47,7 @@ export default async function ReceiptPage({ params }: Props) {
   return (
     <div className="receipt-page mx-auto max-w-xl px-4 py-10 sm:px-6 print:max-w-none print:p-0">
       <article
-        className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-lift print:rounded-none print:border-0 print:shadow-none"
+        className="overflow-hidden rounded-panel border border-border bg-surface shadow-lift print:rounded-none print:border-0 print:shadow-none"
         data-testid="official-receipt"
         data-receipt-no={receipt.receiptNo}
       >
@@ -208,7 +208,7 @@ async function ReceiptNotFound({ no }: { no: string }) {
   const t = await getTranslations('receipt');
   return (
     <div className="mx-auto max-w-lg px-4 py-16 text-center" data-testid="receipt-not-found">
-      <div className="rounded-[28px] border border-border bg-surface p-8 shadow-card">
+      <div className="rounded-panel border border-border bg-surface p-8 shadow-card">
         <h1 className="font-display text-2xl font-bold">{t('notFound')}</h1>
         <p className="mt-2 text-muted">{t('notFoundBody', { no })}</p>
         <Link href="/" className={buttonClasses('primary', 'md', 'mt-6')}>

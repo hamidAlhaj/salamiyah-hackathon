@@ -5,8 +5,8 @@ export type ButtonVariant = 'primary' | 'give' | 'secondary' | 'ghost' | 'danger
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition duration-150 ease-out ' +
-  'active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ' +
+  'inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors duration-150 ease-out ' +
+  'active:scale-[0.98] motion-reduce:active:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ' +
   'focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-60';
 
 const variants: Record<ButtonVariant, string> = {
@@ -14,7 +14,7 @@ const variants: Record<ButtonVariant, string> = {
     'bg-brand-600 text-white shadow-card hover:bg-brand-700 dark:bg-brand-600 dark:hover:bg-brand-700',
   // give-700 / give-800 keep white text at 4.9:1 / 7.1:1 in both themes (give-600 is only 3.4:1).
   give: 'bg-give-700 text-white shadow-card hover:bg-give-800',
-  secondary: 'border border-border bg-surface text-ink hover:bg-surface-muted',
+  secondary: 'border border-accent text-accent hover:bg-accent-soft',
   ghost: 'text-ink hover:bg-surface-muted',
   danger: 'bg-danger text-surface hover:opacity-90',
 };

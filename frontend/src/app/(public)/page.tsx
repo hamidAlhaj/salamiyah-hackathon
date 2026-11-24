@@ -79,7 +79,7 @@ export default async function HomePage({
 
         {/* The brand panel is the open account: collected, spent, remaining. */}
         <div
-          className="relative isolate overflow-hidden rounded-[28px] bg-panel p-7 text-panel-ink shadow-lift sm:p-9"
+          className="relative isolate overflow-hidden rounded-panel bg-panel p-7 text-panel-ink shadow-lift sm:p-9"
           data-testid="platform-ledger"
         >
           <StarLattice className="absolute inset-0 -z-10 h-full w-full" />

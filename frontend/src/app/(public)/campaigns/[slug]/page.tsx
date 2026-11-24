@@ -89,7 +89,7 @@ export default async function CampaignPage({ params }: Props) {
       </Link>
 
       <header className="mt-4">
-        <div className="relative h-48 overflow-hidden rounded-[28px] border border-border sm:h-64">
+        <div className="relative h-48 overflow-hidden rounded-panel border border-border sm:h-64">
           <CampaignCover coverKey={campaign.coverKey} />
           {campaign.status === 'COMPLETED' && (
             <div

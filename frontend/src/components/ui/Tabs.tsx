@@ -25,10 +25,10 @@ export function Tabs({
           key={item.href}
           href={item.href}
           aria-current={item.current ? 'page' : undefined}
-          className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition duration-150 ${
+          className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-colors duration-150 ${
             item.current
-              ? 'border-brand-600 bg-brand-600 text-white shadow-card dark:border-brand-500 dark:bg-brand-600'
-              : 'border-border bg-surface text-ink hover:border-brand-600 hover:text-accent'
+              ? 'border-accent bg-accent-soft text-accent-strong underline decoration-2 underline-offset-4'
+              : 'border-border bg-surface text-ink hover:border-accent hover:text-accent'
           }`}
         >
           {item.label}

@@ -593,7 +593,7 @@ function DonationDone({
   return (
     <div
       role="status"
-      className="mx-auto max-w-xl rounded-[28px] border border-border bg-surface p-8 text-center shadow-card"
+      className="mx-auto max-w-xl rounded-panel border border-border bg-surface p-8 text-center shadow-card"
       data-testid="donation-done"
       data-kind={kind}
     >
