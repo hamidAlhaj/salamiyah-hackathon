@@ -1,18 +1,22 @@
 import type { ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   type TextProps,
+  useColorScheme,
   View,
   type ViewProps,
+  type ViewStyle,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import type { Priority, PublicCampaignCategory } from '@/shared';
 import { fundingSegments } from '@/lib/funding';
 import { CategoryIcon } from './CategoryIcon';
-import { fonts, radius, type, usePalette } from './theme';
+import { fonts, radius, type, usePalette, type Palette } from './theme';
 
 type Tone = 'ink' | 'muted' | 'accent' | 'danger' | 'warning';
 type Size = keyof typeof type;
@@ -52,26 +56,28 @@ export function AppText({
 }
 
 export function Card({ style, ...rest }: ViewProps) {
+  const surface = useCardSurface();
+  return <View style={[surface, styles.card, style]} {...rest} />;
+}
+
+export function useCardSurface(): ViewStyle {
   const c = usePalette();
-  const lightMode = c.page === c.surface;
-  return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: c.surface,
-          borderColor: c.border,
-          shadowColor: c.ink,
-          shadowOpacity: lightMode ? 0.12 : 0,
-          shadowRadius: lightMode ? 16 : 0,
-          shadowOffset: { width: 0, height: lightMode ? 8 : 0 },
-          elevation: lightMode ? 3 : 0,
-        },
-        style,
-      ]}
-      {...rest}
-    />
-  );
+  const surface = {
+    backgroundColor: c.surface,
+    borderColor: c.border,
+    borderWidth: 1,
+    borderRadius: radius.lg,
+  };
+  if (useColorScheme() === 'dark') return surface;
+  if (Platform.OS === 'web') return { ...surface, boxShadow: `0px 8px 16px ${c.ink}1F` };
+  return {
+    ...surface,
+    shadowColor: c.ink,
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+  };
 }
 
 /**
@@ -95,8 +101,8 @@ export function Button({
   accessibilityLabel?: string;
 }) {
   const c = usePalette();
-  const bg = variant === 'primary' ? c.accent : variant === 'give' ? c.give : 'transparent';
-  const fg = variant === 'primary' ? c.white : variant === 'give' ? c.giveInk : c.accent;
+  const bg = variant === 'primary' ? c.primary : variant === 'give' ? c.give : 'transparent';
+  const fg = variant === 'primary' ? c.onBrand : variant === 'give' ? c.giveInk : c.accent;
   return (
     <Pressable
       accessibilityRole="button"
@@ -107,17 +113,14 @@ export function Button({
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.button,
-        {
-          backgroundColor: variant === 'primary' && pressed ? c.accentStrong : bg,
-          borderColor: variant === 'secondary' ? c.accent : bg,
-          opacity: disabled ? 0.6 : pressed && variant !== 'primary' ? 0.85 : 1,
-        },
+        { backgroundColor: bg, opacity: disabled || loading ? 0.6 : pressed ? 0.85 : 1 },
+        variant === 'secondary' && { borderWidth: 1, borderColor: c.accent },
       ]}
     >
       {loading ? (
         <ActivityIndicator color={fg} />
       ) : (
-        <AppText weight="bold" style={{ color: fg }}>
+        <AppText weight="bold" style={{ color: fg, textAlign: 'center' }}>
           {title}
         </AppText>
       )}
@@ -144,34 +147,44 @@ export function Chip({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
+      aria-pressed={selected}
       testID={testID}
       onPress={onPress}
-      style={[
+      style={({ pressed }) => [
         styles.chip,
-        {
-          backgroundColor: c.accentSoft,
-          borderColor: selected ? c.accent : c.border,
-          borderWidth: selected ? 1.5 : 1,
-        },
+        choiceSurface(c, selected),
+        { opacity: pressed ? 0.85 : 1 },
       ]}
     >
       {icon && <CategoryIcon icon={icon} color={c.accentStrong} size={17} />}
-      <AppText size="xs" weight="bold" style={{ color: c.accentStrong }}>
+      <AppText size="sm" weight="medium" style={{ color: c.accentStrong, fontWeight: '600' }}>
         {label}
       </AppText>
-      {selected && <SelectionMark selected />}
+      {selected && <SelectedMark />}
     </Pressable>
   );
 }
 
-/** A visible check keeps selected donation choices distinguishable without relying on colour alone. */
-export function SelectionMark({ selected }: { selected: boolean }) {
+export function choiceSurface(c: Palette, selected: boolean): ViewStyle {
+  return {
+    borderWidth: selected ? 1.5 : 1,
+    borderColor: selected ? c.accent : c.border,
+    backgroundColor: selected ? c.accentSoft : c.surface,
+  };
+}
+
+export function SelectedMark() {
   const c = usePalette();
-  if (!selected) return null;
   return (
-    <AppText size="sm" weight="bold" style={{ color: c.accentStrong }}>
-      ✓
-    </AppText>
+    <Svg width={16} height={16} viewBox="0 0 16 16" fill="none" aria-hidden>
+      <Path
+        d="M3 8l3 3 7-7"
+        stroke={c.accentStrong}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
   );
 }
 
@@ -180,7 +193,7 @@ export function CategoryBadge({ category }: { category: PublicCampaignCategory }
   return (
     <View style={[styles.badge, { backgroundColor: c.accentSoft }]}>
       <CategoryIcon icon={category.icon} color={c.accentStrong} size={15} />
-      <AppText size="xs" weight="bold" style={{ color: c.accentStrong }}>
+      <AppText size="xs" weight="medium" style={{ color: c.accentStrong, fontWeight: '600' }}>
         {category.name}
       </AppText>
     </View>
@@ -290,12 +303,12 @@ export function Notice({ tone, children }: { tone: 'danger' | 'success' | 'muted
 }
 
 export const styles = StyleSheet.create({
-  card: { borderRadius: radius.lg, borderWidth: 1, padding: 16, gap: 16 },
+  card: { padding: 16, gap: 10 },
   button: {
     minHeight: 48,
     paddingHorizontal: 18,
+    paddingVertical: 8,
     borderRadius: radius.pill,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -306,7 +319,6 @@ export const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: 14,
     borderRadius: radius.pill,
-    borderWidth: 1,
   },
   badge: {
     flexDirection: 'row',

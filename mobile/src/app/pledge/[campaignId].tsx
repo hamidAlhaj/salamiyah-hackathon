@@ -16,7 +16,7 @@ import type {
 import { useLang } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import { money } from '@/lib/format';
-import { AppText, Button, Card, Chip, DemoBadge, Notice, SelectionMark, styles } from '@/ui/components';
+import { AppText, Button, Card, Chip, choiceSurface, DemoBadge, Notice, SelectedMark, styles } from '@/ui/components';
 import { fonts, radius, type, usePalette } from '@/ui/theme';
 
 type Path = 'demo' | 'transfer' | 'cash';
@@ -194,7 +194,7 @@ export default function DonateScreen() {
   const paths = (['demo', 'transfer', 'cash'] as const).filter((p) => methodsFor[p].length > 0);
 
   return (
-    <ScrollView style={screen} contentContainerStyle={{ padding: 16, gap: 24 }} keyboardShouldPersistTaps="handled">
+    <ScrollView style={screen} contentContainerStyle={{ padding: 16, gap: 18 }} keyboardShouldPersistTaps="handled">
       {/* 1. Path and method */}
       <View style={{ gap: 10 }} pointerEvents={locked ? 'none' : 'auto'}>
         <StepTitle n={1} title={t('pledge.stepPath')} />
@@ -205,23 +205,19 @@ export default function DonateScreen() {
               key={p}
               accessibilityRole="radio"
               accessibilityState={{ checked: active }}
+              aria-checked={active}
               onPress={() => choosePath(p)}
               testID={`path-${p}`}
-              style={{
-                borderWidth: active ? 1.5 : 1,
+              style={[{
                 borderRadius: radius.lg,
                 padding: 14,
                 gap: 2,
-                borderColor: active ? c.accent : c.border,
-                backgroundColor: active ? c.accentSoft : c.surface,
-              }}
+              }, choiceSurface(c, active)]}
             >
               <View style={[styles.row, { justifyContent: 'space-between' }]}>
                 <AppText weight="bold">{t(`pledge.paths.${p}`)}</AppText>
-                <View style={[styles.row, { gap: 8 }]}>
-                  {p === 'demo' && <DemoBadge />}
-                  <SelectionMark selected={active} />
-                </View>
+                {p === 'demo' && <DemoBadge />}
+                {active && <SelectedMark />}
               </View>
               <AppText size="xs" tone="muted">{t(`pledge.paths.${p}Body`)}</AppText>
             </Pressable>
@@ -351,24 +347,24 @@ export default function DonateScreen() {
                       key={p.id}
                       accessibilityRole="radio"
                       accessibilityState={{ checked: pointId === p.id }}
+                      aria-checked={pointId === p.id}
                       onPress={() => setPointId(p.id)}
                       testID={`point-${p.id}`}
                       style={[
                         styles.row,
                         {
                           justifyContent: 'space-between',
-                          borderWidth: pointId === p.id ? 1.5 : 1,
                           borderRadius: radius.md,
+                          minHeight: 44,
                           padding: 12,
-                          borderColor: pointId === p.id ? c.accent : c.border,
-                          backgroundColor: pointId === p.id ? c.accentSoft : c.surface,
                         },
+                        choiceSurface(c, pointId === p.id),
                       ]}
                     >
                       <AppText weight="medium">{p.name}</AppText>
-                      <View style={[styles.row, { gap: 8 }]}>
+                      <View style={styles.row}>
                         <AppText size="xs" tone="muted">{t(`pledge.pointTypes.${p.type}`)}</AppText>
-                        <SelectionMark selected={pointId === p.id} />
+                        {pointId === p.id && <SelectedMark />}
                       </View>
                     </Pressable>
                   ))}
@@ -475,9 +471,9 @@ function StepTitle({ n, title }: { n: number; title: string }) {
   return (
     <View style={[styles.row, { gap: 8 }]}>
       <View
-        style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' }}
+        style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center' }}
       >
-        <AppText size="xs" weight="bold" style={{ color: c.white }}>{String(n)}</AppText>
+        <AppText size="xs" weight="bold" style={{ color: c.onBrand }}>{String(n)}</AppText>
       </View>
       <AppText weight="bold">{title}</AppText>
     </View>

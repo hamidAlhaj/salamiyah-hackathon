@@ -8,8 +8,8 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { dateTime } from '@/lib/format';
 import { resolveLink } from '@/lib/links';
-import { AppText, Button, Notice, styles } from '@/ui/components';
-import { usePalette } from '@/ui/theme';
+import { AppText, Button, Notice } from '@/ui/components';
+import { radius, usePalette } from '@/ui/theme';
 
 /**
  * The donor's notifications: receipt confirmations on every donation path, verification results and
@@ -20,7 +20,6 @@ export default function NotificationsScreen() {
   const { t } = useTranslation();
   const lang = useLang();
   const c = usePalette();
-  const lightMode = c.page === c.surface;
   const { user, ready } = useAuth();
   const [items, setItems] = useState<NotificationView[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,7 +66,7 @@ export default function NotificationsScreen() {
   return (
     <FlatList
       style={{ flex: 1, backgroundColor: c.page }}
-      contentContainerStyle={{ padding: 16, gap: 16 }}
+      contentContainerStyle={{ padding: 16, gap: 10 }}
       data={items}
       keyExtractor={(n) => n.id}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} />}
@@ -84,16 +83,12 @@ export default function NotificationsScreen() {
           onPress={() => void open(item)}
           testID={`notification-${item.type}`}
           style={({ pressed }) => ({
-            ...styles.card,
-            padding: 16,
+            borderWidth: 1,
+            borderRadius: radius.lg,
+            padding: 14,
             gap: 4,
             borderColor: item.readAt ? c.border : c.accent,
             backgroundColor: item.readAt ? c.surface : c.accentSoft,
-            shadowColor: c.ink,
-            shadowOpacity: lightMode ? 0.12 : 0,
-            shadowRadius: lightMode ? 16 : 0,
-            shadowOffset: { width: 0, height: lightMode ? 8 : 0 },
-            elevation: lightMode ? 3 : 0,
             opacity: pressed ? 0.9 : 1,
           })}
         >

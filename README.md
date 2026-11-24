@@ -283,7 +283,7 @@ cd backend; npm run demo:reset; cd ..
 ```powershell
 cd e2e; npm ci; npx playwright test
 ```
-With the backend (4000) and the frontend (3000) running, it logs in once per role, checks the public pages (seeded numbers, the completed
+With the backend (4000) and the frontend (3000) running, the Playwright suite logs in once per role, checks the public pages (seeded numbers, the completed
 campaign with public proofs, a verifiable receipt, no beneficiary identity or phone on any public page or endpoint) and
 runs the 7-step demo scenario. The scenario changes the data: run `npm run demo:reset` again afterwards. Options:
 `E2E_WEB_URL` / `E2E_API_URL` (defaults `http://localhost:3000` / `:4000`), `E2E_LAN_URL=http://<LAN-IP>:3000` (checks the

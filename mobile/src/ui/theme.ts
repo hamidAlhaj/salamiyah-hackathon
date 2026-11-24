@@ -1,9 +1,9 @@
 import { useColorScheme } from 'react-native';
 
 /**
- * Exact web design tokens from frontend/src/app/globals.css and tailwind.config.ts, adapted to React
- * Native colours. Light and dark follow the phone's setting; `give` is reserved for donations and
- * funding progress.
+ * React Native equivalents of the light and dark tokens in frontend/src/app/globals.css.
+ * Salamiyah green for the brand, saffron (`give`) only for donate actions and funding progress.
+ * Light and dark follow the phone's setting.
  */
 export interface Palette {
   page: string;
@@ -12,11 +12,10 @@ export interface Palette {
   border: string;
   track: string;
   control: string;
-  white: string;
-  sectionMark: string;
   ink: string;
   muted: string;
   accent: string;
+  primary: string;
   accentStrong: string;
   accentSoft: string;
   danger: string;
@@ -25,6 +24,8 @@ export interface Palette {
   warningSoft: string;
   panel: string;
   panelInk: string;
+  onBrand: string;
+  gold: string;
   /** Donate button and the verified funding segment. */
   give: string;
   giveInk: string;
@@ -41,6 +42,8 @@ export interface Palette {
   coverSoft: string;
 }
 
+const brandGreen = '#0F6B2F';
+
 const light: Palette = {
   page: '#FFFFFF',
   surface: '#FFFFFF',
@@ -48,11 +51,10 @@ const light: Palette = {
   border: '#E3EAE5',
   track: '#DDE7E1',
   control: '#6E8278',
-  white: '#FFFFFF',
-  sectionMark: '#C9A13B',
   ink: '#182420',
   muted: '#4A5A54',
-  accent: '#0F6B2F',
+  accent: brandGreen,
+  primary: brandGreen,
   accentStrong: '#0B5224',
   accentSoft: '#E6F2EC',
   danger: '#a3271c',
@@ -61,6 +63,8 @@ const light: Palette = {
   warningSoft: '#f4e3c1',
   panel: '#0B3D2A',
   panelInk: '#E6F2EC',
+  onBrand: '#FFFFFF',
+  gold: '#C9A13B',
   give: '#B45512',
   giveInk: '#FFFFFF',
   givePending: '#FED7AA',
@@ -79,11 +83,10 @@ const dark: Palette = {
   border: '#2c3a33',
   track: '#3a4a42',
   control: '#71837a',
-  white: '#FFFFFF',
-  sectionMark: '#D9B45A',
   ink: '#ecf2ee',
   muted: '#a0b0a7',
   accent: '#6BCFA5',
+  primary: brandGreen,
   accentStrong: '#ACD9C5',
   accentSoft: '#163628',
   danger: '#fca5a5',
@@ -92,6 +95,8 @@ const dark: Palette = {
   warningSoft: '#3d2d10',
   panel: '#0a291d',
   panelInk: '#d6ece1',
+  onBrand: '#FFFFFF',
+  gold: '#D9B45A',
   give: '#F6A34A',
   giveInk: '#1a0f05',
   givePending: '#8F4211',

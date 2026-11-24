@@ -16,6 +16,7 @@ import {
   Notice,
   PriorityBadge,
   styles,
+  useCardSurface,
 } from '@/ui/components';
 import { radius, usePalette } from '@/ui/theme';
 
@@ -65,12 +66,12 @@ export default function CampaignsScreen() {
   );
 
   const header = (
-    <View style={{ gap: 20, paddingBottom: 4 }}>
-      <View style={{ gap: 4 }}>
-        <AppText display size="xl">
+    <View style={{ gap: 24, paddingTop: 8, paddingBottom: 4 }}>
+      <View style={{ gap: 8 }}>
+        <AppText display size="xl" accessibilityRole="header">
           {t('browse.title')}
         </AppText>
-        <View style={{ width: 32, height: 2, backgroundColor: c.sectionMark }} />
+        <View aria-hidden style={{ width: 32, height: 2, backgroundColor: c.gold }} />
         <AppText size="sm" tone="muted">
           {t('browse.intro')}
         </AppText>
@@ -83,7 +84,7 @@ export default function CampaignsScreen() {
         onPress={() => router.push('/campaign/general-fund')}
       />
       {offline && <Notice tone="danger">{t('offline')}</Notice>}
-      <View style={{ backgroundColor: c.surfaceMuted, borderRadius: radius.lg, padding: 12, gap: 12 }}>
+      <View style={{ gap: 10, backgroundColor: c.surfaceMuted, borderRadius: radius.lg, padding: 12 }}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -137,7 +138,7 @@ export default function CampaignsScreen() {
   return (
     <FlatList
       style={{ flex: 1, backgroundColor: c.page }}
-      contentContainerStyle={{ padding: 16, gap: 24 }}
+      contentContainerStyle={{ padding: 16, gap: 20 }}
       data={items}
       keyExtractor={(x) => x.id}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} />}
@@ -169,31 +170,18 @@ function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
   const { t } = useTranslation();
   const lang = useLang();
   const c = usePalette();
-  const lightMode = c.page === c.surface;
+  const cardSurface = useCardSurface();
   return (
     <Link href={`/campaign/${campaign.slug}`} asChild>
       <Pressable
         accessibilityRole="link"
         testID={`campaign-card-${campaign.slug}`}
-        style={({ pressed }) => [
-          {
-            backgroundColor: c.surface,
-            borderColor: c.border,
-            borderWidth: 1,
-            borderRadius: radius.lg,
-            shadowColor: c.ink,
-            shadowOpacity: lightMode ? 0.12 : 0,
-            shadowRadius: lightMode ? 16 : 0,
-            shadowOffset: { width: 0, height: lightMode ? 8 : 0 },
-            elevation: lightMode ? 3 : 0,
-            opacity: pressed ? 0.92 : 1,
-          },
-        ]}
+        style={cardSurface}
       >
-        <View style={{ overflow: 'hidden', borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg }}>
+        <View style={{ overflow: 'hidden', borderStartStartRadius: radius.lg - 1, borderStartEndRadius: radius.lg - 1 }}>
           <CampaignCover coverKey={campaign.coverKey} height={132} />
         </View>
-        <View style={{ padding: 16, gap: 16 }}>
+        <View style={{ padding: 16, gap: 10 }}>
           <View style={styles.row}>
             <CategoryBadge category={campaign.category} />
             <PriorityBadge priority={campaign.priority} />
@@ -219,7 +207,7 @@ function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
               {t('campaign.ofTarget', { target: money(campaign.targetAmount, campaign.currency, lang) })}
             </AppText>
           </AppText>
-          <View style={[styles.row, { justifyContent: 'space-between' }]}>
+          <View style={[styles.row, { justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: c.border, paddingTop: 10 }]}>
             <AppText size="xs" tone="muted" testID="beneficiaries-count">
               {t('campaign.beneficiaries', { count: campaign.beneficiariesCount })}
             </AppText>

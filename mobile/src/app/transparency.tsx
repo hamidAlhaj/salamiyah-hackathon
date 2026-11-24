@@ -60,7 +60,7 @@ export default function TransparencyScreen() {
   return (
     <ScrollView
       testID="transparency-screen"
-      contentContainerStyle={{ padding: 16, gap: 24, paddingBottom: 40 }}
+      contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} />}
     >
       {offline && <Notice tone="danger">{t('offline')}</Notice>}
@@ -72,7 +72,7 @@ export default function TransparencyScreen() {
             style={{ backgroundColor: c.panel, borderRadius: radius.lg, padding: 20, gap: 16 }}
           >
             <View style={{ gap: 6 }}>
-              <AppText display size="xl" style={{ color: c.panelInk }}>
+              <AppText display size="xl" style={{ color: c.onBrand }}>
                 {t('transparency.heading')}
               </AppText>
               <AppText size="sm" style={{ color: c.panelInk }}>
@@ -84,14 +84,14 @@ export default function TransparencyScreen() {
                 key={f.key}
                 testID={`hero-${f.key}`}
                 accessibilityLabel={`${f.label}: ${f.value}`}
-                style={{ borderTopWidth: 1, borderTopColor: c.panelInk, paddingTop: 10 }}
+                style={{ borderTopWidth: 1, borderTopColor: `${c.onBrand}26`, paddingTop: 10 }}
               >
                 <AppText size="sm" style={{ color: c.panelInk }}>
                   {f.label}
                 </AppText>
                 <AppText
                   style={{
-                    color: c.panelInk,
+                    color: c.onBrand,
                     fontFamily: fonts.display,
                     fontSize: 30,
                     lineHeight: 44,
@@ -108,13 +108,13 @@ export default function TransparencyScreen() {
               <View
                 accessibilityRole="progressbar"
                 accessibilityValue={{ min: 0, max: 100, now: Math.min(100, Number(totals.spentPercent)) }}
-                style={{ height: 10, borderRadius: 5, overflow: 'hidden', backgroundColor: c.panelInk }}
+                style={{ height: 10, borderRadius: 5, overflow: 'hidden', backgroundColor: `${c.onBrand}26` }}
               >
                 <View
                   style={{
                     width: `${Math.min(100, Number(totals.spentPercent))}%`,
                     height: '100%',
-                    backgroundColor: c.panelInk,
+                    backgroundColor: `${c.onBrand}D9`,
                   }}
                 />
               </View>
