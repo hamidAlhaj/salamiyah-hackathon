@@ -7,6 +7,8 @@
 
 # Athar (أثر) — Donation Automation for the Local Council in Salamiyah
 
+## Overview
+
 Hackathon proof of concept (official idea, Team 4) for the Local Council of Salamiyah, Syria: a simple web platform
 (plus a donor mobile app) to manage and document local donation campaigns transparently. The council creates campaigns
 in data-driven categories — **orphan sponsorship, home renovation, medical aid** and any category an admin adds — with a
@@ -18,6 +20,34 @@ total collected, the amounts spent with proof, and the beneficiaries — by anon
 > collector PWA, transparency dashboard, optional Google sign-in) and the Expo donor app, with a deterministic demo seed,
 > the judges' walkthrough in [DEMO.md](DEMO.md) (Arabic) and a Playwright suite for it in `e2e/`. The build log is
 > `docs/_analysis/overnight-report.md`; the plan is `docs/_analysis/05-execution-plan.md` §7.
+
+## Team Members
+
+Team 4 — «أثر» / Athar. Roles and contributions match the Project Brief (`docs/submission/`) and the Git history.
+
+| Name | Role | Main contribution | GitHub |
+|---|---|---|---|
+| حميد الدين الحاج · Hamid Alhaj | Team Leader, Mobile & Backend | Led the project; built the NestJS backend, the database and the React Native mobile app | [@hamidAlhaj](https://github.com/hamidAlhaj) |
+| رامي الشعار · Rami Alshaar | Backend & Frontend, Security Tester | Backend security testing (OWASP ZAP scan, XSS, SQL/NoSQL injection, rate limiting, auth checks) and the web redesign | [@RamiAlshaar](https://github.com/RamiAlshaar) |
+| بدر الجرف · Badr Aljerf | Frontend, Presentation | Frontend work (donor registration page, mobile restyle) and the final presentation | [@Badr-pixel-netizen](https://github.com/Badr-pixel-netizen) |
+| يوسف يوسف · Yousef Yousef | Frontend | Next.js frontend pages and UI (email and password registration) | [@Yousef2001yousef](https://github.com/Yousef2001yousef) |
+| نوار حسن · Nawar Hasan | Mobile | React Native mobile app screens and device testing | [@nawarhasan55](https://github.com/nawarhasan55) |
+
+## Tech Stack
+
+| Part | Technology |
+|---|---|
+| Backend | NestJS 10, Prisma 5 + PostgreSQL, passport-jwt (Bearer JWT), bcrypt, class-validator, Swagger (`@nestjs/swagger`), Jest |
+| Frontend | Next.js 15 (App Router, Server Components + Server Actions), React 19, Tailwind CSS 3, next-intl (Arabic RTL / English), Redux Toolkit, Vitest |
+| Mobile | React Native with Expo SDK 58 (expo-router, expo-secure-store), TypeScript |
+| Testing / docs | Playwright end-to-end suite (`e2e/`), Postman v2.1 collection, Swagger UI |
+
+## Prerequisites
+
+- **Node.js 24.12.0** (see `.nvmrc`) and npm (no pnpm / yarn).
+- **PostgreSQL 16+** running locally on port 5432 (no Docker needed).
+- **Git**, and **Google Chrome** for the Playwright end-to-end tests.
+- For the mobile app: the **Expo Go** app on an Android / iOS phone on the same Wi-Fi, or an Android emulator.
 
 ## Main Features
 
@@ -63,6 +93,13 @@ service); the others are public.
 | Imports (4) | `POST /imports/preview` 🔒 · `POST /imports/:id/validate` 🔒 · `POST /imports/:id/commit` 🔒 · `GET /imports/:id/errors.csv` 🔒 |
 | Audit (3) | `GET /audit` 🔒 · `GET /audit/campaigns/:id` 🔒 · `GET /audit/cases/:id` 🔒 |
 
+## API Documentation (Swagger · Postman)
+
+- **Swagger UI:** `http://localhost:4000/api/docs` (built with `@nestjs/swagger`): every endpoint with its DTOs,
+  request bodies, responses, Bearer authentication and the main error codes. Raw OpenAPI JSON: `/api/docs-json`.
+- **Postman collection (v2.1):** [`docs/postman/salamiyah-hackathon.postman_collection.json`](docs/postman/). It uses the variables `{{baseUrl}}` and `{{token}}` (no hard-coded values, no real
+  secrets); the "Auth → Login" request stores the token automatically. Folders follow the domains of the table above.
+
 ## Repository layout
 
 ```
@@ -77,6 +114,17 @@ docs/     input/ (source PDFs, brief, idea, meeting) · analysis/ · _analysis/ 
 
 Three separate npm projects (plus the `e2e/` test tool): no workspaces, no shared packages, no Docker. Rules for contributors and Claude Code are in
 [CLAUDE.md](CLAUDE.md).
+
+## Environment Variables
+
+Each part has its own example file with every variable it needs and **placeholder values only**. Copy it to `.env`
+(never commit `.env`):
+
+| File | Variables |
+|---|---|
+| `backend/.env.example` | `DATABASE_URL`, `PORT`, `WEB_ORIGIN`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `NATIONAL_ID_HMAC_KEY`, `STORAGE_LOCAL_DIR`, `PUBLIC_WEB_URL`, `DEMO_MODE`, `SLA_DAYS`, `SLA_CHECK_MINUTES`, `DEMO_WHATSAPP_NUMBERS`, optional `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_CALLBACK_URL`, optional `RESEND_API_KEY` / `EMAIL_REGISTRATION_FROM` / `EMAIL_REGISTRATION_ORIGIN` |
+| `frontend/.env.example` | `NEST_API_URL` (server-side only: the browser never calls the API directly, so there is no `NEXT_PUBLIC_` API URL), `SITE_URL`, `NODE_ENV`, `SESSION_COOKIE_SECURE` |
+| `mobile/.env.example` | `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_SITE_URL` |
 
 ## Run it locally (Windows first)
 
@@ -301,6 +349,25 @@ runs the 7-step demo scenario. The scenario changes the data: run `npm run demo:
 `E2E_WEB_URL` / `E2E_API_URL` (defaults `http://localhost:3000` / `:4000`), `E2E_LAN_URL=http://<LAN-IP>:3000` (checks the
 LAN login), `E2E_ALERT_DONORS` (1 + the count of `DEMO_WHATSAPP_NUMBERS`, default 3), `E2E_SCREENSHOTS=1` (writes
 `docs/screenshots/p16/`).
+
+## Demo URL and mobile app
+
+- **Demo URL:** not deployed — the hackathon demo runs locally on the council laptop
+  (web `http://localhost:3000`, API `http://localhost:4000`, Swagger `http://localhost:4000/api/docs`); phones on the
+  same Wi-Fi open the LAN address (see [DEMO.md](DEMO.md)).
+- **Mobile APK / Expo link:** run `cd mobile && npx expo start` and scan the QR code with **Expo Go** (Android / iOS),
+  or press `a` for an Android emulator. No signed APK is published for the hackathon.
+
+## Known Limitations
+
+- Electronic payments (ShamCash, Syriatel Cash, MTN Cash, PayPal, Visa) are **simulated** («Demo» badge) and never count
+  as verified money; the real path is transfer + receipt upload + finance verification.
+- Bank / wallet receiving details are **fake placeholders**; all seed data is fictional.
+- WhatsApp messages go to an internal outbox and are sent with one-tap `wa.me` links — no WhatsApp API.
+- Uploads are stored on the local disk (`STORAGE_LOCAL_DIR`), not in cloud storage; no production deployment yet.
+- Google sign-in and email registration are optional and need their own keys in `backend/.env`.
+- Future scope (not built): food baskets, education, monthly collection-point box collection, joint approval,
+  Aga Khan transfers, monthly reconciliation.
 
 ## Checks before every push
 Each line starts from the repository root.
