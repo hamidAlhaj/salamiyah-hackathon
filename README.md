@@ -172,7 +172,7 @@ EMAIL_REGISTRATION_FROM="Athar <signup@your-verified-domain.example>"
 EMAIL_REGISTRATION_ORIGIN="http://localhost:3000"
 ```
 
-Use the public HTTPS website origin for recipients on other devices. Choose **Register with email** on `/register` and request a verification link. It expires after 30 minutes. Open it to enter a name and password, then log in with the email address and password. Donors add a phone in their profile before donating. Phone registration and Google sign-in use their existing setup.
+Verify the sender domain in Resend before testing. HTTP is accepted only for `localhost` during local development; use the public HTTPS website origin for recipients on other devices. Choose **Register with email** on `/register` and request a verification link. It expires after 30 minutes. Open it to enter a name and password, then log in with the email address and password. Donors add a phone in their profile before donating. Phone registration and Google sign-in use their existing setup.
 
 ### 5a. Sign in with Google (optional, off by default)
 Phone + password stays the main login (staff, collectors, older donors) and is unchanged. "Continue with Google"
