@@ -69,10 +69,10 @@ export default function TransparencyScreen() {
         <>
           <View
             testID="transparency-hero"
-            style={{ backgroundColor: c.panel, borderRadius: 24, padding: 20, gap: 16 }}
+            style={{ backgroundColor: c.panel, borderRadius: radius.lg, padding: 20, gap: 16 }}
           >
             <View style={{ gap: 6 }}>
-              <AppText display size="xl" style={{ color: '#ffffff' }}>
+              <AppText display size="xl" style={{ color: c.onBrand }}>
                 {t('transparency.heading')}
               </AppText>
               <AppText size="sm" style={{ color: c.panelInk }}>
@@ -84,14 +84,14 @@ export default function TransparencyScreen() {
                 key={f.key}
                 testID={`hero-${f.key}`}
                 accessibilityLabel={`${f.label}: ${f.value}`}
-                style={{ borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.15)', paddingTop: 10 }}
+                style={{ borderTopWidth: 1, borderTopColor: `${c.onBrand}26`, paddingTop: 10 }}
               >
                 <AppText size="sm" style={{ color: c.panelInk }}>
                   {f.label}
                 </AppText>
                 <AppText
                   style={{
-                    color: '#ffffff',
+                    color: c.onBrand,
                     fontFamily: fonts.display,
                     fontSize: 30,
                     lineHeight: 44,
@@ -108,13 +108,13 @@ export default function TransparencyScreen() {
               <View
                 accessibilityRole="progressbar"
                 accessibilityValue={{ min: 0, max: 100, now: Math.min(100, Number(totals.spentPercent)) }}
-                style={{ height: 10, borderRadius: 5, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.15)' }}
+                style={{ height: 10, borderRadius: 5, overflow: 'hidden', backgroundColor: `${c.onBrand}26` }}
               >
                 <View
                   style={{
                     width: `${Math.min(100, Number(totals.spentPercent))}%`,
                     height: '100%',
-                    backgroundColor: 'rgba(255,255,255,0.85)',
+                    backgroundColor: `${c.onBrand}D9`,
                   }}
                 />
               </View>

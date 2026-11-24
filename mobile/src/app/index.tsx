@@ -16,6 +16,7 @@ import {
   Notice,
   PriorityBadge,
   styles,
+  useCardSurface,
 } from '@/ui/components';
 import { radius, usePalette } from '@/ui/theme';
 
@@ -65,11 +66,12 @@ export default function CampaignsScreen() {
   );
 
   const header = (
-    <View style={{ gap: 14, paddingBottom: 4 }}>
-      <View style={{ gap: 4 }}>
-        <AppText display size="xl">
+    <View style={{ gap: 24, paddingTop: 8, paddingBottom: 4 }}>
+      <View style={{ gap: 8 }}>
+        <AppText display size="xl" accessibilityRole="header">
           {t('browse.title')}
         </AppText>
+        <View aria-hidden style={{ width: 32, height: 2, backgroundColor: c.gold }} />
         <AppText size="sm" tone="muted">
           {t('browse.intro')}
         </AppText>
@@ -82,59 +84,61 @@ export default function CampaignsScreen() {
         onPress={() => router.push('/campaign/general-fund')}
       />
       {offline && <Notice tone="danger">{t('offline')}</Notice>}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        accessibilityLabel={t('browse.categoriesLabel')}
-        contentContainerStyle={{ gap: 8 }}
-        testID="category-chips"
-      >
-        <Chip
-          label={t('browse.all')}
-          selected={category === undefined}
-          onPress={() => setCategory(undefined)}
-          testID="category-ALL"
-        />
-        {categories.map((cat) => (
+      <View style={{ gap: 10, backgroundColor: c.surfaceMuted, borderRadius: radius.lg, padding: 12 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          accessibilityLabel={t('browse.categoriesLabel')}
+          contentContainerStyle={{ gap: 8 }}
+          testID="category-chips"
+        >
           <Chip
-            key={cat.id}
-            label={cat.name}
-            icon={cat.icon}
-            selected={category === cat.code}
-            onPress={() => setCategory(cat.code)}
-            testID={`category-${cat.code}`}
+            label={t('browse.all')}
+            selected={category === undefined}
+            onPress={() => setCategory(undefined)}
+            testID="category-ALL"
           />
-        ))}
-      </ScrollView>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        accessibilityLabel={t('browse.priorityLabel')}
-        contentContainerStyle={{ gap: 8 }}
-      >
-        <Chip
-          label={t('browse.priorityAll')}
-          selected={priority === undefined}
-          onPress={() => setPriority(undefined)}
-          testID="priority-ALL"
-        />
-        {PRIORITIES.map((p) => (
+          {categories.map((cat) => (
+            <Chip
+              key={cat.id}
+              label={cat.name}
+              icon={cat.icon}
+              selected={category === cat.code}
+              onPress={() => setCategory(cat.code)}
+              testID={`category-${cat.code}`}
+            />
+          ))}
+        </ScrollView>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          accessibilityLabel={t('browse.priorityLabel')}
+          contentContainerStyle={{ gap: 8 }}
+        >
           <Chip
-            key={p}
-            label={t(`priority.${p}`)}
-            selected={priority === p}
-            onPress={() => setPriority(p)}
-            testID={`priority-${p}`}
+            label={t('browse.priorityAll')}
+            selected={priority === undefined}
+            onPress={() => setPriority(undefined)}
+            testID="priority-ALL"
           />
-        ))}
-      </ScrollView>
+          {PRIORITIES.map((p) => (
+            <Chip
+              key={p}
+              label={t(`priority.${p}`)}
+              selected={priority === p}
+              onPress={() => setPriority(p)}
+              testID={`priority-${p}`}
+            />
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 
   return (
     <FlatList
       style={{ flex: 1, backgroundColor: c.page }}
-      contentContainerStyle={{ padding: 16, gap: 14 }}
+      contentContainerStyle={{ padding: 16, gap: 20 }}
       data={items}
       keyExtractor={(x) => x.id}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} />}
@@ -166,23 +170,17 @@ function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
   const { t } = useTranslation();
   const lang = useLang();
   const c = usePalette();
+  const cardSurface = useCardSurface();
   return (
     <Link href={`/campaign/${campaign.slug}`} asChild>
       <Pressable
         accessibilityRole="link"
         testID={`campaign-card-${campaign.slug}`}
-        style={({ pressed }) => [
-          {
-            backgroundColor: c.surface,
-            borderColor: c.border,
-            borderWidth: 1,
-            borderRadius: radius.lg,
-            overflow: 'hidden',
-            opacity: pressed ? 0.92 : 1,
-          },
-        ]}
+        style={cardSurface}
       >
-        <CampaignCover coverKey={campaign.coverKey} height={132} />
+        <View style={{ overflow: 'hidden', borderStartStartRadius: radius.lg - 1, borderStartEndRadius: radius.lg - 1 }}>
+          <CampaignCover coverKey={campaign.coverKey} height={132} />
+        </View>
         <View style={{ padding: 16, gap: 10 }}>
           <View style={styles.row}>
             <CategoryBadge category={campaign.category} />
@@ -209,7 +207,7 @@ function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
               {t('campaign.ofTarget', { target: money(campaign.targetAmount, campaign.currency, lang) })}
             </AppText>
           </AppText>
-          <View style={[styles.row, { justifyContent: 'space-between' }]}>
+          <View style={[styles.row, { justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: c.border, paddingTop: 10 }]}>
             <AppText size="xs" tone="muted" testID="beneficiaries-count">
               {t('campaign.beneficiaries', { count: campaign.beneficiariesCount })}
             </AppText>
