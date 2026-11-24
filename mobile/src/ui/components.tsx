@@ -1,18 +1,22 @@
 import type { ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   type TextProps,
+  useColorScheme,
   View,
   type ViewProps,
+  type ViewStyle,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import type { Priority, PublicCampaignCategory } from '@/shared';
 import { fundingSegments } from '@/lib/funding';
 import { CategoryIcon } from './CategoryIcon';
-import { fonts, radius, type, usePalette } from './theme';
+import { fonts, radius, type, usePalette, type Palette } from './theme';
 
 type Tone = 'ink' | 'muted' | 'accent' | 'danger' | 'warning';
 type Size = keyof typeof type;
@@ -52,17 +56,28 @@ export function AppText({
 }
 
 export function Card({ style, ...rest }: ViewProps) {
+  const surface = useCardSurface();
+  return <View style={[surface, styles.card, style]} {...rest} />;
+}
+
+export function useCardSurface(): ViewStyle {
   const c = usePalette();
-  return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: c.surface, borderColor: c.border },
-        style,
-      ]}
-      {...rest}
-    />
-  );
+  const surface = {
+    backgroundColor: c.surface,
+    borderColor: c.border,
+    borderWidth: 1,
+    borderRadius: radius.lg,
+  };
+  if (useColorScheme() === 'dark') return surface;
+  if (Platform.OS === 'web') return { ...surface, boxShadow: `0px 8px 16px ${c.ink}1F` };
+  return {
+    ...surface,
+    shadowColor: c.ink,
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+  };
 }
 
 /**
@@ -86,8 +101,8 @@ export function Button({
   accessibilityLabel?: string;
 }) {
   const c = usePalette();
-  const bg = variant === 'primary' ? c.accent : variant === 'give' ? c.give : 'transparent';
-  const fg = variant === 'primary' ? c.surface : variant === 'give' ? c.giveInk : c.accent;
+  const bg = variant === 'primary' ? c.primary : variant === 'give' ? c.give : 'transparent';
+  const fg = variant === 'primary' ? c.onBrand : variant === 'give' ? c.giveInk : c.accent;
   return (
     <Pressable
       accessibilityRole="button"
@@ -98,14 +113,14 @@ export function Button({
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
-        variant === 'secondary' && { borderWidth: 1, borderColor: c.border },
+        { backgroundColor: bg, opacity: disabled || loading ? 0.6 : pressed ? 0.85 : 1 },
+        variant === 'secondary' && { borderWidth: 1, borderColor: c.accent },
       ]}
     >
       {loading ? (
         <ActivityIndicator color={fg} />
       ) : (
-        <AppText weight="bold" style={{ color: fg }}>
+        <AppText weight="bold" style={{ color: fg, textAlign: 'center' }}>
           {title}
         </AppText>
       )}
@@ -132,20 +147,44 @@ export function Chip({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
+      aria-pressed={selected}
       testID={testID}
       onPress={onPress}
-      style={[
+      style={({ pressed }) => [
         styles.chip,
-        selected
-          ? { backgroundColor: c.accent, borderColor: c.accent }
-          : { backgroundColor: c.surface, borderColor: c.border },
+        choiceSurface(c, selected),
+        { opacity: pressed ? 0.85 : 1 },
       ]}
     >
-      {icon && <CategoryIcon icon={icon} color={selected ? c.surface : c.accent} size={17} />}
-      <AppText size="sm" weight="medium" style={{ color: selected ? c.surface : c.ink }}>
+      {icon && <CategoryIcon icon={icon} color={c.accentStrong} size={17} />}
+      <AppText size="sm" weight="medium" style={{ color: c.accentStrong, fontWeight: '600' }}>
         {label}
       </AppText>
+      {selected && <SelectedMark />}
     </Pressable>
+  );
+}
+
+export function choiceSurface(c: Palette, selected: boolean): ViewStyle {
+  return {
+    borderWidth: selected ? 1.5 : 1,
+    borderColor: selected ? c.accent : c.border,
+    backgroundColor: selected ? c.accentSoft : c.surface,
+  };
+}
+
+export function SelectedMark() {
+  const c = usePalette();
+  return (
+    <Svg width={16} height={16} viewBox="0 0 16 16" fill="none" aria-hidden>
+      <Path
+        d="M3 8l3 3 7-7"
+        stroke={c.accentStrong}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
   );
 }
 
@@ -153,8 +192,8 @@ export function CategoryBadge({ category }: { category: PublicCampaignCategory }
   const c = usePalette();
   return (
     <View style={[styles.badge, { backgroundColor: c.accentSoft }]}>
-      <CategoryIcon icon={category.icon} color={c.accent} size={15} />
-      <AppText size="xs" weight="medium" tone="accent">
+      <CategoryIcon icon={category.icon} color={c.accentStrong} size={15} />
+      <AppText size="xs" weight="medium" style={{ color: c.accentStrong, fontWeight: '600' }}>
         {category.name}
       </AppText>
     </View>
@@ -264,11 +303,12 @@ export function Notice({ tone, children }: { tone: 'danger' | 'success' | 'muted
 }
 
 export const styles = StyleSheet.create({
-  card: { borderRadius: radius.lg, borderWidth: 1, padding: 16, gap: 10 },
+  card: { padding: 16, gap: 10 },
   button: {
     minHeight: 48,
     paddingHorizontal: 18,
-    borderRadius: radius.md,
+    paddingVertical: 8,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -276,10 +316,9 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    minHeight: 40,
+    minHeight: 44,
     paddingHorizontal: 14,
     borderRadius: radius.pill,
-    borderWidth: 1,
   },
   badge: {
     flexDirection: 'row',

@@ -3,26 +3,22 @@
 @tailwind utilities;
 
 @layer base {
-  /* Theme tokens as "R G B" (see tailwind.config.ts). Text pairs are chosen for WCAG AA in both
-     themes (measured in P21): light ink on page 16.6:1, muted on page 7.3:1, accent on page 5.5:1,
-     control on surface 4.1:1; dark ink on page 16.3:1, muted 8.2:1, accent 8.6:1, control 4.2:1. */
-
-  /* Light: clean morning white. A near-white page with a breath of mint, pure-white cards lifted by
-     a hairline border and a soft green-tinted shadow, and a fresh Salamiyah green for every accent. */
+  /* Contrast from the design proposal. Light ink 16.01:1, muted 7.29:1 and accent 6.64:1
+     on white. Muted 6.41:1 and accent 5.84:1 on mint. */
   :root {
     color-scheme: light;
-    --page: 246 249 247; /* #f6f9f7 */
+    --page: 255 255 255;
     --surface: 255 255 255; /* #ffffff cards, inputs, header */
-    --surface-muted: 239 245 241; /* #eff5f1 recessed panels, mint not grey */
-    --border: 222 231 226; /* #dee7e2 hairline */
-    --track: 220 231 224; /* #dce7e0 progress track, skeletons */
+    --surface-muted: 235 242 238;
+    --border: 227 234 229;
+    --track: 221 231 225;
     --control: 110 130 120; /* #6e8278 input outlines */
-    --text: 13 28 21; /* #0d1c15 green-black ink */
-    --text-muted: 69 87 78; /* #45574e */
-    --ring: 31 138 91; /* brand-500 */
-    --accent: 24 115 75; /* brand-600: links, active text */
-    --accent-strong: 19 91 60; /* brand-700 */
-    --accent-soft: 225 244 233; /* #e1f4e9 chips, selected */
+    --text: 24 36 32;
+    --text-muted: 74 90 84;
+    --ring: 15 107 47;
+    --accent: 15 107 47;
+    --accent-strong: 11 82 36;
+    --accent-soft: 230 242 236;
     --danger: 168 36 26; /* #a8241a */
     --danger-soft: 253 236 233; /* #fdece9 */
     --danger-line: 245 200 192; /* #f5c8c0 */
@@ -31,15 +27,18 @@
     --warning-line: 240 214 158; /* #f0d69e */
     --info: 15 76 110; /* #0f4c6e */
     --info-soft: 228 241 248; /* #e4f1f8 */
-    --panel: 14 74 51; /* #0e4a33 deep Salamiyah green: brand panel, logo tile */
-    --panel-ink: 230 245 237;
+    --panel: 11 61 42;
+    --panel-ink: 230 242 236;
+    --footer: 23 33 28;
+    --footer-ink: 201 211 206;
+    --footer-muted: 163 177 170;
     --lattice: rgb(255 255 255 / 0.1); /* star lattice lines on the panel */
-    --lattice-soft: rgb(24 115 75 / 0.07); /* star lattice on light surfaces */
+    --lattice-soft: rgb(15 107 47 / 0.07);
     /* Chart series (validated for CVD separation and contrast on the surface): money in, money out. */
-    --series-collected: 217 111 26; /* give-600 #d96f1a */
-    --series-spent: 24 115 75; /* brand-600 #18734b */
-    --shadow-card: 0 1px 2px rgb(14 74 51 / 0.04), 0 4px 14px -6px rgb(14 74 51 / 0.1);
-    --shadow-lift: 0 18px 36px -16px rgb(14 74 51 / 0.22), 0 4px 10px rgb(14 74 51 / 0.05);
+    --series-collected: 180 85 18;
+    --series-spent: 15 107 47;
+    --shadow-card: 0 1px 2px rgb(24 36 32 / 0.04), 0 20px 40px -24px rgb(24 36 32 / 0.28);
+    --shadow-lift: 0 24px 48px -20px rgb(24 36 32 / 0.32);
   }
 
   /* Dark: deep pine, never pure black; elevation becomes a faint outline. */
@@ -53,9 +52,9 @@
     --control: 113 131 122; /* #71837a */
     --text: 236 242 238;
     --text-muted: 160 176 167;
-    --ring: 70 162 122; /* brand-400 */
-    --accent: 121 191 159; /* brand-300 */
-    --accent-strong: 172 217 197; /* brand-200 */
+    --ring: 107 207 165;
+    --accent: 107 207 165;
+    --accent-strong: 172 217 197;
     --accent-soft: 22 54 40; /* #163628 */
     --danger: 252 165 165;
     --danger-soft: 61 27 25;
@@ -68,11 +67,14 @@
     --panel: 10 41 29; /* deeper than brand-900 so it still reads as a panel */
     --panel-ink: 214 236 225;
     --lattice: rgb(255 255 255 / 0.06);
-    --lattice-soft: rgb(121 191 159 / 0.06);
-    --series-collected: 217 111 26; /* #d96f1a */
-    --series-spent: 70 162 122; /* brand-400 #46a27a */
-    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.03);
-    --shadow-lift: 0 0 0 1px rgb(255 255 255 / 0.07), 0 14px 32px -12px rgb(0 0 0 / 0.7);
+    --lattice-soft: rgb(107 207 165 / 0.06);
+    --series-collected: 246 163 74;
+    --footer: 10 16 13;
+    --footer-ink: 201 211 206;
+    --footer-muted: 163 177 170;
+    --series-spent: 107 207 165;
+    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.04);
+    --shadow-lift: 0 0 0 1px rgb(255 255 255 / 0.08), 0 14px 32px -12px rgb(0 0 0 / 0.7);
   }
 
   html {
@@ -99,6 +101,30 @@
 }
 
 @layer components {
+  .section-title::after {
+    content: '';
+    display: block;
+    inline-size: 3rem;
+    block-size: 2px;
+    margin-block-start: 0.5rem;
+    @apply bg-gold-500;
+  }
+  .bg-panel .section-title::after {
+    @apply bg-gold-400;
+  }
+  .hero-scrim {
+    background: linear-gradient(to left, rgb(0 0 0 / 0.78), rgb(0 0 0 / 0.62) 48%, rgb(0 0 0 / 0.13));
+  }
+  [dir='ltr'] .hero-scrim {
+    background: linear-gradient(to right, rgb(0 0 0 / 0.78), rgb(0 0 0 / 0.62) 48%, rgb(0 0 0 / 0.13));
+  }
+  @media (max-width: 639px) {
+    .hero-scrim,
+    [dir='ltr'] .hero-scrim {
+      background: linear-gradient(to top, rgb(0 0 0 / 0.82), rgb(0 0 0 / 0.66) 64%, rgb(0 0 0 / 0.42));
+    }
+  }
+
   /* Loading placeholder with a soft shimmer (static when motion is reduced). */
   .skeleton {
     @apply animate-shimmer rounded-2xl bg-track;
@@ -155,18 +181,18 @@
   :root,
   .dark {
     color-scheme: light;
-    --page: 246 249 247; /* #f6f9f7 */
+    --page: 255 255 255;
     --surface: 255 255 255; /* #ffffff cards, inputs, header */
-    --surface-muted: 239 245 241; /* #eff5f1 recessed panels, mint not grey */
-    --border: 222 231 226; /* #dee7e2 hairline */
-    --track: 220 231 224; /* #dce7e0 progress track, skeletons */
+    --surface-muted: 235 242 238;
+    --border: 227 234 229;
+    --track: 221 231 225;
     --control: 110 130 120; /* #6e8278 input outlines */
-    --text: 13 28 21; /* #0d1c15 green-black ink */
-    --text-muted: 69 87 78; /* #45574e */
-    --ring: 31 138 91; /* brand-500 */
-    --accent: 24 115 75; /* brand-600: links, active text */
-    --accent-strong: 19 91 60; /* brand-700 */
-    --accent-soft: 225 244 233; /* #e1f4e9 chips, selected */
+    --text: 24 36 32;
+    --text-muted: 74 90 84;
+    --ring: 15 107 47;
+    --accent: 15 107 47;
+    --accent-strong: 11 82 36;
+    --accent-soft: 230 242 236;
     --danger: 168 36 26; /* #a8241a */
     --danger-soft: 253 236 233; /* #fdece9 */
     --danger-line: 245 200 192; /* #f5c8c0 */
@@ -175,15 +201,18 @@
     --warning-line: 240 214 158; /* #f0d69e */
     --info: 15 76 110; /* #0f4c6e */
     --info-soft: 228 241 248; /* #e4f1f8 */
-    --panel: 14 74 51; /* #0e4a33 deep Salamiyah green: brand panel, logo tile */
-    --panel-ink: 230 245 237;
+    --panel: 11 61 42;
+    --panel-ink: 230 242 236;
+    --footer: 23 33 28;
+    --footer-ink: 201 211 206;
+    --footer-muted: 163 177 170;
     --lattice: rgb(255 255 255 / 0.1); /* star lattice lines on the panel */
-    --lattice-soft: rgb(24 115 75 / 0.07); /* star lattice on light surfaces */
+    --lattice-soft: rgb(15 107 47 / 0.07);
     /* Chart series (validated for CVD separation and contrast on the surface): money in, money out. */
-    --series-collected: 217 111 26; /* give-600 #d96f1a */
-    --series-spent: 24 115 75; /* brand-600 #18734b */
-    --shadow-card: 0 1px 2px rgb(14 74 51 / 0.04), 0 4px 14px -6px rgb(14 74 51 / 0.1);
-    --shadow-lift: 0 18px 36px -16px rgb(14 74 51 / 0.22), 0 4px 10px rgb(14 74 51 / 0.05);
+    --series-collected: 180 85 18;
+    --series-spent: 15 107 47;
+    --shadow-card: 0 1px 2px rgb(24 36 32 / 0.04), 0 20px 40px -24px rgb(24 36 32 / 0.28);
+    --shadow-lift: 0 24px 48px -20px rgb(24 36 32 / 0.32);
   }
   html,
   body {

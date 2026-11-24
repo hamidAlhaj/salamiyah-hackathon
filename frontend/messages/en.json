@@ -15,6 +15,9 @@
     "transparency": "Transparency",
     "fund": "Council fund"
   },
+  "footer": {
+    "photoCredit": "Hero photo: <photo>View from Shmemis Castle</photo> — Jdowny, <license>CC BY-SA 3.0</license>, Wikimedia Commons (cropped)"
+  },
   "home": {
     "filterAll": "All",
     "empty": "There are no published campaigns in this category right now.",

@@ -338,6 +338,10 @@ Libraries used here that the b4f reference does not have. Each one is pinned to 
 | `passport-google-oauth20`, `@types/passport-google-oauth20` (dev) | backend | Optional "Sign in with Google" (OAuth 2.0 strategy for the installed `passport` 0.7.0 / `@nestjs/passport` 10.0.3); off unless the three `GOOGLE_*` keys are set | 2.0.0 / 2.0.17 | P22 |
 
 ## Docs
+
+### Credits
+
+- Hero photo: [View from Shmemis Castle](https://commons.wikimedia.org/wiki/File:View_from_Shmemis_Castle.jpg) by Jdowny via Wikimedia Commons, [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) (cropped).
 - `docs/input/`: council PoC proposal (**primary requirement source**), full system specification, team brief (ar/en),
   original idea, meeting recording.
 - `docs/analysis/`: meeting transcript and summary, earlier requirements/architecture drafts (historical).

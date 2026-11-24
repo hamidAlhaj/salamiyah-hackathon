@@ -91,7 +91,7 @@ export default async function TransparencyPage() {
       {/* ── The open account ── */}
       <section className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 lg:pt-12">
         <div
-          className="relative isolate overflow-hidden rounded-[28px] bg-panel p-6 text-panel-ink shadow-lift sm:p-10"
+          className="relative isolate overflow-hidden rounded-panel bg-panel p-6 text-panel-ink shadow-lift sm:p-10"
           data-testid="transparency-hero"
         >
           <StarLattice className="absolute inset-0 -z-10 h-full w-full" />

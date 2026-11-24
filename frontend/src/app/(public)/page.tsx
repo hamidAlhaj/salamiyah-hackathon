@@ -17,7 +17,7 @@ interface Step {
 
 const CODE_RE = /^[A-Z][A-Z0-9_]{2,39}$/;
 
-/** Public home: the open ledger first, then every campaign category from the API. */
+/** Public home with the council ledger and every campaign category from the API. */
 export default async function HomePage({
   searchParams,
 }: {
@@ -52,126 +52,142 @@ export default async function HomePage({
 
   return (
     <>
-      <section className="mx-auto grid max-w-6xl gap-10 px-4 pb-14 pt-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14 lg:pt-16">
-        <div className="flex flex-col justify-center">
-          <p className="text-sm font-medium text-accent">{t('kicker')}</p>
-          <h1 className="mt-3 max-w-[20ch] font-display text-4xl font-bold leading-tight sm:text-5xl">
+      <section className="relative isolate bg-panel bg-[url('/images/hero/shmemis-mobile.webp')] bg-cover bg-center text-white [--ring:107_207_165] sm:bg-[url('/images/hero/shmemis-desktop.webp')]">
+        <div className="hero-scrim absolute inset-0 -z-10" aria-hidden="true" />
+        <div className="mx-auto flex min-h-[28rem] max-w-content flex-col justify-end px-4 py-[clamp(3rem,7vw,5.5rem)] sm:min-h-[32rem] sm:px-6">
+          <p className="self-start rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
+            {t('kicker')}
+          </p>
+          <h1 className="mt-4 max-w-[22ch] font-display text-3xl font-bold leading-tight sm:text-5xl">
             {t('heroTitle')}
           </h1>
-          <p className="mt-5 max-w-[60ch] text-lg text-muted">{t('heroBody')}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="#campaigns" className={buttonClasses('primary', 'lg')}>
+          <p className="mt-4 max-w-[52ch] text-base sm:text-read">{t('heroBody')}</p>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link href="#campaigns" className={buttonClasses('primary', 'lg', 'w-full sm:w-auto')}>
               {t('ctaCases')}
             </Link>
-            <Link href="/track" className={buttonClasses('secondary', 'lg')}>
-              {t('ctaTrack')}
+            <Link
+              href={`/campaigns/${GENERAL_FUND_SLUG}/donate`}
+              className={buttonClasses('give', 'lg', 'w-full sm:w-auto')}
+              data-testid="home-fund-cta"
+            >
+              {tFund('cta')}
             </Link>
           </div>
-          {/* A donation without a specific campaign: the general council fund (docs/fund-contract.md). */}
           <Link
-            href={`/campaigns/${GENERAL_FUND_SLUG}/donate`}
-            className={buttonClasses('give', 'lg', 'mt-3 self-start')}
-            data-testid="home-fund-cta"
+            href="/track"
+            className="mt-2 inline-flex min-h-11 items-center self-start text-sm font-medium underline underline-offset-4 hover:text-brand-200"
           >
-            {tFund('cta')}
-          </Link>
-        </div>
-
-        {/* The brand panel is the open account: collected, spent, remaining. */}
-        <div
-          className="relative isolate overflow-hidden rounded-[28px] bg-panel p-7 text-panel-ink shadow-lift sm:p-9"
-          data-testid="platform-ledger"
-        >
-          <StarLattice className="absolute inset-0 -z-10 h-full w-full" />
-          <h2 className="font-display text-xl font-bold text-white">{t('ledgerTitle')}</h2>
-          <div className="mt-6 space-y-5">
-            <dl>
-              <dt className="text-sm text-panel-ink/80">{t('ledgerCollected')}</dt>
-              <dd className="font-display text-3xl font-bold tabular-nums text-white sm:text-4xl">
-                {money(totals.verifiedAmount)}
-              </dd>
-            </dl>
-            <div className="flex h-2.5 overflow-hidden rounded-full bg-white/15" aria-hidden="true">
-              <span className="h-full bg-white/80" style={{ width: `${spentShare}%` }} />
-            </div>
-            <dl className="grid grid-cols-2 gap-4">
-              <div>
-                <dt className="text-sm text-panel-ink/80">{t('ledgerSpent')}</dt>
-                <dd className="text-xl font-bold tabular-nums text-white">
-                  {money(totals.spentAmount)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm text-panel-ink/80">{t('ledgerRemaining')}</dt>
-                <dd className="text-xl font-bold tabular-nums text-white">
-                  {money(totals.remainingAmount)}
-                </dd>
-              </div>
-            </dl>
-          </div>
-          <p className="mt-6 border-t border-white/15 pt-4 text-sm text-panel-ink/85">
-            {t('ledgerBeneficiaries', { count: stats.beneficiaries.total })}
-          </p>
-          <p className="mt-1 text-xs text-panel-ink/70">
-            {t('ledgerNote')} {t('ledgerDemo', { amount: money(totals.demoAmount) })}
-          </p>
-          <Link
-            href="/transparency"
-            className="mt-5 inline-flex items-center rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10"
-            data-testid="ledger-transparency-link"
-          >
-            {t('ledgerMore')}
+            {t('ctaTrack')}
           </Link>
         </div>
       </section>
 
-      <section id="campaigns" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-16 sm:px-6">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-display text-2xl font-bold">{t('campaignsTitle')}</h2>
-          <p className="text-sm text-muted" data-testid="campaign-count">
-            {t('count', { count: page.total })}
-          </p>
-        </div>
-        <div className="mt-5 space-y-3">
-          <CategoryTabs
-            categories={categories}
-            active={category}
-            priority={priority}
-            allLabel={t('filterAll')}
-            label={t('categoriesLabel')}
-          />
-          <PriorityFilter
-            active={priority}
-            category={category}
-            label={t('priorityLabel')}
-            options={[
-              { value: undefined, label: t('priorityAll') },
-              ...PRIORITIES.map((p) => ({ value: p, label: tPriority(p) })),
-            ]}
-          />
-        </div>
-        {page.items.length > 0 ? (
+      <section className="bg-surface-muted py-[clamp(3rem,7vw,5.5rem)]">
+        <div className="mx-auto max-w-content px-4 sm:px-6">
+          {/* The brand panel is the open account: collected, spent, remaining. */}
           <div
-            className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-            data-testid="campaign-grid"
+            className="relative isolate overflow-hidden rounded-panel bg-panel p-7 text-panel-ink shadow-lift sm:p-9"
+            data-testid="platform-ledger"
           >
-            {page.items.map((c) => (
-              <CampaignCard key={c.id} campaign={c} />
-            ))}
+            <StarLattice className="absolute inset-0 -z-10 h-full w-full" />
+            <h2 className="section-title font-display text-xl font-bold text-white">
+              {t('ledgerTitle')}
+            </h2>
+            <div className="mt-6 space-y-5">
+              <dl>
+                <dt className="text-sm text-panel-ink/80">{t('ledgerCollected')}</dt>
+                <dd className="font-display text-3xl font-bold tabular-nums text-white sm:text-4xl">
+                  {money(totals.verifiedAmount)}
+                </dd>
+              </dl>
+              <div
+                className="flex h-2.5 overflow-hidden rounded-full bg-white/15"
+                aria-hidden="true"
+              >
+                <span className="h-full bg-white/80" style={{ width: `${spentShare}%` }} />
+              </div>
+              <dl className="grid grid-cols-2 gap-4">
+                <div>
+                  <dt className="text-sm text-panel-ink/80">{t('ledgerSpent')}</dt>
+                  <dd className="text-xl font-bold tabular-nums text-white">
+                    {money(totals.spentAmount)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-panel-ink/80">{t('ledgerRemaining')}</dt>
+                  <dd className="text-xl font-bold tabular-nums text-white">
+                    {money(totals.remainingAmount)}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <p className="mt-6 border-t border-white/15 pt-4 text-sm text-panel-ink/85">
+              {t('ledgerBeneficiaries', { count: stats.beneficiaries.total })}
+            </p>
+            <p className="mt-1 text-xs text-panel-ink/70">
+              {t('ledgerNote')} {t('ledgerDemo', { amount: money(totals.demoAmount) })}
+            </p>
+            <Link
+              href="/transparency"
+              className="mt-5 inline-flex min-h-11 items-center rounded-full border border-white/30 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10"
+              data-testid="ledger-transparency-link"
+            >
+              {t('ledgerMore')}
+            </Link>
           </div>
-        ) : (
-          <EmptyState
-            className="mt-6"
-            icon="search"
-            message={t('empty')}
-            action={{ href: filterHref({}), label: t('emptyAction') }}
-          />
-        )}
+        </div>
       </section>
 
-      <section className="border-t border-border bg-surface/60">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-          <h2 className="font-display text-xl font-bold">{t('stepsTitle')}</h2>
+      <section id="campaigns" className="scroll-mt-20 py-[clamp(3rem,7vw,5.5rem)]">
+        <div className="mx-auto max-w-content px-4 sm:px-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="section-title font-display text-3xl font-bold">{t('campaignsTitle')}</h2>
+            <p className="text-sm text-muted" data-testid="campaign-count">
+              {t('count', { count: page.total })}
+            </p>
+          </div>
+          <div className="mt-5 space-y-3">
+            <CategoryTabs
+              categories={categories}
+              active={category}
+              priority={priority}
+              allLabel={t('filterAll')}
+              label={t('categoriesLabel')}
+            />
+            <PriorityFilter
+              active={priority}
+              category={category}
+              label={t('priorityLabel')}
+              options={[
+                { value: undefined, label: t('priorityAll') },
+                ...PRIORITIES.map((p) => ({ value: p, label: tPriority(p) })),
+              ]}
+            />
+          </div>
+          {page.items.length > 0 ? (
+            <div
+              className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+              data-testid="campaign-grid"
+            >
+              {page.items.map((c) => (
+                <CampaignCard key={c.id} campaign={c} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              className="mt-6"
+              icon="search"
+              message={t('empty')}
+              action={{ href: filterHref({}), label: t('emptyAction') }}
+            />
+          )}
+        </div>
+      </section>
+
+      <section className="bg-surface-muted py-[clamp(3rem,7vw,5.5rem)]">
+        <div className="mx-auto max-w-content px-4 sm:px-6">
+          <h2 className="section-title font-display text-2xl font-bold">{t('stepsTitle')}</h2>
           <ol className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((step, index) => (
               <li key={step.title} className="flex gap-3">

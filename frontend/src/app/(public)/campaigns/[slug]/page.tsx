@@ -83,13 +83,13 @@ export default async function CampaignPage({ params }: Props) {
         : null;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6" data-testid="campaign-page">
+    <div className="mx-auto max-w-content px-4 py-8 sm:px-6" data-testid="campaign-page">
       <Link href="/#campaigns" className="text-sm font-medium text-accent hover:underline">
         {t('backToAll')}
       </Link>
 
       <header className="mt-4">
-        <div className="relative h-48 overflow-hidden rounded-[28px] border border-border sm:h-64">
+        <div className="relative h-48 overflow-hidden rounded-panel border border-border sm:h-64">
           <CampaignCover coverKey={campaign.coverKey} />
           {campaign.status === 'COMPLETED' && (
             <div
@@ -167,7 +167,7 @@ export default async function CampaignPage({ params }: Props) {
 
       <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-10">
-          <p className="max-w-[70ch] text-lg leading-relaxed">{campaign.summary}</p>
+          <p className="max-w-[68ch] text-read">{campaign.summary}</p>
 
           <BeneficiaryList beneficiaries={beneficiaries} currency={campaign.currency} />
 

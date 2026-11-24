@@ -15,10 +15,12 @@ export function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
   const spent = Number(campaign.spentAmount) > 0;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lift">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-card transition-shadow duration-200 hover:shadow-lift focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-page">
       <div className="relative h-40 overflow-hidden">
-        <CampaignCover coverKey={campaign.coverKey} />
-        <span className="absolute start-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-surface/90 px-2.5 py-1 text-xs font-semibold text-accent-strong shadow-card backdrop-blur">
+        <div className="absolute inset-0 transition-transform duration-300 ease-calm group-hover:scale-[1.03] motion-reduce:transform-none">
+          <CampaignCover coverKey={campaign.coverKey} />
+        </div>
+        <span className="absolute start-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent-strong shadow-card">
           <CategoryIcon icon={campaign.category.icon} className="h-4 w-4" />
           {campaign.category.name}
         </span>
@@ -60,7 +62,7 @@ export function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
           {campaign.area && <span>{campaign.area}</span>}
           <span>{t('beneficiaries', { count: campaign.beneficiariesCount })}</span>
         </p>
-        <div className="mt-auto pt-5">
+        <div className="mt-auto space-y-2 pt-5">
           <FundingBar
             size="sm"
             target={campaign.targetAmount}
@@ -69,7 +71,7 @@ export function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
             demo={campaign.demoAmount}
             label={t('progressLabel')}
           />
-          <p className="mt-2 text-sm">
+          <p className="border-t border-border pt-3 text-sm">
             <span className="font-semibold tabular-nums">
               {formatMoney(campaign.verifiedAmount, campaign.currency, locale)}
             </span>{' '}

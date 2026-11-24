@@ -7,7 +7,7 @@
     "icon": "./assets/brand/athar-icon-green.png",
     "scheme": "athar",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#eef2ef",
+    "backgroundColor": "#FFFFFF",
     "android": {
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {

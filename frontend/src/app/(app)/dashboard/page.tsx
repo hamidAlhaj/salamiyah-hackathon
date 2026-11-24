@@ -37,7 +37,7 @@ export default async function DashboardPage() {
       data-testid="dashboard"
       data-role={user.role}
     >
-      <section className="relative isolate overflow-hidden rounded-[28px] border border-border bg-surface px-6 py-8 shadow-card sm:px-9">
+      <section className="relative isolate overflow-hidden rounded-panel border border-border bg-surface px-6 py-8 shadow-card sm:px-9">
         <StarLattice
           tone="soft"
           className="absolute inset-y-0 end-0 -z-10 h-full w-1/2 ltr:[mask-image:linear-gradient(to_left,black_30%,transparent)] rtl:[mask-image:linear-gradient(to_right,black_30%,transparent)]"

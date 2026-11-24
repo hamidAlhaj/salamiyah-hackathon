@@ -15,18 +15,19 @@ const config: Config = {
       colors: {
         // Salamiyah green: trust and the council. Primary actions, links, active states.
         brand: {
-          50: '#eef7f3',
-          100: '#d5ece2',
-          200: '#acd9c5',
-          300: '#79bf9f',
-          400: '#46a27a',
-          500: '#1f8a5b',
-          600: '#18734b',
-          700: '#135b3c',
-          800: '#114a32',
-          900: '#0f3d2a',
-          950: '#072318',
+          50: '#f1f7f3',
+          100: '#e6f2ec',
+          200: '#c4e2d0',
+          300: '#8fcaa8',
+          400: '#6bcfa5',
+          500: '#1f8a4c',
+          600: '#0f6b2f',
+          700: '#0b5224',
+          800: '#0b3d2a',
+          900: '#082e20',
+          950: '#05201a',
         },
+        gold: { 400: '#d9b45a', 500: '#c9a13b', 700: '#8a6a1c' },
         // Harvest saffron: giving. ONLY donate actions and progress toward a funding goal.
         give: {
           50: '#fff7ed',
@@ -66,10 +67,18 @@ const config: Config = {
         info: { DEFAULT: cssVar('--info'), soft: cssVar('--info-soft') },
         // The deep green of the brand panel and the logo tile (same in both themes).
         panel: { DEFAULT: cssVar('--panel'), ink: cssVar('--panel-ink') },
+        footer: {
+          DEFAULT: cssVar('--footer'),
+          ink: cssVar('--footer-ink'),
+          muted: cssVar('--footer-muted'),
+        },
         // Chart series only (transparency charts): money collected vs money spent.
         series: { collected: cssVar('--series-collected'), spent: cssVar('--series-spent') },
       },
       borderColor: { DEFAULT: cssVar('--border') },
+      maxWidth: { content: '75rem' },
+      borderRadius: { panel: '1.25rem' },
+      transitionTimingFunction: { calm: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
       fontFamily: {
         // IBM Plex Sans Arabic (next/font, self-hosted) covers Arabic and Latin body text.
         sans: ['var(--font-sans)', 'Tahoma', 'Arial', 'sans-serif'],
@@ -83,6 +92,7 @@ const config: Config = {
         sm: ['0.9375rem', { lineHeight: '1.7' }],
         base: ['1rem', { lineHeight: '1.75' }],
         lg: ['1.125rem', { lineHeight: '1.7' }],
+        read: ['1.125rem', { lineHeight: '1.8' }],
         xl: ['1.25rem', { lineHeight: '1.5' }],
         '2xl': ['1.5rem', { lineHeight: '1.4' }],
         '3xl': ['1.875rem', { lineHeight: '1.35' }],
