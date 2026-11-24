@@ -3,7 +3,8 @@
 How to use:
 - Send **Prompt 0** first, then 1 → 5 in order, one per message.
 - Wait for each prompt to report green before sending the next.
-- Prompts 1–4 are the "must" set (≈ 2.5 h). Prompt 5 is "should" (≈ 1.5 h). Skip Prompt 5 if time is short.
+- Prompts 1–4 are the web "must" set (≈ 2.5 h). Prompt 5 is "should" (≈ 1.5 h); skip it if time is short.
+- Prompt 6 brings the mobile app (`mobile/`) to the same colours and shapes, with the logo checked (≈ 30–45 min).
 
 Files the agent must read (all in the repo, branch `p30-design-research`):
 - `CLAUDE.md`: project rules. It overrides anything else.
@@ -155,4 +156,51 @@ Review branch main against docs/design-research/01-proposal.md §5 "Must keep": 
 answer pass/fail with evidence (file:line or screenshot). Check WCAG AA contrast of every new text/background pair
 with the values in 00-summary.md §2, keyboard focus visible on header, cards, buttons and donate form, 375px with
 no horizontal scroll, Arabic and English. List anything that fails; do not change code in this message.
+```
+
+---
+
+## Prompt 6: mobile app (Expo) in the same style as the web (≈ 30–45 min)
+
+You can send it straight after Prompt 0, in parallel with the web prompts. It touches `mobile/` only.
+
+```
+Make the Athar donor app (folder mobile/, Expo SDK 58) match the redesigned web: it is the same product.
+Read CLAUDE.md (Mobile rules, UI rules), docs/design-research/01-proposal.md §1 (the web tokens) and
+docs/design-research/00-summary.md §2 (contrast). Work on a new branch p33-mobile-style from main (git fetch first;
+if p31-redesign is already merged, main has it). Touch ONLY mobile/. No new libraries, no `any`, no unused code.
+
+1. Logo (already the final v2 logo: check, do not redraw or regenerate):
+   - mobile/app.json must use: icon ./assets/brand/athar-icon-green.png; ios.icon athar-icon-green-square.png;
+     android adaptiveIcon foreground athar-adaptive-foreground.png on #0B3D2A; web favicon athar-icon-green.png;
+     expo-splash-screen image athar-logo-white-bg.png on #FFFFFF, dark image athar-logo-dark.png on #0B3D2A.
+     Fix anything that differs. Change the top-level "backgroundColor" from #eef2ef to #FFFFFF (new page colour).
+   - The header logo in mobile/src/app/_layout.tsx (HeaderLogo, white-word athar-icon-dark.png on the green header)
+     stays. Do not touch docs/brand/.
+2. Colours: in mobile/src/ui/theme.ts set the palettes to these exact values (same as the web tokens):
+   light: page #FFFFFF, surface #FFFFFF, surfaceMuted #EBF2EE, border #E3EAE5, track #DDE7E1, control #6E8278,
+          ink #182420, muted #4A5A54, accent #0F6B2F, accentStrong #0B5224, accentSoft #E6F2EC,
+          panel #0B3D2A, panelInk #E6F2EC, give #B45512, giveInk #FFFFFF, givePending #FED7AA, seriesSpent #0F6B2F
+          (danger, dangerSoft, warning, warningSoft, demo, cover* unchanged).
+   dark:  accent #6BCFA5, accentStrong #ACD9C5, accentSoft #163628, panel #0A291D, panelInk #D6ECE1,
+          give #F6A34A, giveInk #1A0F05, givePending #8F4211, seriesSpent #6BCFA5 (everything else unchanged).
+   Update the doc comment of theme.ts. Then grep mobile/src for hard-coded hex colours (e.g. src/app/transparency.tsx)
+   and replace them with palette entries; leave CampaignCover illustration colours as they are.
+3. Shapes (like the web): buttons and chips pill-shaped (radius.pill); cards radius 16 (set radius.lg to 16),
+   1px border c.border, a soft shadow on light (shadowColor #182420, opacity ~0.12, radius ~16, offset y 8;
+   elevation 3 on Android) and no shadow in dark. Since page and surface are now both white in light mode, every
+   card MUST keep its 1px border so cards stay visible. Section backgrounds that group content may use surfaceMuted.
+   Selected amount / payment choices: border c.accent + background c.accentSoft + a ✓ icon (not colour only).
+   Tap targets ≥ 44pt; Arabic text ≥ 13 (type.xs stays 13).
+4. Keep: RTL Arabic + English, Western digits, light/dark following the phone, the «Demo» badge, distinct labels for
+   verified / pending / demo / spent, the funding bar filling from the reading start, every testID (e2e and the web
+   screenshot script use home-fund-cta), all loading/error/empty/disabled states.
+5. Check: cd mobile && npx tsc --noEmit && npx expo lint && npx expo install --check && npx expo config --json
+   (icons and splash resolve). Then start the API (backend: npm run build && node dist/main.js) and
+   CI=1 EXPO_PUBLIC_API_URL=http://localhost:4000 npx expo start --web --port 8081; screenshot the home, a campaign
+   page and the donate screen at 375px in light and dark; overwrite docs/screenshots/athar/mobile-home.png with the
+   light home. Make sure white cards are distinguishable from the white page and every text is readable.
+   Stop every server you started.
+6. If all green: commit "style(mobile): same design tokens and shapes as the web", merge into main (no squash, no
+   force), push (retry with git -c http.version=HTTP/1.1 push). Report the changes and the screenshots.
 ```
