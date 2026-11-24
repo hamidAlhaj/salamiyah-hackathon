@@ -72,7 +72,7 @@ export default function TransparencyScreen() {
             style={{ backgroundColor: c.panel, borderRadius: 24, padding: 20, gap: 16 }}
           >
             <View style={{ gap: 6 }}>
-              <AppText display size="xl" style={{ color: '#ffffff' }}>
+              <AppText display size="xl" style={{ color: c.onBrand }}>
                 {t('transparency.heading')}
               </AppText>
               <AppText size="sm" style={{ color: c.panelInk }}>
@@ -91,7 +91,7 @@ export default function TransparencyScreen() {
                 </AppText>
                 <AppText
                   style={{
-                    color: '#ffffff',
+                    color: c.onBrand,
                     fontFamily: fonts.display,
                     fontSize: 30,
                     lineHeight: 44,
