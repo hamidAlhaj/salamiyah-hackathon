@@ -197,6 +197,18 @@
       "Beneficiaries without identities"
     ],
     "tooMany": "Too many sign-in attempts. Wait a minute, then try again.",
+    "noAccount": "New to Athar?",
+    "registerLink": "Create an account",
+    "registerTitle": "Create your donor account",
+    "registerSubtitle": "Register to donate and follow your contributions.",
+    "fullName": "Full name",
+    "registerSubmit": "Create account",
+    "registerSubmitting": "Creating account…",
+    "registerRequired": "Enter your name, phone number, and a password of at least 8 characters.",
+    "registerInvalid": "Check your name, phone number, and password, then try again.",
+    "phoneTaken": "An account with this phone number already exists. Log in instead.",
+    "alreadyAccount": "Already have an account?",
+    "loginLink": "Log in",
     "google": {
       "or": "or",
       "button": "Continue with Google",

@@ -7,6 +7,10 @@ export function login(phone: string, password: string) {
   return apiFetch<AuthResponse>('/auth/login', { method: 'POST', body: { phone, password } });
 }
 
+export function register(body: { fullName: string; phone: string; password: string; locale: 'ar' | 'en' }) {
+  return apiFetch<AuthResponse>('/auth/register', { method: 'POST', body });
+}
+
 /** Memoised per request: the root layout, (app) layout and page share one GET /auth/me. */
 export const me = cache((token: string) => apiFetch<CurrentUser>('/auth/me', { token }));
 
